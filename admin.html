@@ -98,10 +98,23 @@
     </div>
 
     <script>
-        // 🚨 [매우 중요] 앱스 스크립트에서 새로 발급받은 '모든 사용자' 권한의 웹 앱 URL을 넣으세요!
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwXu8ZJQFDFSDg1lTD56c-dUbCmBz88tT_7k_DRvYO_tldYE3EoL9Pq3R8XdFWdX5pP/exec';
+        // 🚨 [매우 중요] 아래 따옴표 안에 본인의 웹 앱 URL을 다시 꼭 넣어주세요!
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwyoYa6C1C9MBeBs3FpBhxUKxmm7TxZ_JZUFwP9idODkEdQwzZYhScnca5prwmDKH0H/exec';
         
-        let allMembers = []; // 전체 데이터를 저장할 변수
+        let allMembers = [];
+
+        // 💡 한글 번역 사전 (엑셀의 영어를 화면에서만 한글로 바꿔줍니다)
+        const translate = {
+            "Timestamp": "접수일시", "name": "이름", "gender": "성별", "nickname": "닉네임",
+            "birthYear": "출생연도", "phoneNumber": "연락처", "region": "거주지역",
+            "job": "직업", "jobCategory": "직군", "jobOrganizationName": "직장명",
+            "height": "키", "doubleEyelid": "쌍꺼풀", "bodyType": "체형",
+            "personality": "성격", "mbti": "MBTI", "hobby": "취미",
+            "smoking": "흡연여부", "drinking": "음주여부", "religion": "종교",
+            "idealType": "이상형", "importantCriteria": "중요조건", "preferredAgeRange": "선호연령",
+            "preferredHeightMin": "선호키(최소)", "avoidReligion": "기피종교", "avoidType": "기피유형",
+            "selfIntroduction": "자기소개", "continueMatchingYn": "추가매칭여부"
+        };
 
         // 데이터 불러오기 함수
         async function loadData() {
@@ -111,17 +124,15 @@
                 const response = await fetch(scriptURL);
                 allMembers = await response.json();
                 
-                // 이번 달 통계 계산 (Timestamp 기준)
-                const currentMonth = new Date().toISOString().substring(0, 7); // 예: "2026-05"
+                const currentMonth = new Date().toISOString().substring(0, 7);
                 const thisMonthCount = allMembers.filter(m => String(m['Timestamp']).startsWith(currentMonth)).length;
                 
                 document.getElementById('monthlyStats').innerHTML = 
                     `총 누적 회원 : ${allMembers.length}명 <br> 이번 달 신규 지원 : ${thisMonthCount}명`;
                 
-                // 처음엔 전체 회원 보여주기
                 filterMembers('all');
             } catch (error) {
-                alert('데이터를 불러오는 중 오류가 발생했습니다. 구글 앱스 스크립트 권한을 확인해주세요.');
+                alert('데이터를 불러오는 중 오류가 발생했습니다.');
                 console.error(error);
             } finally {
                 document.getElementById('loadingIndicator').style.display = 'none';
@@ -133,37 +144,39 @@
             const tableContainer = document.getElementById('tableContainer');
             if (allMembers.length === 0) return;
             
-            tableContainer.style.display = 'block'; // 표 영역 보이기
+            tableContainer.style.display = 'block';
 
             let filteredData = allMembers;
             let title = '전체 회원 명단';
 
             if (gender === '남' || gender === '여') {
-                filteredData = allMembers.filter(m => m['성별'] === gender);
+                filteredData = allMembers.filter(m => m['gender'] === gender || m['성별'] === gender);
                 title = `${gender}자 회원 명단`;
             }
             
             document.getElementById('tableTitle').textContent = title;
             document.getElementById('rowCount').textContent = `${filteredData.length}명`;
 
-            // 표 헤더(항목명) 그리기 - 필요한 항목만 추려내거나 전부 보여주기
-            // 보기 편하게 일부 핵심 항목만 보여주도록 설정 (원하시면 headers 변수를 수정하세요)
             const allHeaders = Object.keys(allMembers[0]);
             
-            document.getElementById('headerRow').innerHTML = allHeaders.map(h => `<th>${h}</th>`).join('');
+            // 표 헤더(항목명) 그리기 - 사전에 있으면 한글로, 없으면 원래 영어로
+            document.getElementById('headerRow').innerHTML = allHeaders.map(h => 
+                `<th>${translate[h] || h}</th>`
+            ).join('');
             
-            // 표 내용 그리기 (최신순으로 보기 위해 역순 정렬: reverse)
+            // 표 내용 그리기 (최신순)
             document.getElementById('memberData').innerHTML = filteredData.reverse().map(row => 
                 `<tr>${allHeaders.map(h => {
-                    // 날짜 데이터 예쁘게 자르기
                     let cellData = row[h] || '';
-                    if (h === 'Timestamp' && cellData) cellData = String(cellData).substring(0, 10);
+                    if (h === 'Timestamp' && cellData) {
+                        // 날짜를 보기 좋게 YYYY-MM-DD HH:MM 형식으로 자르기
+                        cellData = String(cellData).substring(0, 16).replace('T', ' ');
+                    }
                     return `<td>${cellData}</td>`;
                 }).join('')}</tr>`
             ).join('');
         }
 
-        // 페이지 열리자마자 데이터 불러오기 실행
         window.onload = loadData;
     </script>
 </body>
