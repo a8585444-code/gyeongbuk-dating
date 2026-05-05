@@ -98,7 +98,7 @@
     </div>
 
     <script>
-        // 🚨 [매우 중요] 아래 따옴표 안에 본인의 웹 앱 URL을 다시 꼭 넣어주세요!
+        // 🚨 [매우 중요] 아래 따옴표 안에 본인의 구글 웹 앱 URL을 다시 꼭 넣어주세요!
         const scriptURL = 'https://script.google.com/macros/s/AKfycbzRmZFyU1ZJEjJebry-BTp5geWuyEz4Fev7tAWLmD1blzpZkpfWJPfk2xtveMlwK9lS/exec';
         
         let allMembers = [];
@@ -165,7 +165,7 @@
             ).join('');
             
             // 표 내용 그리기 (최신순)
-            document.getElementById('memberData').innerHTML = filteredData.reverse().map(row => 
+            document.getElementById('memberData').innerHTML = [...filteredData].reverse().map(row => 
                 `<tr>${allHeaders.map(h => {
                     let cellData = row[h] || '';
                     if (h === 'Timestamp' && cellData) {
