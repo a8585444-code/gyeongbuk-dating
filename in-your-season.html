@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>In Your Season 프로필 생성 - 파인드썸</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #f0f2f5; padding: 20px; }
+        .header { max-width: 1200px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { text-decoration: none; color: #7c3aed; font-weight: 600; font-size: 14px; }
+        
+        .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; max-width: 1200px; margin: 0 auto; overflow-x: auto; }
+        h1 { font-size: 20px; color: #1a1a2e; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+        th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
+        th { background: #f8fafc; color: #64748b; font-weight: 600; position: sticky; top: 0; }
+        
+        .gen-btn { background: #1e293b; color: white; padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s; }
+        .gen-btn:hover { background: #334155; }
+
+        .loading { text-align: center; padding: 50px; color: #7c3aed; font-weight: bold; }
+
+        /* 프로필 생성 팝업(모달) 스타일 */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 24px; border-radius: 16px; width: 90%; max-width: 450px; }
+        .modal-content h2 { margin-bottom: 16px; font-size: 18px; color: #1a1a2e; }
+        .profile-textarea { width: 100%; height: 250px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 13px; line-height: 1.6; resize: vertical; margin-bottom: 16px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+        .modal-actions button { padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; }
+        .btn-close { background: #f1f5f9; color: #64748b; }
+        .btn-copy { background: #7c3aed; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="/admin.html" class="back-btn">← 관리자 홈으로</a>
+        <div id="stats" style="font-size: 13px; color: #64748b;">활성 정회원: 0명</div>
+    </div>
+
+    <div class="card">
+        <h1>💌 In Your Season 프로필 카드 생성</h1>
+        <p class="subtitle">승인된 정회원의 정보를 바탕으로 상대방에게 전달할 프로필 양식을 자동 생성합니다.</p>
+        
+        <div id="loading" class="loading">데이터를 불러오는 중입니다... ⏳</div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>회원번호</th>
+                    <th>이름</th>
+                    <th>성별</th>
+                    <th>나이</th>
+                    <th>직업</th>
+                    <th>지역</th>
+                    <th>MBTI</th>
+                    <th>프로필 텍스트</th>
+                </tr>
+            </thead>
+            <tbody id="memberList"></tbody>
+        </table>
+    </div>
+
+    <div id="profileModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>✨ 자동 생성된 프로필</h2>
+            <textarea id="profileText" class="profile-textarea" readonly></textarea>
+            <div class="modal-actions">
+                <button class="btn-close" onclick="closeModal()">닫기</button>
+                <button class="btn-copy" onclick="copyProfile()">복사하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://teeutkxfzxdsaqdvwrwt.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
+        
+        let globalMembers = [];
+
+        async function fetchActiveMembers() {
+            try {
+                // 승인된 정회원만 불러오기
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/members?status=eq.정회원&order=id.desc`, {
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                });
+                globalMembers = await response.json();
+                renderMembers(globalMembers);
+            } catch (error) {
+                alert('데이터 로드 실패');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function renderMembers(members) {
+            const listBody = document.getElementById('memberList');
+            document.getElementById('stats').textContent = `활성 정회원: ${members.length}명`;
+
+            if (members.length === 0) {
+                listBody.innerHTML = '<tr><td colspan="8" style="padding:50px;">프로필을 생성할 수 있는 정회원이 없습니다.</td></tr>';
+                return;
+            }
+
+            listBody.innerHTML = members.map(m => `
+                <tr>
+                    <td>${m.id}</td>
+                    <td><strong>${m.name || '-'}</strong></td>
+                    <td>${m.gender || '-'}</td>
+                    <td>${m.birthYear || '-'}</td>
+                    <td>${m.job || '-'}</td>
+                    <td>${m.region || '-'}</td>
+                    <td>${m.mbti || '-'}</td>
+                    <td>
+                        <button class="gen-btn" onclick="generateProfile(${m.id})">프로필 텍스트 생성</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 프로필 텍스트 자동 조립 및 팝업 열기
+        function generateProfile(id) {
+            const m = globalMembers.find(member => member.id === id);
+            if(!m) return;
+
+            // 상대방에게 보낼 깔끔한 소개 양식
+            const profileString = `[ In Your Season ]
+안녕하세요! 파인드썸입니다.
+새로운 매칭 프로필을 전달해 드립니다. 💌
+
+👤 나이: ${m.birthYear ? m.birthYear + '년생' : '미기재'}
+🏢 직업: ${m.job || '미기재'} (${m.jobCategory || ''})
+📍 거주지: ${m.region || '미기재'}
+📏 키: ${m.height ? m.height + 'cm' : '미기재'}
+✨ 체형: ${m.bodyType || '미기재'}
+🧩 MBTI: ${m.mbti || '미기재'}
+🚭 흡연: ${m.smoking || '미기재'}
+🍻 음주: ${m.drinking || '미기재'}
+
+[간단 자기소개]
+${m.selfIntroduction || '안녕하세요. 좋은 인연을 만나고 싶습니다.'}
+
+※ 위 프로필을 확인하시고 매칭 진행 여부를 알려주세요!`;
+
+            document.getElementById('profileText').value = profileString;
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+
+        // 팝업창 닫기
+        function closeModal() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
+
+        // 텍스트 클립보드에 복사하기
+        function copyProfile() {
+            const textarea = document.getElementById('profileText');
+            textarea.select();
+            document.execCommand('copy');
+            alert('프로필 텍스트가 복사되었습니다! 카카오톡에 붙여넣기 해보세요.');
+        }
+
+        window.onload = fetchActiveMembers;
+    </script>
+</body>
+</html>
