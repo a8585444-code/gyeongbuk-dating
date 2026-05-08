@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원 매칭 - 파인드썸</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #f0f2f5; padding: 20px; }
+        .header { max-width: 1200px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { text-decoration: none; color: #7c3aed; font-weight: 600; font-size: 14px; }
+        
+        .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; max-width: 1200px; margin: 0 auto; overflow-x: auto; }
+        h1 { font-size: 20px; color: #1a1a2e; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .gender-icon { padding: 4px 10px; border-radius: 8px; font-size: 16px; }
+        .icon-woman { background: #fce7f3; color: #db2777; }
+        .icon-man { background: #dbeafe; color: #2563eb; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+        th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
+        th { background: #f8fafc; color: #64748b; font-weight: 600; position: sticky; top: 0; }
+        
+        .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; background: #d1fae5; color: #059669; }
+        .status-wait { background: #fee2e2; color: #dc2626; }
+
+        .match-btn { background: #1e293b; color: white; padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s; }
+        .match-btn:hover { background: #334155; }
+
+        .loading { text-align: center; padding: 50px; color: #7c3aed; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="/admin.html" class="back-btn">← 관리자 홈으로</a>
+        <div id="stats" style="font-size: 13px; color: #64748b;">총 0명</div>
+    </div>
+
+    <div class="card">
+        <h1 id="pageTitle">
+            <span id="genderIcon" class="gender-icon"></span>
+            회원 명단 불러오는 중...
+        </h1>
+        <div id="loading" class="loading">데이터를 불러오는 중입니다... ⏳</div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>상태</th>
+                    <th>이름</th>
+                    <th>나이(출생연도)</th>
+                    <th>직업/직장</th>
+                    <th>키</th>
+                    <th>거주지</th>
+                    <th>MBTI</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody id="memberList">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        // 💡 대표님 맞춤형 자동 키 입력 완료!
+        const SUPABASE_URL = 'https://teeutkxfzxdsaqdvwrwt.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
+
+        // URL에서 성별 정보 파악하기 (?gender=woman 또는 ?gender=man)
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetGender = urlParams.get('gender'); // 'woman' 또는 'man'
+
+        // 페이지 제목 세팅
+        const titleEl = document.getElementById('pageTitle');
+        const iconEl = document.getElementById('genderIcon');
+        
+        if (targetGender === 'woman') {
+            titleEl.innerHTML = `<span class="gender-icon icon-woman">♀️</span> 여자 회원 매칭 명단`;
+        } else if (targetGender === 'man') {
+            titleEl.innerHTML = `<span class="gender-icon icon-man">♂️</span> 남자 회원 매칭 명단`;
+        }
+
+        async function fetchMembers() {
+            try {
+                // 최신순으로 전체 데이터 불러오기
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/members?order=created_at.desc`, {
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                });
+                const allMembers = await response.json();
+
+                // 클릭한 메뉴에 맞춰 성별 필터링 (여, 여성 / 남, 남성 등 다양한 입력 대비)
+                const filteredMembers = allMembers.filter(m => {
+                    const g = m.gender || m['성별'] || '';
+                    if (targetGender === 'woman') return g.includes('여');
+                    if (targetGender === 'man') return g.includes('남');
+                    return true;
+                });
+
+                renderMembers(filteredMembers);
+            } catch (error) {
+                alert('데이터 로드 실패: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function renderMembers(members) {
+            const listBody = document.getElementById('memberList');
+            document.getElementById('stats').textContent = `조회된 회원: 총 ${members.length}명`;
+
+            if (members.length === 0) {
+                listBody.innerHTML = '<tr><td colspan="8" style="padding:50px;">해당 성별의 회원이 없습니다.</td></tr>';
+                return;
+            }
+
+            listBody.innerHTML = members.map(m => {
+                // 상태별 뱃지 색상
+                const isWait = (m.status === '대기' || m.status === 'PENDING');
+                const badgeClass = isWait ? 'status-badge status-wait' : 'status-badge';
+                const statusText = m.status || '대기';
+
+                return `
+                <tr>
+                    <td><span class="${badgeClass}">${statusText}</span></td>
+                    <td><strong>${m.name || '-'}</strong></td>
+                    <td>${m.birthYear || '-'}</td>
+                    <td>${m.job || '-'}<br><span style="font-size:11px; color:#888;">${m.jobOrganizationName || ''}</span></td>
+                    <td>${m.height || '-'}cm</td>
+                    <td>${m.region || '-'}</td>
+                    <td>${m.mbti || '-'}</td>
+                    <td>
+                        <button class="match-btn" onclick="alert('프로필 및 매칭 기능은 준비 중입니다. (회원번호: ${m.id})')">상세/매칭</button>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        window.onload = fetchMembers;
+    </script>
+</body>
+</html>
