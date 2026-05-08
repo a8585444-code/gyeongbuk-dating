@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로필 수정 - 파인드썸</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #f0f2f5; padding: 20px; }
+        .header { max-width: 1200px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { text-decoration: none; color: #7c3aed; font-weight: 600; font-size: 14px; }
+        
+        .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; max-width: 1200px; margin: 0 auto; overflow-x: auto; }
+        h1 { font-size: 20px; color: #1a1a2e; margin-bottom: 20px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+        th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
+        th { background: #f8fafc; color: #64748b; font-weight: 600; position: sticky; top: 0; }
+        
+        .edit-btn { background: #7c3aed; color: white; padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s; }
+        .edit-btn:hover { background: #6d28d9; }
+
+        .loading { text-align: center; padding: 50px; color: #7c3aed; font-weight: bold; }
+
+        /* 수정 팝업(모달) 스타일 */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 24px; border-radius: 16px; width: 90%; max-width: 400px; }
+        .modal-content h2 { margin-bottom: 16px; font-size: 18px; }
+        .form-group { margin-bottom: 12px; text-align: left; }
+        .form-group label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+        .modal-actions button { padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; }
+        .btn-cancel { background: #f1f5f9; color: #64748b; }
+        .btn-save { background: #7c3aed; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="/admin.html" class="back-btn">← 관리자 홈으로</a>
+    </div>
+
+    <div class="card">
+        <h1>프로필 정보 수정</h1>
+        <div id="loading" class="loading">데이터를 불러오는 중입니다... ⏳</div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>회원번호</th>
+                    <th>상태</th>
+                    <th>이름</th>
+                    <th>성별</th>
+                    <th>연락처</th>
+                    <th>직업</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody id="memberList"></tbody>
+        </table>
+    </div>
+
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>회원 정보 수정</h2>
+            <input type="hidden" id="editId">
+            
+            <div class="form-group">
+                <label>진행 상태</label>
+                <select id="editStatus">
+                    <option value="대기">대기 (미승인)</option>
+                    <option value="정회원">정회원 (승인완료)</option>
+                    <option value="매칭중">매칭중</option>
+                    <option value="매칭완료">매칭완료</option>
+                    <option value="휴면">휴면</option>
+                    <option value="거절">거절</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>이름</label>
+                <input type="text" id="editName">
+            </div>
+            <div class="form-group">
+                <label>연락처</label>
+                <input type="text" id="editPhone">
+            </div>
+            <div class="form-group">
+                <label>직업</label>
+                <input type="text" id="editJob">
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal()">취소</button>
+                <button class="btn-save" onclick="saveProfile()">저장하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://teeutkxfzxdsaqdvwrwt.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
+        
+        let globalMembers = [];
+
+        async function fetchMembers() {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/members?order=id.desc`, {
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                });
+                globalMembers = await response.json();
+                renderMembers(globalMembers);
+            } catch (error) {
+                alert('데이터 로드 실패');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function renderMembers(members) {
+            const listBody = document.getElementById('memberList');
+            if (members.length === 0) {
+                listBody.innerHTML = '<tr><td colspan="7" style="padding:50px;">등록된 회원이 없습니다.</td></tr>';
+                return;
+            }
+
+            listBody.innerHTML = members.map(m => `
+                <tr>
+                    <td>${m.id}</td>
+                    <td><strong>${m.status || '대기'}</strong></td>
+                    <td>${m.name || '-'}</td>
+                    <td>${m.gender || '-'}</td>
+                    <td>${m.phoneNumber || '-'}</td>
+                    <td>${m.job || '-'}</td>
+                    <td>
+                        <button class="edit-btn" onclick="openModal(${m.id})">정보 수정</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 팝업창 열기 및 기존 데이터 채워넣기
+        function openModal(id) {
+            const member = globalMembers.find(m => m.id === id);
+            if(!member) return;
+
+            document.getElementById('editId').value = member.id;
+            document.getElementById('editStatus').value = member.status || '대기';
+            document.getElementById('editName').value = member.name || '';
+            document.getElementById('editPhone').value = member.phoneNumber || '';
+            document.getElementById('editJob').value = member.job || '';
+
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        // 팝업창 닫기
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // 수정한 데이터 수파베이스에 저장하기 (PATCH)
+        async function saveProfile() {
+            const id = document.getElementById('editId').value;
+            const newStatus = document.getElementById('editStatus').value;
+            const newName = document.getElementById('editName').value;
+            const newPhone = document.getElementById('editPhone').value;
+            const newJob = document.getElementById('editJob').value;
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/members?id=eq.${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        status: newStatus,
+                        name: newName,
+                        phoneNumber: newPhone,
+                        job: newJob
+                    })
+                });
+
+                if (response.ok) {
+                    alert('성공적으로 수정되었습니다.');
+                    closeModal();
+                    fetchMembers(); // 화면 새로고침 없이 데이터만 다시 불러와서 표 업데이트
+                } else {
+                    throw new Error('수정 실패');
+                }
+            } catch (error) {
+                alert('저장 중 오류가 발생했습니다.');
+            }
+        }
+
+        window.onload = fetchMembers;
+    </script>
+</body>
+</html>
