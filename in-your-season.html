@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>In Your Season 프로필 생성 - 파인드썸</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #f0f2f5; padding: 20px; }
@@ -13,7 +14,6 @@
         .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; max-width: 1200px; margin: 0 auto; overflow-x: auto; }
         h1 { font-size: 20px; color: #1a1a2e; margin-bottom: 24px; }
 
-        /* 메인 목록 테이블 */
         .main-table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; margin-bottom: 20px; }
         .main-table th, .main-table td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
         .main-table th { background: #f8fafc; color: #64748b; font-weight: 600; }
@@ -22,18 +22,18 @@
 
         /* 팝업 모달 스타일 */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-        .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 500px; position: relative; overflow: hidden; }
+        .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 500px; position: relative; overflow: hidden; display: flex; flex-direction: column; }
         
-        /* 💖 이미지와 동일한 프로필 카드 디자인 */
-        .profile-card-container { width: 100%; background: #fff; border: 2px solid #000; }
-        .profile-header { background: #fce7f3; color: #db2777; padding: 12px; text-align: center; font-weight: 800; font-size: 18px; border-bottom: 2px solid #000; }
+        /* 💖 프로필 카드 디자인 (이미지 저장 영역) */
+        #captureArea { width: 500px; background: #fff; border: 2px solid #000; margin: 0 auto; }
+        .profile-header { background: #fce7f3; color: #db2777; padding: 12px; text-align: center; font-weight: 800; font-size: 20px; border-bottom: 2px solid #000; }
         .profile-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .profile-table th { background: #eff6ff; color: #1e3a8a; width: 30%; padding: 10px; border: 1px solid #000; font-size: 14px; text-align: left; }
-        .profile-table td { background: #fff; color: #000; padding: 10px; border: 1px solid #000; font-size: 14px; text-align: left; line-height: 1.4; word-break: break-all; }
+        .profile-table th { background: #eff6ff; color: #1e3a8a; width: 30%; padding: 12px; border: 1px solid #000; font-size: 14px; text-align: left; }
+        .profile-table td { background: #fff; color: #000; padding: 12px; border: 1px solid #000; font-size: 14px; text-align: left; line-height: 1.5; word-break: break-all; }
 
         .modal-footer { background: #f8fafc; padding: 15px; display: flex; justify-content: center; gap: 10px; border-top: 1px solid #ddd; }
         .btn-close { background: #64748b; color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
-        .btn-capture { background: #db2777; color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-download { background: #db2777; color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
 
         .loading { text-align: center; padding: 50px; color: #7c3aed; font-weight: bold; }
     </style>
@@ -66,16 +66,15 @@
 
     <div id="profileModal" class="modal-overlay">
         <div class="modal-content">
-            <div id="captureArea" class="profile-card-container">
+            <div id="captureArea">
                 <div class="profile-header">♥In Your Season Profile♥</div>
                 <table class="profile-table">
-                    <tbody id="profileData">
-                        </tbody>
+                    <tbody id="profileData"></tbody>
                 </table>
             </div>
             <div class="modal-footer">
                 <button class="btn-close" onclick="closeModal()">닫기</button>
-                <button class="btn-capture" onclick="alert('화면을 캡처해서 사용해주세요! (추후 자동저장 기능 추가 가능)')">캡처용 보기</button>
+                <button class="btn-download" id="downloadBtn">JPEG 저장하기</button>
             </div>
         </div>
     </div>
@@ -85,6 +84,7 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
         
         let globalMembers = [];
+        let currentMemberName = "";
 
         async function fetchActiveMembers() {
             try {
@@ -116,36 +116,60 @@
             const m = globalMembers.find(member => member.id === id);
             if(!m) return;
 
+            currentMemberName = m.name || "profile";
+
             const rows = [
-                ['닉네임', m.nickname || 'WAA'],
-                ['출생년도', m.birthYear || '94'],
-                ['거주지', m.region || '경기도 용인시'],
-                ['키', m.height || '163'],
-                ['특징', m.personality || '유쌍, 하얗고 피부 좋다는 얘기를 종종 듣습니다'],
-                ['직업', `${m.jobCategory || '공공기관'} / ${m.job || '사무행정'}`],
-                ['MBTI', m.mbti || 'INFP'],
+                ['닉네임', m.nickname || '-'],
+                ['출생년도', m.birthYear || '-'],
+                ['거주지', m.region || '-'],
+                ['키', m.height ? m.height + 'cm' : '-'],
+                ['특징', m.personality || '-'],
+                ['직업', `${m.jobCategory || ''} / ${m.job || ''}`],
+                ['MBTI', m.mbti || '-'],
                 ['종교', m.religion || '무교'],
-                ['최종학력', '4년제 대졸'], // 필요시 DB 컬럼 추가
-                ['흡연유무', m.smoking || '비흡연'],
-                ['주량', m.drinking || '소주 1병'],
-                ['취미', m.hobby || '수영, 러닝'],
-                ['성격 키워드', '다정함 배려심 깊은 유머러스한'],
-                ['저는요', m.selfIntroduction || '퇴근 후 가볍게 운동하는 걸 좋아합니다.'],
-                ['매력어필', '']
+                ['최종학력', '4년제 대졸'],
+                ['흡연유무', m.smoking || '-'],
+                ['주량', m.drinking || '-'],
+                ['취미', m.hobby || '-'],
+                ['주변에서 저를', m.avoidType || '강아지상'], // 예시 데이터 매칭
+                ['성격 키워드', '다정함, 배려심, 유머러스'],
+                ['저는요', m.selfIntroduction || '-']
             ];
 
-            const tableHtml = rows.map(row => `
+            document.getElementById('profileData').innerHTML = rows.map(row => `
                 <tr>
                     <th>${row[0]}</th>
                     <td>${row[1]}</td>
                 </tr>
             `).join('');
 
-            document.getElementById('profileData').innerHTML = tableHtml;
             document.getElementById('profileModal').style.display = 'flex';
         }
 
         function closeModal() { document.getElementById('profileModal').style.display = 'none'; }
+
+        // 📷 핵심 기능: JPEG 이미지로 저장하기
+        document.getElementById('downloadBtn').onclick = function() {
+            const captureArea = document.getElementById('captureArea');
+            const btn = this;
+            
+            btn.innerText = "저장 중...";
+            btn.disabled = true;
+
+            html2canvas(captureArea, {
+                scale: 2, // 화질을 2배 선명하게
+                useCORS: true,
+                backgroundColor: "#ffffff"
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `파인드썸_${currentMemberName}_프로필.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.9); // 0.9는 품질(90%)
+                link.click();
+                
+                btn.innerText = "JPEG 저장하기";
+                btn.disabled = false;
+            });
+        };
 
         window.onload = fetchActiveMembers;
     </script>
