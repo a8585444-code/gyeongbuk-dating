@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>매칭 진행중 관리 - 파인드썸</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #f0f2f5; padding: 20px; }
+        .header { max-width: 1200px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { text-decoration: none; color: #7c3aed; font-weight: 600; font-size: 14px; }
+        
+        .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; max-width: 1200px; margin: 0 auto; overflow-x: auto; }
+        h1 { font-size: 20px; color: #1a1a2e; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+        th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
+        th { background: #f8fafc; color: #64748b; font-weight: 600; position: sticky; top: 0; }
+        
+        .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; background: #fef3c7; color: #b45309; }
+        
+        .action-btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s; margin: 0 2px; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-fail { background: #f1f5f9; color: #64748b; }
+        .btn-fail:hover { background: #e2e8f0; }
+
+        .loading { text-align: center; padding: 50px; color: #7c3aed; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="/admin.html" class="back-btn">← 관리자 홈으로</a>
+        <div id="stats" style="font-size: 13px; color: #64748b;">매칭 진행 중: 0명</div>
+    </div>
+
+    <div class="card">
+        <h1>💞 매칭 진행중인 회원 관리</h1>
+        <p class="subtitle">현재 소개팅이 조율 중이거나 연락처 교환 대기 중인 회원들입니다.</p>
+        
+        <div id="loading" class="loading">데이터를 불러오는 중입니다... ⏳</div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>회원번호</th>
+                    <th>상태</th>
+                    <th>이름</th>
+                    <th>성별</th>
+                    <th>연락처</th>
+                    <th>직업</th>
+                    <th>결과 처리 (상태 변경)</th>
+                </tr>
+            </thead>
+            <tbody id="memberList"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://teeutkxfzxdsaqdvwrwt.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
+
+        async function fetchMatchingMembers() {
+            try {
+                // 상태가 '매칭중'인 회원만 불러오기
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/members?status=eq.매칭중&order=id.desc`, {
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                });
+                const members = await response.json();
+                renderMembers(members);
+            } catch (error) {
+                alert('데이터 로드 실패');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function renderMembers(members) {
+            const listBody = document.getElementById('memberList');
+            document.getElementById('stats').textContent = `매칭 진행 중: ${members.length}명`;
+
+            if (members.length === 0) {
+                listBody.innerHTML = '<tr><td colspan="7" style="padding:50px;">현재 매칭이 진행 중인 회원이 없습니다.</td></tr>';
+                return;
+            }
+
+            listBody.innerHTML = members.map(m => `
+                <tr>
+                    <td>${m.id}</td>
+                    <td><span class="status-badge">${m.status}</span></td>
+                    <td><strong>${m.name || '-'}</strong></td>
+                    <td>${m.gender || '-'}</td>
+                    <td>${m.phoneNumber || '-'}</td>
+                    <td>${m.job || '-'}</td>
+                    <td>
+                        <button class="action-btn btn-success" onclick="updateStatus(${m.id}, '매칭완료', '${m.name}')">입금/매칭 확정</button>
+                        <button class="action-btn btn-fail" onclick="updateStatus(${m.id}, '정회원', '${m.name}')">매칭 무산 (다시 대기)</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function updateStatus(id, newStatus, name) {
+            let msg = newStatus === '매칭완료' 
+                ? `[${name}] 님의 매칭을 최종 확정(입금 완료) 처리하시겠습니까?` 
+                : `[${name}] 님의 매칭이 무산되었습니까? (정회원 상태로 복귀합니다)`;
+                
+            if(!confirm(msg)) return;
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/members?id=eq.${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (response.ok) {
+                    alert('처리가 완료되었습니다.');
+                    location.reload(); 
+                }
+            } catch (error) {
+                alert('처리 중 오류가 발생했습니다.');
+            }
+        }
+
+        window.onload = fetchMatchingMembers;
+    </script>
+</body>
+</html>
