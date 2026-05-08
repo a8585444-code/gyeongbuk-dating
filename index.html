@@ -14,18 +14,15 @@
         
         .container { max-width: 600px; margin: 0 auto; padding: 20px 14px 70px; }
         
-        /* 안내 박스 */
         .intro-box { background: white; border-radius: 16px; padding: 24px; margin-bottom: 16px; font-size: 0.88rem; color: #444; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .intro-box h3 { font-size: 0.95rem; color: #111; margin: 16px 0 8px; border-left: 4px solid #d63384; padding-left: 10px; }
         .intro-box ul { padding-left: 20px; margin-bottom: 12px; }
         .intro-box li { margin-bottom: 6px; }
         .highlight-text { color: #d63384; font-weight: 700; }
         
-        /* 폼 섹션 */
         .section { background: white; border-radius: 16px; padding: 26px 20px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
         .section-title { font-size: 0.85rem; font-weight: 800; color: #d63384; letter-spacing: 1px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #f0e0eb; }
         
-        /* 비공개 섹션 강조 */
         .private-section { background: #fdfafc; border: 1px solid #f8e5f0; }
         .private-title { color: #9b2c6b; }
         .private-badge { display: inline-block; background: #fce4ec; color: #c2185b; font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; vertical-align: middle; margin-left: 6px; }
@@ -36,12 +33,10 @@
         .field-label .req { color: #d63384; margin-left: 3px; }
         .field-desc { font-size: 0.8rem; color: #888; margin-bottom: 10px; }
         
-        /* 입력 폼 */
         input[type="text"], select, textarea { width: 100%; padding: 14px 16px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 0.95rem; font-family: inherit; color: #333; background: #f8fafc; transition: all 0.2s; }
         input[type="text"]:focus, select:focus, textarea:focus { border-color: #d63384; background: #fff; box-shadow: 0 0 0 3px rgba(214,51,132,0.1); outline: none; }
         textarea { height: 100px; resize: none; }
         
-        /* 라디오 & 태그 버튼 */
         .radio-row { display: flex; flex-wrap: wrap; gap: 8px; }
         .radio-row label { flex: 1; text-align: center; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 0.9rem; font-weight: 600; cursor: pointer; background: #f8fafc; color: #64748b; transition: 0.2s; }
         .radio-row input[type="radio"] { display: none; }
@@ -50,13 +45,11 @@
         .ar-tag { display: inline-block; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; border: 1.5px solid #e2e8f0; background: #fff; color: #64748b; margin: 0 4px 8px 0; transition: 0.2s; font-weight: 500; }
         .ar-tag.selected { background: #9b2c6b; color: #fff; border-color: #9b2c6b; }
 
-        /* 파일 업로드 */
         .file-upload-area { border: 2px dashed #cbd5e1; border-radius: 16px; padding: 30px 20px; text-align: center; cursor: pointer; position: relative; background: #f8fafc; transition: 0.2s; }
         .file-upload-area:hover { border-color: #d63384; background: #fff; }
         .file-upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
         .file-preview-list img { width: 120px; height: 160px; object-fit: cover; border-radius: 12px; margin-top: 15px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-        /* 하단 버튼 및 동의 */
         .agree-box { background: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border: 1px solid #f0e0eb; }
         .agree-box label { font-weight: 700; color: #333; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .agree-box input[type="checkbox"] { width: 18px; height: 18px; accent-color: #d63384; }
@@ -64,7 +57,6 @@
         .submit-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #d63384, #9b2c6b); color: white; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(214, 51, 132, 0.25); transition: 0.2s; }
         .submit-btn:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
 
-        /* 모달 */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
         .modal-overlay.show { display: flex; }
         .modal { background: white; border-radius: 24px; padding: 40px 30px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
@@ -213,10 +205,21 @@
         <div class="section private-section">
             <div class="section-title private-title">🔒 이상형 및 비공개 정보 <span class="private-badge">운영진 참고용</span></div>
             
-            <div class="field" style="background:#fff; padding:15px; border-radius:12px; border:1px solid #e2e8f0;">
+            <div class="field" style="background:#fff; padding:18px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:25px;">
                 <label class="field-label">현재 재직중인 직장명 <span class="req">*</span></label>
                 <div class="field-desc">신원 확인 및 사내 매칭 방지용입니다. <span class="highlight-text">절대 공개되지 않습니다.</span></div>
                 <input type="text" name="jobOrganizationName" required placeholder="정확한 회사명/기관명을 적어주세요">
+
+                <div style="margin-top: 20px;">
+                    <label class="field-label">재직증명서 또는 명함 첨부 <span class="req">*</span></label>
+                    <div class="field-desc">안전한 매칭을 위한 필수 인증 절차입니다.</div>
+                    <div class="file-upload-area" style="padding: 20px;">
+                        <input type="file" id="certInput" accept="image/*" required>
+                        <div style="font-size: 30px; margin-bottom: 5px;">🏢</div>
+                        <p id="certStatus" style="font-size: 0.85rem; color:#64748b; font-weight:600;">여기를 터치하여 증명서/명함 선택</p>
+                    </div>
+                    <div id="certPreview" class="file-preview-list" style="text-align: center;"></div>
+                </div>
             </div>
 
             <div class="field">
@@ -293,19 +296,35 @@
         labelEl.querySelector('input').checked = true;
     }
 
+    // 프로필 사진 미리보기
     const photoInput = document.getElementById('photoInput');
     photoInput.addEventListener('change', function() {
         const preview = document.getElementById('photoPreview');
         const status = document.getElementById('fileStatus');
         preview.innerHTML = '';
         if (this.files[0]) {
-            status.innerHTML = `<span style="color:#d63384;">✔️ 사진이 등록되었습니다</span>`;
+            status.innerHTML = `<span style="color:#d63384;">✔️ 프로필 사진이 선택되었습니다</span>`;
             const img = document.createElement('img');
             img.src = URL.createObjectURL(this.files[0]);
             preview.appendChild(img);
         }
     });
 
+    // 재직증명서 미리보기
+    const certInput = document.getElementById('certInput');
+    certInput.addEventListener('change', function() {
+        const preview = document.getElementById('certPreview');
+        const status = document.getElementById('certStatus');
+        preview.innerHTML = '';
+        if (this.files[0]) {
+            status.innerHTML = `<span style="color:#d63384;">✔️ 증명서가 선택되었습니다</span>`;
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(this.files[0]);
+            preview.appendChild(img);
+        }
+    });
+
+    // 폼 전송
     const form = document.getElementById('applyForm');
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -314,26 +333,42 @@
         submitBtn.textContent = '정보를 안전하게 전송 중입니다... ⏳';
 
         try {
+            // 태그 합치기
             const avoidTags = [];
             document.querySelectorAll('#avoidTags .ar-tag.selected').forEach(t => avoidTags.push(t.innerText));
             document.getElementById('avoidReligionHidden').value = avoidTags.join(', ');
 
+            // 1. 프로필 사진 업로드
             const file = photoInput.files[0];
             let photoUrl = "";
             if (file) {
-                const fileName = `${Date.now()}_${file.name}`;
+                const fileName = `photo_${Date.now()}_${file.name}`;
                 const { data: uploadData, error: uploadError } = await _supabase.storage
                     .from('profile_photos')
                     .upload(fileName, file);
-                
                 if (uploadError) throw uploadError;
                 const { data: urlData } = _supabase.storage.from('profile_photos').getPublicUrl(fileName);
                 photoUrl = urlData.publicUrl;
             }
 
+            // 2. 재직증명서 업로드
+            const certFile = certInput.files[0];
+            let certUrl = "";
+            if (certFile) {
+                const certFileName = `cert_${Date.now()}_${certFile.name}`;
+                const { data: certUploadData, error: certUploadError } = await _supabase.storage
+                    .from('profile_photos') // 권한 설정된 기존 버킷 같이 사용
+                    .upload(certFileName, certFile);
+                if (certUploadError) throw certUploadError;
+                const { data: certUrlData } = _supabase.storage.from('profile_photos').getPublicUrl(certFileName);
+                certUrl = certUrlData.publicUrl;
+            }
+
+            // 3. DB 저장
             const formData = new FormData(form);
             const finalData = Object.fromEntries(formData.entries());
             finalData.photo_url = photoUrl;
+            finalData.cert_url = certUrl; // 방금 만든 수파베이스 칸에 주소 넣기!
             finalData.status = "대기";
 
             const { error: dbError } = await _supabase.from('members').insert([finalData]);
