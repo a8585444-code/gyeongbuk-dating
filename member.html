@@ -34,10 +34,10 @@
         .close-modal { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px; color: #94a3b8; }
 
         /* 사진 컨테이너 */
-        .photo-container { display: flex; gap: 12px; overflow-x: auto; padding: 5px 0 20px; scrollbar-width: thin; justify-content: center; }
+        .photo-container { display: flex; gap: 20px; overflow-x: auto; padding: 5px 0 20px; scrollbar-width: thin; justify-content: center; }
         .profile-photo { width: 180px; height: 240px; object-fit: cover; border-radius: 12px; border: 1px solid #eee; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .profile-photo:hover { transform: scale(1.02); }
-        .no-photo { width: 100%; height: 180px; background: #f8fafc; display: flex; align-items: center; justify-content: center; color: #94a3b8; border-radius: 12px; border: 1px dashed #cbd5e1; margin-bottom: 20px; }
+        .no-photo { width: 180px; height: 240px; background: #f8fafc; display: flex; align-items: center; justify-content: center; color: #94a3b8; border-radius: 12px; border: 1px dashed #cbd5e1; }
 
         /* 상세 정보 그리드 */
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -70,7 +70,7 @@
                     <th>상태변경</th>
                     <th>이름(닉네임)</th>
                     <th>나이/지역</th>
-                    <th>직업/키</th>
+                    <th>공개 직업/키</th>
                     <th>MBTI/종교</th>
                     <th>연락처</th>
                     <th>관리</th>
@@ -137,7 +137,7 @@
                         <button class="btn btn-copy" onclick="copyText('${m.phoneNumber}')">📞 번호복사</button>
                     </td>
                     <td>
-                        <button class="btn btn-detail" onclick="showDetail(${m.id})">상세/사진</button>
+                        <button class="btn btn-detail" onclick="showDetail(${m.id})">상세/사진 확인</button>
                         <button class="btn btn-match" onclick="showCandidates(${m.id})">💡 매칭후보</button>
                     </td>
                 </tr>
@@ -161,31 +161,60 @@
 
         function showDetail(id) {
             const m = allMembers.find(x => x.id === id);
-            document.getElementById('modalTitle').innerText = `${m.name} (${m.nickname}) 님의 상세 프로필`;
+            document.getElementById('modalTitle').innerText = `📋 ${m.name} (${m.nickname}) 님의 상세 프로필`;
             
-            let photoHtml = '';
+            // 1. 사진 컨테이너 (프로필 사진 + 인증 서류 나란히 배치)
+            let imagesHtml = '<div class="photo-container">';
+            
+            // 프로필 사진
             if (m.photo_url) {
-                const photos = m.photo_url.split(','); 
-                photoHtml = `<div class="photo-container">${photos.map(url => `<img src="${url.trim()}" class="profile-photo" onclick="window.open('${url.trim()}')">`).join('')}</div>`;
+                imagesHtml += `
+                    <div style="text-align: center;">
+                        <div style="font-size: 12px; font-weight: 800; color: #64748b; margin-bottom: 8px;">👤 공개 프로필</div>
+                        <img src="${m.photo_url.trim()}" class="profile-photo" onclick="window.open('${m.photo_url.trim()}')" title="클릭하여 원본 보기">
+                    </div>
+                `;
             } else {
-                photoHtml = `<div class="no-photo">등록된 사진이 없습니다.</div>`;
+                imagesHtml += `<div style="text-align: center;"><div style="font-size: 12px; font-weight: 800; color: #64748b; margin-bottom: 8px;">👤 공개 프로필</div><div class="no-photo">사진 없음</div></div>`;
             }
 
+            // 인증 서류 (재직증명서/사업자등록증)
+            if (m.cert_url) {
+                imagesHtml += `
+                    <div style="text-align: center;">
+                        <div style="font-size: 12px; font-weight: 800; color: #d63384; margin-bottom: 8px;">🔒 인증 서류 (비공개)</div>
+                        <img src="${m.cert_url.trim()}" class="profile-photo" style="border: 3px solid #fce4ec;" onclick="window.open('${m.cert_url.trim()}')" title="클릭하여 원본 보기">
+                    </div>
+                `;
+            } else {
+                imagesHtml += `<div style="text-align: center;"><div style="font-size: 12px; font-weight: 800; color: #d63384; margin-bottom: 8px;">🔒 인증 서류 (비공개)</div><div class="no-photo" style="border-color:#fce4ec; color:#d63384;">미제출</div></div>`;
+            }
+            
+            imagesHtml += '</div>';
+
+            // 2. 상세 정보 그리드 렌더링
             document.getElementById('modalBody').innerHTML = `
-                ${photoHtml}
+                ${imagesHtml}
+                
                 <div class="info-grid">
-                    <div class="info-item"><div class="info-label">직업</div><div class="info-value">${m.job || '-'}</div></div>
-                    <div class="info-item"><div class="info-label">키 / MBTI</div><div class="info-value">${m.height}cm / ${m.mbti}</div></div>
-                    <div class="info-item"><div class="info-label">성격</div><div class="info-value">${m.personality || '-'}</div></div>
-                    <div class="info-item"><div class="info-label">취미</div><div class="info-value">${m.hobby || '-'}</div></div>
-                    <div class="info-item"><div class="info-label">체형</div><div class="info-value">${m.bodyType || '-'}</div></div>
-                    <div class="info-item"><div class="info-label">종교 / 음주 / 흡연</div><div class="info-value">${m.religion} / ${m.drinking} / ${m.smoking}</div></div>
-                    <div class="info-item full-width"><div class="info-label">자기소개</div><div class="info-value">${m.selfIntroduction || '-'}</div></div>
+                    <div class="info-item full-width" style="background: #fff0f6; border-color: #f8e5f0;">
+                        <div class="info-label" style="color: #d63384;">🔒 실제 직장/사업체명 (비공개 인증용)</div>
+                        <div class="info-value" style="font-size: 16px;">${m.jobOrganizationName || '미입력'}</div>
+                    </div>
+
+                    <div class="info-item"><div class="info-label">공개 직업</div><div class="info-value">${m.job || '-'}</div></div>
+                    <div class="info-item"><div class="info-label">키 / 체형</div><div class="info-value">${m.height}cm / ${m.bodyType || '-'}</div></div>
+                    <div class="info-item"><div class="info-label">MBTI / 종교</div><div class="info-value">${m.mbti} / ${m.religion}</div></div>
+                    <div class="info-item"><div class="info-label">음주 / 흡연</div><div class="info-value">${m.drinking} / ${m.smoking}</div></div>
+                    
+                    <div class="info-item full-width"><div class="info-label">성격 및 취미</div><div class="info-value">${m.personality || '-'}</div></div>
+                    <div class="info-item full-width"><div class="info-label">한 줄 소개</div><div class="info-value">${m.selfIntroduction || '-'}</div></div>
                     <div class="info-item full-width"><div class="info-label">이상형</div><div class="info-value">${m.idealType || '-'}</div></div>
-                    <div class="info-item"><div class="info-label">이성 중요조건</div><div class="info-value">${m.importantCriteria || '-'}</div></div>
+                    
+                    <div class="info-item"><div class="info-label">가장 중요한 조건</div><div class="info-value">${m.importantCriteria || '-'}</div></div>
                     <div class="info-item"><div class="info-label">선호 나이대</div><div class="info-value">${m.preferredAgeRange || '-'}</div></div>
-                    <div class="info-item"><div class="info-label">기피 종교</div><div class="info-value">${m.avoidReligion || '-'}</div></div>
-                    <div class="info-item"><div class="info-label">기피 유형</div><div class="info-value">${m.avoidType || '-'}</div></div>
+                    
+                    <div class="info-item full-width" style="background: #f8fafc;"><div class="info-label">기피 종교 / 유형</div><div class="info-value">${m.avoidReligion || '-'} <br> ${m.avoidType || '-'}</div></div>
                 </div>
             `;
             document.getElementById('commonModal').style.display = 'flex';
@@ -205,7 +234,7 @@
                             <strong style="font-size:16px; color:#7c3aed;">${c.name}</strong> (${c.birthYear}년생, ${c.region})<br>
                             <span style="font-size:12px; color:#64748b;">${c.job} / ${c.height}cm / ${c.mbti}</span>
                         </div>
-                        <button class="btn btn-detail" onclick="showDetail(${c.id})">상세 프로필 보기</button>
+                        <button class="btn btn-detail" onclick="showDetail(${c.id})">상세 확인</button>
                     </div>
                 `).join('');
             document.getElementById('commonModal').style.display = 'flex';
