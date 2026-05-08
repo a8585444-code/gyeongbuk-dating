@@ -48,10 +48,9 @@
         .file-upload-area { border: 2px dashed #ddd; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; background: #fdfcfd; position: relative; transition: 0.2s; }
         .file-upload-area:hover { border-color: #d63384; background: #fdf5f9; }
         .file-upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-        .file-preview-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-        .file-preview-item { position: relative; width: 90px; height: 90px; }
+        .file-preview-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center; }
+        .file-preview-item { position: relative; width: 100px; height: 130px; }
         .file-preview-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1.5px solid #eee; }
-        .file-preview-item .remove-btn { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; background: #d63384; color: white; border: none; border-radius: 50%; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         
         .ar-tag { display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1.5px solid #d1d5db; background: #fff; color: #374151; transition: 0.2s; margin: 0 4px 6px 0; }
         .ar-tag.selected { background: #7c3aed; color: #fff; border-color: #7c3aed; }
@@ -131,26 +130,16 @@
         </div>
 
         <div class="section">
-            <div class="section-title">사진</div>
+            <div class="section-title">프로필 사진</div>
             <div class="field">
-                <label class="field-label">1순위 사진 (메인) <span class="req">*</span></label>
-                <div class="field-desc">얼굴이 가장 잘 나온 사진을 올려주세요.</div>
+                <label class="field-label">가장 잘 나온 사진 1장 <span class="req">*</span></label>
+                <div class="field-desc">얼굴이 잘 보이는 사진으로 올려주세요. (보안 서버에 안전하게 저장됩니다)</div>
                 <div class="file-upload-area" id="photo1UploadArea">
                     <input type="file" id="photo1Input" accept="image/*" required>
                     <div style="font-size: 2rem;">📸</div>
-                    <p>클릭하여 1장 첨부</p>
+                    <p>클릭하여 사진 첨부</p>
                 </div>
                 <div class="file-preview-list" id="photo1PreviewList"></div>
-            </div>
-            <div class="field">
-                <label class="field-label">2순위 사진 (보조)</label>
-                <div class="field-desc">전신 사진이나 다른 매력을 보여줄 수 있는 사진 (선택)</div>
-                <div class="file-upload-area" id="photo2UploadArea">
-                    <input type="file" id="photo2Input" accept="image/*">
-                    <div style="font-size: 2rem;">📷</div>
-                    <p>클릭하여 첨부</p>
-                </div>
-                <div class="file-preview-list" id="photo2PreviewList"></div>
             </div>
         </div>
 
@@ -193,7 +182,7 @@
                 <input type="text" name="jobOrganizationName" required placeholder="정확한 회사/기관명을 기재해주세요">
                 
                 <div style="margin-top:15px;">
-                    <label class="field-label">재직증명서 / 명함 / 사업자등록증 <span class="req">*</span></label>
+                    <label class="field-label">재직증명서 / 사업자등록증 첨부 <span class="req">*</span></label>
                     <div class="file-upload-area" id="proofUploadArea" style="padding:15px;">
                         <input type="file" id="certInput" accept="image/*" required>
                         <div style="font-size: 1.5rem;">📄</div>
@@ -341,7 +330,6 @@
         });
     }
     setupPreview('photo1Input', 'photo1PreviewList');
-    setupPreview('photo2Input', 'photo2PreviewList');
     setupPreview('certInput', 'certPreviewList');
 
     // 폼 전송 (수파베이스 DB/Storage 연동)
@@ -372,15 +360,14 @@
                 return _supabase.storage.from('profile_photos').getPublicUrl(fileName).data.publicUrl;
             }
 
-            // 스토리지에 파일 병렬 업로드
+            // 스토리지에 파일 병렬 업로드 (사진 1장, 증명서 1장)
             const photo1 = await uploadSingleFile('photo1Input', 'p1');
-            const photo2 = await uploadSingleFile('photo2Input', 'p2');
             const certUrl = await uploadSingleFile('certInput', 'cert');
             
             // DB 전송 데이터 가공
             const formData = new FormData(document.getElementById('applyForm'));
             const finalData = Object.fromEntries(formData.entries());
-            finalData.photo_url = photo2 ? `${photo1},${photo2}` : photo1; // 1, 2순위 합치기
+            finalData.photo_url = photo1; 
             finalData.cert_url = certUrl;
             finalData.status = "대기";
 
