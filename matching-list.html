@@ -18,9 +18,7 @@
         td { padding: 15px; border-bottom: 1px solid #eee; }
 
         /* 상태별 색상 */
-        .status-badge { padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 11px; }
         .pay-done { background: #e8f5e9; color: #2e7d32; }
-        .pay-wait { background: #fff3e0; color: #e65100; }
         
         select { padding: 6px; border-radius: 6px; border: 1px solid #ddd; font-family: inherit; font-size: 12px; cursor: pointer; outline: none; }
         .match-done-select { background: #7c3aed; color: white; font-weight: 800; }
@@ -109,11 +107,11 @@
         async function updateMatch(id, field, value) {
             const { error } = await _supabase.from('matches').update({ [field]: value }).eq('id', id);
             if (error) alert('수정 실패');
-            else loadMatches(); // 즉시 새로고침
+            else loadMatches();
         }
 
         async function deleteMatch(id) {
-            if(!confirm('이 매칭 기록을 삭제하시겠습니까? (DB에서 완전히 삭제됩니다)')) return;
+            if(!confirm('이 매칭 기록을 삭제하시겠습니까?')) return;
             const { error } = await _supabase.from('matches').delete().eq('id', id);
             loadMatches();
         }
