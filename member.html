@@ -329,7 +329,16 @@
         function copyText(t) { navigator.clipboard.writeText(t).then(()=>alert('연락처 복사됨')); }
         function closeModal() { document.getElementById('commonModal').style.display = 'none'; }
         window.onclick = (e) => { if (e.target == document.getElementById('commonModal')) closeModal(); }
-        window.onload = loadData;
+        async function checkAuth() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) {
+                alert('보안 구역입니다. 관리자 로그인이 필요합니다.');
+                window.location.href = '/login.html';
+                return;
+            }
+            loadData();
+        }
+        checkAuth();
     </script>
 </body>
 </html>
