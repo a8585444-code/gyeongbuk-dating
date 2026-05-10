@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 로그인 - 파인드썸</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .login-card { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; }
+        .login-card h1 { font-size: 24px; color: #1e293b; margin-bottom: 10px; }
+        .login-card p { font-size: 14px; color: #64748b; margin-bottom: 30px; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 5px; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; }
+        .input-group input:focus { border-color: #d63384; }
+        .btn-login { width: 100%; background: #d63384; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .btn-login:hover { background: #be185d; }
+        .error-msg { color: #ef4444; font-size: 13px; margin-top: 15px; display: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div style="font-size: 40px; margin-bottom: 10px;">🔐</div>
+        <h1>관리자 로그인</h1>
+        <p>파인드썸 시스템에 접근하려면 로그인하세요.</p>
+        
+        <form id="loginForm">
+            <div class="input-group">
+                <label>이메일 아이디</label>
+                <input type="email" id="email" required placeholder="admin@findsome.com">
+            </div>
+            <div class="input-group">
+                <label>비밀번호</label>
+                <input type="password" id="password" required placeholder="비밀번호를 입력하세요">
+            </div>
+            <button type="submit" class="btn-login" id="loginBtn">로그인 접속</button>
+            <div id="errorMsg" class="error-msg">이메일 또는 비밀번호가 틀렸습니다.</div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://teeutkxfzxdsaqdvwrwt.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // 이미 로그인된 상태라면 굳이 로그인 창을 볼 필요 없이 메인으로 튕겨냄
+        async function checkAlreadyLoggedIn() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) {
+                window.location.href = '/admin.html';
+            }
+        }
+        checkAlreadyLoggedIn();
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            const errorMsg = document.getElementById('errorMsg');
+
+            btn.textContent = '확인 중... ⏳';
+            btn.disabled = true;
+            errorMsg.style.display = 'none';
+
+            // 수파베이스 로그인 시도
+            const { data, error } = await _supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                errorMsg.style.display = 'block';
+                btn.textContent = '로그인 접속';
+                btn.disabled = false;
+            } else {
+                // 로그인 성공 시 관리자 홈으로 이동
+                window.location.href = '/admin.html';
+            }
+        });
+    </script>
+</body>
+</html>
