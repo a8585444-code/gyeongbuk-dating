@@ -112,8 +112,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         const targetGender = urlParams.get('gender'); 
         let allMembers = [];
-        let baseMembers = []; // 성별에 맞게 필터링된 기본 멤버 목록
-        let currentGradeTab = 'ALL'; // 현재 선택된 탭 기억
+        let baseMembers = [];
+        let currentGradeTab = 'ALL';
 
         async function loadData() {
             try {
@@ -122,30 +122,23 @@
                 });
                 allMembers = await response.json();
                 
-                // 해당 성별만 1차 필터링
                 baseMembers = allMembers.filter(m => {
                     const g = m.gender || '';
                     return targetGender === 'woman' ? g.includes('여') : g.includes('남');
                 });
 
                 document.getElementById('pageTitle').innerText = (targetGender === 'woman' ? '♀️ 여자' : '♂️ 남자') + ' 매칭 관리';
-                
-                // 초기에는 '전체보기' 렌더링
                 filterByGrade('ALL');
             } catch (e) { alert('데이터 로드 실패'); }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
 
-        // 💡 탭 필터링 실행 함수
         function filterByGrade(grade) {
             currentGradeTab = grade;
 
-            // 모든 탭 버튼 색상 초기화
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            // 선택한 탭 색상 활성화
             document.getElementById('tab-' + grade).classList.add('active');
 
-            // 등급에 맞춰 리스트 거르기
             let filteredList = [];
             if (grade === 'ALL') {
                 filteredList = baseMembers;
@@ -158,7 +151,6 @@
             renderList(filteredList);
         }
 
-        // 화면에 그리는 함수
         function renderList(members) {
             const listBody = document.getElementById('memberList');
             document.getElementById('stats').textContent = `현재 조회된 회원: ${members.length}명`;
@@ -183,7 +175,7 @@
                         </div>
                     </td>
                     <td><strong>${m.name}</strong><br><span style="font-size:11px; color:#94a3b8;">(${m.nickname})</span></td>
-                    <td>'${m.birthYear}년생 / ${m.region}</td>
+                    <td>${m.birthYear}년생 / ${m.region}</td>
                     <td>${m.job}<br>${m.height}cm</td>
                     <td><button class="btn btn-copy" onclick="copyText('${m.phoneNumber}')">📞 번호복사</button></td>
                     <td>
@@ -194,7 +186,6 @@
             `).join('');
         }
 
-        // DB에 업데이트 하는 함수 (업데이트 후 탭 자동 리프레시 포함)
         async function updateField(id, fieldName, value) {
             try {
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/members?id=eq.${id}`, {
@@ -203,14 +194,12 @@
                     body: JSON.stringify({ [fieldName]: value })
                 });
                 if(response.ok) {
-                    // 전체 멤버 데이터 갱신
                     const idx = allMembers.findIndex(x => x.id === id);
                     if(idx > -1) allMembers[idx][fieldName] = value;
                     
                     const baseIdx = baseMembers.findIndex(x => x.id === id);
                     if(baseIdx > -1) baseMembers[baseIdx][fieldName] = value;
 
-                    // 💡 등급을 바꿨다면 현재 보고 있는 탭 화면도 새로고침해서 정렬 맞춤!
                     if(fieldName === 'grade') {
                         filterByGrade(currentGradeTab);
                     }
@@ -218,7 +207,6 @@
             } catch (e) { alert('업데이트 실패'); }
         }
 
-        // --- (이하 showDetail, showCandidates 코드는 완벽하게 동일하게 유지됨) ---
         function showDetail(id) {
             const m = allMembers.find(x => x.id === id);
             document.getElementById('modalTitle').innerText = `📋 ${m.name} (${m.nickname}) 프로필 확인`;
