@@ -41,12 +41,15 @@
         .info-value { font-size: 14px; font-weight: 600; color: #1e293b; line-height: 1.5; }
         .full-width { grid-column: span 2; }
 
-        .candidate-item { display: flex; justify-content: space-between; align-items: center; padding: 18px; border: 1px solid #f1f5f9; border-radius: 15px; margin-bottom: 12px; background: #fff; transition: 0.2s; }
-        .candidate-item:hover { border-color: #7c3aed; background: #fdfaff; }
+        /* 상세보기 안의 등급 배지용 */
         .grade-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 800; margin-left: 5px; }
         .grade-A { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
         .grade-B { background: #fff7ed; color: #f97316; border: 1px solid #ffedd5; }
         .grade-C { background: #f0f9ff; color: #0ea5e9; border: 1px solid #e0f2fe; }
+
+        /* 매칭 후보 리스트 호버 효과 */
+        .candidate-item { display: flex; align-items: center; gap: 15px; padding: 15px; border: 1px solid #f1f5f9; border-radius: 15px; margin-bottom: 12px; background: #fff; transition: 0.2s; }
+        .candidate-item:hover { border-color: #7c3aed; background: #fdfaff; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1); }
     </style>
 </head>
 <body>
@@ -210,19 +213,44 @@
             });
 
             document.getElementById('modalTitle').innerText = `❤️ ${m.name} 님을 위한 추천 후보`;
-            document.getElementById('modalBody').innerHTML = candidates.length === 0 ? 
-                '<div style="padding:40px; text-align:center; color:#94a3b8;">매칭 가능한 정회원이 없습니다.</div>' :
-                candidates.map(c => `
+            
+            let htmlContent = candidates.length === 0 ? 
+                '<div style="padding:40px; text-align:center; color:#94a3b8;">매칭 가능한 정회원이 없습니다.</div>' : '';
+
+            // 매칭 후보 리스트 렌더링 (초강조 등급 아이콘 적용)
+            candidates.forEach(c => {
+                let gradeStyle = '';
+                let gradeText = c.grade || '?';
+                
+                if(c.grade === 'A') {
+                    gradeStyle = 'background:#fef2f2; color:#ef4444; border:2px solid #fecaca;';
+                } else if(c.grade === 'B') {
+                    gradeStyle = 'background:#fff7ed; color:#f97316; border:2px solid #ffedd5;';
+                } else if(c.grade === 'C') {
+                    gradeStyle = 'background:#f0f9ff; color:#0ea5e9; border:2px solid #e0f2fe;';
+                } else {
+                    gradeStyle = 'background:#f8fafc; color:#cbd5e1; border:2px dashed #e2e8f0; font-size:14px;';
+                }
+
+                htmlContent += `
                     <div class="candidate-item">
-                        <div>
-                            <strong style="font-size:16px; color:#7c3aed;">
-                                ${c.name} <span class="grade-badge grade-${c.grade || 'NONE'}">${c.grade || '-'}등급</span>
-                            </strong> (${c.birthYear}년생, ${c.region})<br>
-                            <span style="font-size:12px; color:#64748b;">${c.job} / ${c.height}cm / ${c.mbti}</span>
+                        <div style="width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; flex-shrink: 0; ${gradeStyle}">
+                            ${gradeText}
                         </div>
-                        <button class="btn btn-detail" onclick="showDetail(${c.id})">상세 확인</button>
+                        
+                        <div style="flex: 1;">
+                            <strong style="font-size:16px; color:#1e293b;">${c.name}</strong>
+                            <span style="font-size:13px; color:#64748b; margin-left:4px;">(${c.birthYear}년생, ${c.region})</span><br>
+                            <span style="font-size:13px; color:#7c3aed; font-weight:800;">${c.job}</span>
+                            <span style="font-size:12px; color:#64748b;"> / ${c.height}cm / ${c.mbti}</span>
+                        </div>
+                        
+                        <button class="btn btn-detail" style="padding: 10px 15px;" onclick="showDetail(${c.id})">상세 확인</button>
                     </div>
-                `).join('');
+                `;
+            });
+
+            document.getElementById('modalBody').innerHTML = htmlContent;
             document.getElementById('commonModal').style.display = 'flex';
         }
 
