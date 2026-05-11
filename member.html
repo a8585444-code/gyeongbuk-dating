@@ -255,4 +255,101 @@
                 ${imagesHtml}
                 <div class="info-grid">
                     <div class="info-item full-width" style="background:#fff0f6; border-color:#f8e5f0;">
-                        <div class="
+                        <div class="info-label" style="color:#d63384;">🔒 실제 직장/사업체 및 회원 등급</div>
+                        <div class="info-value" style="font-size:16px;">
+                            ${esc(m.jobOrganizationName)} 
+                            <span class="grade-badge grade-${m.grade || 'NONE'}">${m.grade || '미정'}등급</span>
+                        </div>
+                    </div>
+                    <div class="info-item"><div class="info-label">공개 직업</div><div class="info-value">${esc(m.job)}</div></div>
+                    <div class="info-item"><div class="info-label">키 / 체형</div><div class="info-value">${esc(m.height)}cm / ${esc(m.bodyType)}</div></div>
+                    <div class="info-item"><div class="info-label">MBTI / 종교</div><div class="info-value">${esc(m.mbti)} / ${esc(m.religion)}</div></div>
+                    <div class="info-item"><div class="info-label">음주 / 흡연</div><div class="info-value">${esc(m.drinking)} / ${esc(m.smoking)}</div></div>
+                    <div class="info-item full-width"><div class="info-label">성격 및 취미</div><div class="info-value">${esc(m.personality)}</div></div>
+                    <div class="info-item full-width"><div class="info-label">한 줄 소개</div><div class="info-value">${esc(m.selfIntroduction)}</div></div>
+                    <div class="info-item full-width"><div class="info-label">이상형</div><div class="info-value">${esc(m.idealType)}</div></div>
+                    <div class="info-item"><div class="info-label">가장 중요한 조건</div><div class="info-value">${esc(m.importantCriteria)}</div></div>
+                    <div class="info-item"><div class="info-label">선호 나이대</div><div class="info-value">${esc(m.preferredAgeRange)}</div></div>
+                    <div class="info-item full-width" style="background:#f8fafc;">
+                        <div class="info-label">기피 종교 / 지인 차단</div>
+                        <div class="info-value">${esc(m.avoidReligion)} <br> <span style="color:#ef4444;">${esc(m.avoidType)}</span></div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('commonModal').style.display = 'flex';
+        }
+
+        function showCandidates(id) {
+            const m = allMembers.find(x => x.id === id);
+            const oppGender = (m.gender.includes('남')) ? '여' : '남';
+            
+            let rawCandidates = allMembers.filter(x => x.gender.includes(oppGender) && x.status === '정회원');
+            const candidates = rawCandidates.filter(c => {
+                const myBlock = m.avoidType || '';
+                const targetBlock = c.avoidType || '';
+                const targetFormat = `${c.birthYear}년생 ${c.name}`;
+                const myFormat = `${m.birthYear}년생 ${m.name}`;
+                return !(myBlock.includes(targetFormat) || targetBlock.includes(myFormat));
+            });
+
+            document.getElementById('modalTitle').innerText = `❤️ ${esc(m.name)} 님을 위한 추천 후보`;
+            
+            let htmlContent = candidates.length === 0 ? 
+                '<div style="padding:40px; text-align:center; color:#94a3b8;">매칭 가능한 정회원이 없습니다.</div>' : '';
+
+            candidates.forEach(c => {
+                let gradeStyle = '';
+                let gradeText = c.grade || '?';
+                
+                if(c.grade === 'A') gradeStyle = 'background:#fef2f2; color:#ef4444; border:2px solid #fecaca;';
+                else if(c.grade === 'B') gradeStyle = 'background:#fff7ed; color:#f97316; border:2px solid #ffedd5;';
+                else if(c.grade === 'C') gradeStyle = 'background:#f0f9ff; color:#0ea5e9; border:2px solid #e0f2fe;';
+                else gradeStyle = 'background:#f8fafc; color:#cbd5e1; border:2px dashed #e2e8f0; font-size:14px;';
+
+                htmlContent += `
+                    <div class="candidate-item">
+                        <div style="width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; flex-shrink: 0; ${gradeStyle}">
+                            ${gradeText}
+                        </div>
+                        <div style="flex: 1;">
+                            <strong style="font-size:16px; color:#1e293b;">${esc(c.name)}</strong>
+                            <span style="font-size:13px; color:#64748b; margin-left:4px;">(${esc(c.birthYear)}년생, ${esc(c.region)})</span><br>
+                            <span style="font-size:13px; color:#7c3aed; font-weight:800;">${esc(c.job)}</span>
+                            <span style="font-size:12px; color:#64748b;"> / ${esc(c.height)}cm / ${esc(c.mbti)}</span>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <button class="btn btn-detail" style="padding: 8px 15px;" onclick="showDetail(${c.id})">상세 확인</button>
+                            <button class="btn" style="background:#ec4899; color:white; padding: 8px 15px;" onclick="createMatch(${m.id}, '${esc(m.name)}', '${esc(m.gender)}', ${c.id}, '${esc(c.name)}')">💞 매칭하기</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('modalBody').innerHTML = htmlContent;
+            document.getElementById('commonModal').style.display = 'flex';
+        }
+
+        async function createMatch(mId, mName, mGender, cId, cName) {
+            if(!confirm(`[${mName}]님과 [${cName}]님을 매칭 확정 명단으로 보내시겠습니까?`)) return;
+
+            let maleId, femaleId, maleName, femaleName;
+            if(mGender.includes('남')) { maleId = mId; maleName = mName; femaleId = cId; femaleName = cName; } 
+            else { maleId = cId; maleName = cName; femaleId = mId; femaleName = mName; }
+
+            try {
+                const { error } = await _supabase.from('matches').insert([{ male_id: maleId, female_id: femaleId, male_name: maleName, female_name: femaleName, match_status: '매칭진행중' }]);
+                if(error) throw error;
+                alert('💞 성공적으로 매칭 명단에 추가되었습니다!\n화면 상단의 [매칭 및 입금 확정 명단]에서 확인해주세요.');
+                closeModal();
+            } catch(err) { alert('매칭 추가 실패: ' + err.message); }
+        }
+
+        function copyText(t) { navigator.clipboard.writeText(t).then(()=>alert('연락처 복사됨')); }
+        function closeModal() { document.getElementById('commonModal').style.display = 'none'; }
+        window.onclick = (e) => { if (e.target == document.getElementById('commonModal')) closeModal(); }
+        
+        // 페이지 시작
+        checkAuth();
+    </script>
+</body>
+</html>
