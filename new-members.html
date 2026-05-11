@@ -3,108 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회원 매칭 관리 - 당신의 계절</title>
+    <title>신규 신청 회원 관리 - 당신의 계절</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
         .header { max-width: 1400px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
-        .back-btn { text-decoration: none; color: #db2777; font-weight: 700; font-size: 14px; background: #fff; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; }
-        .back-btn:hover { opacity: 0.8; }
-        
+        .back-btn { text-decoration: none; color: #db2777; font-weight: 700; font-size: 14px; background: #fff; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; max-width: 1400px; margin: 0 auto; overflow-x: auto; }
         h1 { font-size: 20px; color: #1a1a2e; margin-bottom: 20px; }
-        
-        .tab-container { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; overflow-x: auto; }
-        .tab-btn { padding: 10px 20px; border: none; background: #f8fafc; color: #64748b; font-size: 14px; font-weight: 800; cursor: pointer; border-radius: 10px; transition: 0.2s; white-space: nowrap; }
-        .tab-btn:hover { background: #e2e8f0; color: #1e293b; }
-        .tab-btn.active { background: #1e293b; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .tab-btn.active#tab-A { background: #ef4444; }
-        .tab-btn.active#tab-B { background: #f97316; }
-        .tab-btn.active#tab-C { background: #0ea5e9; }
-
-        table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
-        th, td { padding: 14px 10px; border-bottom: 1px solid #eee; text-align: center; }
-        th { background: #f8fafc; color: #64748b; font-weight: 700; position: sticky; top: 0; }
-        
-        .btn { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; transition: 0.2s; margin: 2px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; white-space: nowrap; }
+        th, td { padding: 14px 10px; border-bottom: 1px solid #eee; }
+        th { background: #f8fafc; color: #64748b; font-weight: 700; }
+        .btn { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; margin: 2px; }
         .btn-detail { background: #fce7f3; color: #db2777; }
-        .btn-copy { background: #f1f5f9; color: #475569; }
-        .btn-match { background: #1e293b; color: white; }
-        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
         
-        .select-container { display: flex; flex-direction: column; gap: 4px; align-items: center; }
-        .status-select, .grade-select { padding: 5px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 11px; font-weight: 800; cursor: pointer; width: 85px; outline: none; }
-        .grade-select { background: #fff0f6; color: #db2777; border-color: #f0e0eb; }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
         .modal-content { background: white; border-radius: 20px; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; padding: 30px; position: relative; }
         .close-modal { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px; color: #94a3b8; }
-
+        
         .photo-container { display: flex; gap: 20px; overflow-x: auto; padding: 5px 0 20px; justify-content: center; }
         .profile-photo { width: 180px; height: 240px; object-fit: cover; border-radius: 12px; border: 1px solid #eee; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .profile-photo:hover { transform: scale(1.02); }
-
+        
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .info-item { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #f1f5f9; }
         .info-label { font-size: 11px; color: #db2777; font-weight: 800; margin-bottom: 6px; text-transform: uppercase; }
         .info-value { font-size: 14px; font-weight: 600; color: #1e293b; line-height: 1.5; }
         .full-width { grid-column: span 2; }
-
-        .grade-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 800; margin-left: 5px; }
-        .grade-A { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
-        .grade-B { background: #fff7ed; color: #f97316; border: 1px solid #ffedd5; }
-        .grade-C { background: #f0f9ff; color: #0ea5e9; border: 1px solid #e0f2fe; }
-
-        .candidate-item { display: flex; align-items: center; gap: 15px; padding: 15px; border: 1px solid #f1f5f9; border-radius: 15px; margin-bottom: 12px; background: #fff; transition: 0.2s; }
-        .candidate-item:hover { border-color: #db2777; background: #fff5f9; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(219, 39, 119, 0.1); }
-        
-        .loading { text-align: center; padding: 100px; color: #db2777; font-weight: 800; font-size: 18px; }
     </style>
 </head>
 <body>
-
     <div class="header">
-        <div>
-            <a href="/admin.html" class="back-btn">← 관리자 홈으로</a>
-            <a href="/matching-list.html" class="back-btn" style="background:#1e293b; color:white; margin-left:10px;">💞 매칭 및 입금 확정 명단</a>
-        </div>
-        <div id="stats" style="font-size: 13px; color: #64748b; font-weight: 600;">데이터 로드 중...</div>
+        <a href="/admin.html" class="back-btn">← 관리자 홈으로</a>
+        <div style="font-size: 13px; color: #64748b; font-weight: 600;">신규 대기 회원: <span id="pendingCount">0</span>명</div>
     </div>
-
     <div class="card" id="mainContainer" style="display:none;">
-        <h1 id="pageTitle">회원 매칭 관리</h1>
-        
-        <div class="tab-container">
-            <button class="tab-btn active" id="tab-ALL" onclick="filterByGrade('ALL')">전체보기</button>
-            <button class="tab-btn" id="tab-A" onclick="filterByGrade('A')">A 등급</button>
-            <button class="tab-btn" id="tab-B" onclick="filterByGrade('B')">B 등급</button>
-            <button class="tab-btn" id="tab-C" onclick="filterByGrade('C')">C 등급</button>
-            <button class="tab-btn" id="tab-NONE" onclick="filterByGrade('NONE')">등급미정</button>
-        </div>
-
-        <div id="loading" class="loading">회원 정보를 불러오는 중입니다... ⏳</div>
-        
+        <h1>🚨 신규 신청 회원 관리 (미승인 명단)</h1>
+        <div id="loading" style="text-align:center; padding:50px; color:#db2777; font-weight:700;">불러오는 중...</div>
         <table>
             <thead>
                 <tr>
-                    <th>상태 / 등급</th>
-                    <th>이름(닉네임)</th>
-                    <th>나이/지역</th>
-                    <th>공개 직업/키</th>
-                    <th>MBTI/종교</th>
-                    <th>연락처</th>
-                    <th>관리</th>
+                    <th>관리</th><th>상태</th><th>접수일시</th><th>이름(닉네임)</th><th>성별/나이</th><th>연락처</th><th>지역</th><th>직업</th>
                 </tr>
             </thead>
             <tbody id="memberList"></tbody>
         </table>
     </div>
 
-    <div id="commonModal" class="modal">
+    <div id="detailModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal()">×</span>
-            <h2 id="modalTitle" style="margin-bottom:25px; font-size: 20px; color: #1e293b;">정보</h2>
+            <h2 id="modalTitle" style="margin-bottom:25px; font-size: 20px; color: #1e293b;">프로필 심사</h2>
             <div id="modalBody"></div>
+            
+            <div style="margin-top:25px; text-align:center; display:flex; justify-content:center; gap:10px;">
+                <button class="btn" style="padding:14px 20px; font-size:14px; border-radius: 30px; background:#f1f5f9; color:#475569;" onclick="rejectMember()">❌ 반려 및 영구 삭제</button>
+                <button class="btn" style="padding:14px 35px; font-size:15px; border-radius: 30px; background:#10b981; color:white; font-weight: 800; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);" onclick="approveMember()">✅ 이 회원을 '정회원'으로 승인하기</button>
+            </div>
         </div>
     </div>
 
@@ -114,12 +69,10 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        const urlParams = new URLSearchParams(window.location.search);
-        const targetGender = urlParams.get('gender'); 
-        let baseMembers = [];
-        let currentGradeTab = 'ALL';
+        let pendingMembers = [];
+        let currentViewId = null;
 
-        function esc(str) { return str ? str.toString().replace(/[&<>'"]/g, match => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[match]) : '-'; }
+        function esc(str) { return str ? str.toString().replace(/[&<>'"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[m]) : '-'; }
 
         async function checkAuth() {
             const { data: { session } } = await _supabase.auth.getSession();
@@ -128,86 +81,41 @@
             loadData();
         }
 
-        // ✨ 서버 사이드 필터링 적용 (성별을 DB 쿼리에서 걸러 서버 부하 및 요금 방어)
         async function loadData() {
             try {
-                const genderStr = targetGender === 'woman' ? '여' : '남';
-                const { data, error } = await _supabase.from('members')
-                    .select('*')
-                    .ilike('gender', `%${genderStr}%`)
-                    .order('id', { ascending: false })
-                    .limit(200); // Pagination의 초석으로 최근 가입자 기준 200건만 가져오도록 설정
-
+                const { data, error } = await _supabase.from('members').select('*').in('status', ['대기', 'PENDING']).order('id', { ascending: false });
                 if (error) throw error;
-                baseMembers = data;
-
-                document.getElementById('pageTitle').innerText = (targetGender === 'woman' ? '♀️ 여성' : '♂️ 남성') + ' 매칭 관리';
-                filterByGrade('ALL');
+                pendingMembers = data;
+                document.getElementById('pendingCount').innerText = pendingMembers.length;
+                renderList();
             } catch (e) { alert('데이터 로드 실패'); }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
 
-        function filterByGrade(grade) {
-            currentGradeTab = grade;
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('tab-' + grade).classList.add('active');
-
-            let filteredList = [];
-            if (grade === 'ALL') filteredList = baseMembers;
-            else if (grade === 'NONE') filteredList = baseMembers.filter(m => !m.grade || m.grade === '');
-            else filteredList = baseMembers.filter(m => m.grade === grade);
-
-            renderList(filteredList);
-        }
-
-        function renderList(members) {
+        function renderList() {
             const listBody = document.getElementById('memberList');
-            document.getElementById('stats').textContent = `조회된 회원: ${members.length}명`;
-
-            listBody.innerHTML = members.map(m => `
+            if(pendingMembers.length === 0) {
+                listBody.innerHTML = '<tr><td colspan="8" style="padding:40px; color:#94a3b8;">현재 승인 대기 중인 신규 회원이 없습니다.</td></tr>';
+                return;
+            }
+            listBody.innerHTML = pendingMembers.map(m => `
                 <tr>
-                    <td>
-                        <div class="select-container">
-                            <select class="status-select" onchange="updateField(${m.id}, 'status', this.value)" style="color: ${m.status==='정회원'?'#059669':'#64748b'}">
-                                <option value="대기" ${m.status==='대기'?'selected':''}>대기</option>
-                                <option value="정회원" ${m.status==='정회원'?'selected':''}>정회원</option>
-                                <option value="매칭중" ${m.status==='매칭중'?'selected':''}>매칭중</option>
-                                <option value="휴면" ${m.status==='휴면'?'selected':''}>휴면</option>
-                            </select>
-                            <select class="grade-select" onchange="updateField(${m.id}, 'grade', this.value)">
-                                <option value="" ${!m.grade?'selected':''}>등급미정</option>
-                                <option value="A" ${m.grade==='A'?'selected':''}>A등급</option>
-                                <option value="B" ${m.grade==='B'?'selected':''}>B등급</option>
-                                <option value="C" ${m.grade==='C'?'selected':''}>C등급</option>
-                            </select>
-                        </div>
-                    </td>
+                    <td><button class="btn btn-detail" onclick="showDetail(${m.id})">상세 심사</button></td>
+                    <td><span style="color:#ef4444; font-weight:800;">${m.status}</span></td>
+                    <td>${new Date(m.created_at).toLocaleDateString()}</td>
                     <td><strong>${esc(m.name)}</strong><br><span style="font-size:11px; color:#94a3b8;">(${esc(m.nickname)})</span></td>
-                    <td>${esc(m.birthYear)}년생<br>${esc(m.region)}</td>
-                    <td>${esc(m.job)}<br>${esc(m.height)}cm</td>
-                    <td><span style="font-weight:700;">${esc(m.mbti)}</span><br>${esc(m.religion)}</td>
-                    <td><button class="btn btn-copy" onclick="copyText('${esc(m.phoneNumber)}')">📞 번호복사</button></td>
-                    <td>
-                        <button class="btn btn-detail" onclick="showDetail(${m.id})">상세/사진</button>
-                        <button class="btn btn-match" onclick="showCandidates(${m.id})">💡 매칭후보</button>
-                    </td>
+                    <td>${esc(m.gender)}<br>${esc(m.birthYear)}년생</td>
+                    <td>${esc(m.phoneNumber)}</td>
+                    <td>${esc(m.region)}</td>
+                    <td>${esc(m.job)}</td>
                 </tr>
             `).join('');
         }
 
-        async function updateField(id, fieldName, value) {
-            try {
-                const { error } = await _supabase.from('members').update({ [fieldName]: value }).eq('id', id);
-                if(error) throw error;
-                const baseIdx = baseMembers.findIndex(x => x.id === id);
-                if(baseIdx > -1) baseMembers[baseIdx][fieldName] = value;
-                if(fieldName === 'grade') filterByGrade(currentGradeTab);
-            } catch (e) { alert('업데이트 실패'); }
-        }
-
         async function showDetail(id) {
-            const m = baseMembers.find(x => x.id === id);
-            document.getElementById('modalTitle').innerText = `📋 ${esc(m.name)} (${esc(m.nickname)}) 프로필 확인`;
+            currentViewId = id;
+            const m = pendingMembers.find(x => x.id === id);
+            document.getElementById('modalTitle').innerText = `📋 ${esc(m.name)} (${esc(m.nickname)}) 님 프로필 심사`;
             
             let imagesHtml = '<div class="photo-container">';
             if (m.photo_url) imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">잘 나온 사진</div><img src="${m.photo_url}" class="profile-photo" onclick="window.open('${m.photo_url}')"></div>`;
@@ -229,12 +137,10 @@
                 ${imagesHtml}
                 <div class="info-grid">
                     <div class="info-item full-width" style="background:#fff0f6; border-color:#f8e5f0;">
-                        <div class="info-label" style="color:#d63384;">🔒 실제 직장/사업체 및 회원 등급</div>
-                        <div class="info-value" style="font-size:16px;">
-                            ${esc(m.jobOrganizationName)} 
-                            <span class="grade-badge grade-${m.grade || 'NONE'}">${m.grade || '미정'}등급</span>
-                        </div>
+                        <div class="info-label" style="color:#d63384;">🔒 실제 직장/사업체명</div>
+                        <div class="info-value" style="font-size:16px;">${esc(m.jobOrganizationName)}</div>
                     </div>
+                    
                     <div class="info-item"><div class="info-label">공개 직업</div><div class="info-value">${esc(m.job)}</div></div>
                     <div class="info-item"><div class="info-label">최종학력</div><div class="info-value">${esc(m.finalEducation)}</div></div>
                     <div class="info-item"><div class="info-label">키</div><div class="info-value">${esc(m.height)}cm</div></div>
@@ -248,7 +154,7 @@
                     <div class="info-item full-width"><div class="info-label">저는요 (상세 자기소개)</div><div class="info-value">${esc(m.selfIntroduction)}</div></div>
                     <div class="info-item full-width"><div class="info-label">나만의 매력어필 한 줄</div><div class="info-value">${esc(m.appeal)}</div></div>
                     
-                    <div class="info-item"><div class="info-label">가장 중요한 조건</div><div class="info-value">${esc(m.importantCriteria)}</div></div>
+                    <div class="info-item"><div class="info-label">가장 중요한 이성 조건</div><div class="info-value">${esc(m.importantCriteria)}</div></div>
                     <div class="info-item"><div class="info-label">선호 나이대</div><div class="info-value">${esc(m.preferredAgeRange)}</div></div>
                     <div class="info-item full-width"><div class="info-label">이상형 상세</div><div class="info-value">${esc(m.idealType)}</div></div>
                     
@@ -256,93 +162,71 @@
                         <div class="info-label">기피 종교 / 지인 차단</div>
                         <div class="info-value">${esc(m.avoidReligion)} <br> <span style="color:#ef4444;">${esc(m.avoidType)}</span></div>
                     </div>
+                    
                     <div class="info-item full-width" style="background:#f0f9ff; border-color:#e0f2fe;">
                         <div class="info-label" style="color:#0ea5e9;">⚙️ 매칭 진행 옵션</div>
                         <div class="info-value" style="color:#0369a1;">${m.continueMatchingYn === 'N' ? '❌ 매칭 성사 시 자동 중지' : '✅ 계속 매칭 받기 (추천)'}</div>
                     </div>
                 </div>
             `;
-            document.getElementById('commonModal').style.display = 'flex';
+            document.getElementById('detailModal').style.display = 'flex';
         }
 
-        async function showCandidates(id) {
-            const m = baseMembers.find(x => x.id === id);
-            const oppGender = (m.gender.includes('남')) ? '여' : '남';
+        // ✨ 법적 컴플라이언스 100% 반영 (승인 시 즉시 파기)
+        async function approveMember() {
+            if(!currentViewId) return;
+            if(!confirm("이 회원을 정회원으로 승인하시겠습니까?\n(승인 즉시 보안을 위해 고객의 인증 서류는 서버에서 영구 삭제됩니다.)")) return;
             
-            // 매칭 후보를 위해 상대 성별만 DB에서 쿼리해 옴. (메모리 최적화)
-            const { data: rawCandidates, error } = await _supabase.from('members')
-                .select('*')
-                .eq('status', '정회원')
-                .ilike('gender', `%${oppGender}%`);
-                
-            if(error) { alert('후보 불러오기 실패'); return; }
-
-            // ✨ 필터링 고도화 로직
-            const candidates = rawCandidates.filter(c => {
-                // 1. 공백 무시 지인 차단 확인
-                const myBlock = (m.avoidType || '').replace(/\s/g, ''); 
-                const targetBlock = (c.avoidType || '').replace(/\s/g, '');
-                const targetFormat = `${c.birthYear}년생${c.name}`.replace(/\s/g, ''); 
-                const myFormat = `${m.birthYear}년생${m.name}`.replace(/\s/g, '');
-                if (myBlock.includes(targetFormat) || targetBlock.includes(myFormat)) return false;
-
-                // 2. 고객의 '선호 나이대' 검증
-                let cNum = parseInt(c.birthYear);
-                const cBirthYearFull = cNum < 50 ? 2000 + cNum : 1900 + cNum; // 출생연도 4자리 변환
-                if (m.min_preferred_year && cBirthYearFull < m.min_preferred_year) return false;
-                if (m.max_preferred_year && cBirthYearFull > m.max_preferred_year) return false;
-
-                return true;
-            });
-
-            document.getElementById('modalTitle').innerText = `❤️ ${esc(m.name)} 님을 위한 추천 후보`;
-            
-            let htmlContent = candidates.length === 0 ? '<div style="padding:40px; text-align:center; color:#94a3b8;">조건에 맞는 정회원 후보가 없습니다.</div>' : '';
-
-            candidates.forEach(c => {
-                let gradeStyle = ''; let gradeText = c.grade || '?';
-                if(c.grade === 'A') gradeStyle = 'background:#fef2f2; color:#ef4444; border:2px solid #fecaca;';
-                else if(c.grade === 'B') gradeStyle = 'background:#fff7ed; color:#f97316; border:2px solid #ffedd5;';
-                else if(c.grade === 'C') gradeStyle = 'background:#f0f9ff; color:#0ea5e9; border:2px solid #e0f2fe;';
-                else gradeStyle = 'background:#f8fafc; color:#cbd5e1; border:2px dashed #e2e8f0; font-size:14px;';
-
-                htmlContent += `
-                    <div class="candidate-item">
-                        <div style="width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; flex-shrink: 0; ${gradeStyle}">
-                            ${gradeText}
-                        </div>
-                        <div style="flex: 1;">
-                            <strong style="font-size:16px; color:#1e293b;">${esc(c.name)}</strong>
-                            <span style="font-size:13px; color:#64748b; margin-left:4px;">(${esc(c.birthYear)}년생, ${esc(c.region)})</span><br>
-                            <span style="font-size:13px; color:#db2777; font-weight:800;">${esc(c.job)}</span>
-                            <span style="font-size:12px; color:#64748b;"> / ${esc(c.height)}cm / ${esc(c.mbti)}</span>
-                        </div>
-                        <div style="display:flex; flex-direction:column; gap:5px;">
-                            <button class="btn btn-detail" style="padding: 8px 15px;" onclick="showDetail(${c.id})">상세 확인</button>
-                            <button class="btn" style="background:#db2777; color:white; padding: 8px 15px;" onclick="createMatch(${m.id}, '${esc(m.name)}', '${esc(m.gender)}', ${c.id}, '${esc(c.name)}')">💞 매칭하기</button>
-                        </div>
-                    </div>
-                `;
-            });
-            document.getElementById('modalBody').innerHTML = htmlContent;
-            document.getElementById('commonModal').style.display = 'flex';
-        }
-
-        async function createMatch(mId, mName, mGender, cId, cName) {
-            if(!confirm(`[${mName}]님과 [${cName}]님을 매칭 명단으로 보내시겠습니까?`)) return;
-            let maleId, femaleId, maleName, femaleName;
-            if(mGender.includes('남')) { maleId = mId; maleName = mName; femaleId = cId; femaleName = cName; } 
-            else { maleId = cId; maleName = cName; femaleId = mId; femaleName = mName; }
             try {
-                const { error } = await _supabase.from('matches').insert([{ male_id: maleId, female_id: femaleId, male_name: maleName, female_name: femaleName, match_status: '매칭진행중' }]);
-                if(error) throw error;
-                alert('💞 매칭 명단에 추가되었습니다!'); closeModal();
-            } catch(err) { alert('매칭 실패'); }
+                const member = pendingMembers.find(x => x.id === currentViewId);
+
+                // 1. 스토리지에서 인증 서류 파기
+                if (member.cert_url && !member.cert_url.startsWith('http')) {
+                    await _supabase.storage.from('cert_documents').remove([member.cert_url]);
+                }
+
+                // 2. DB 업데이트 시 cert_url 초기화
+                const { error } = await _supabase.from('members')
+                    .update({ status: '정회원', cert_url: null })
+                    .eq('id', currentViewId);
+                    
+                if (error) throw error;
+                alert("정회원 승인 및 서류 영구 파기가 완료되었습니다!");
+                closeModal(); loadData();
+            } catch(e) { alert("승인 처리 실패"); console.error(e); }
         }
 
-        function copyText(t) { navigator.clipboard.writeText(t).then(()=>alert('연락처 복사됨')); }
-        function closeModal() { document.getElementById('commonModal').style.display = 'none'; }
-        window.onclick = (e) => { if (e.target == document.getElementById('commonModal')) closeModal(); }
+        // ✨ 완벽한 반려 및 청소 로직 반영
+        async function rejectMember() {
+            if(!currentViewId) return;
+            if(!confirm("이 회원의 가입을 반려(거절)하시겠습니까?\n업로드된 사진, 서류, 데이터가 모두 영구 삭제됩니다.")) return;
+            
+            try {
+                const member = pendingMembers.find(x => x.id === currentViewId);
+                
+                // 1. 퍼블릭 이미지 스토리지 삭제
+                const photosToDelete = [];
+                if (member.photo_url) photosToDelete.push(member.photo_url.split('/').pop());
+                if (member.photo_url_full) photosToDelete.push(member.photo_url_full.split('/').pop());
+                
+                if (photosToDelete.length > 0) {
+                    await _supabase.storage.from('profile_photos').remove(photosToDelete);
+                }
+
+                // 2. 비공개 서류 스토리지 삭제
+                if (member.cert_url && !member.cert_url.startsWith('http')) {
+                    await _supabase.storage.from('cert_documents').remove([member.cert_url]);
+                }
+
+                // 3. DB 로우 영구 삭제
+                await _supabase.from('members').delete().eq('id', currentViewId);
+                
+                alert("가입 반려 및 모든 데이터 영구 파기가 완료되었습니다.");
+                closeModal(); loadData();
+            } catch(e) { alert("반려 처리 실패"); console.error(e); }
+        }
+
+        function closeModal() { document.getElementById('detailModal').style.display = 'none'; currentViewId = null; }
         
         checkAuth();
     </script>
