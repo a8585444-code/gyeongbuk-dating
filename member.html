@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회원 매칭 관리 - 파인드썸</title>
+    <title>회원 매칭 관리 - 당신의 계절</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
         .header { max-width: 1400px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
-        .back-btn { text-decoration: none; color: #7c3aed; font-weight: 700; font-size: 14px; background: #fff; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; }
+        .back-btn { text-decoration: none; color: #db2777; font-weight: 700; font-size: 14px; background: #fff; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; }
         .back-btn:hover { opacity: 0.8; }
         
         .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; max-width: 1400px; margin: 0 auto; overflow-x: auto; }
@@ -27,14 +27,14 @@
         th { background: #f8fafc; color: #64748b; font-weight: 700; position: sticky; top: 0; }
         
         .btn { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; transition: 0.2s; margin: 2px; }
-        .btn-detail { background: #ede9fe; color: #7c3aed; }
+        .btn-detail { background: #fce7f3; color: #db2777; }
         .btn-copy { background: #f1f5f9; color: #475569; }
         .btn-match { background: #1e293b; color: white; }
         .btn:hover { opacity: 0.8; transform: translateY(-1px); }
         
         .select-container { display: flex; flex-direction: column; gap: 4px; align-items: center; }
         .status-select, .grade-select { padding: 5px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 11px; font-weight: 800; cursor: pointer; width: 85px; outline: none; }
-        .grade-select { background: #fff0f6; color: #d63384; border-color: #f0e0eb; }
+        .grade-select { background: #fff0f6; color: #db2777; border-color: #f0e0eb; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
         .modal-content { background: white; border-radius: 20px; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; padding: 30px; position: relative; }
@@ -46,7 +46,7 @@
 
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .info-item { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #f1f5f9; }
-        .info-label { font-size: 11px; color: #7c3aed; font-weight: 800; margin-bottom: 6px; text-transform: uppercase; }
+        .info-label { font-size: 11px; color: #db2777; font-weight: 800; margin-bottom: 6px; text-transform: uppercase; }
         .info-value { font-size: 14px; font-weight: 600; color: #1e293b; line-height: 1.5; }
         .full-width { grid-column: span 2; }
 
@@ -56,9 +56,9 @@
         .grade-C { background: #f0f9ff; color: #0ea5e9; border: 1px solid #e0f2fe; }
 
         .candidate-item { display: flex; align-items: center; gap: 15px; padding: 15px; border: 1px solid #f1f5f9; border-radius: 15px; margin-bottom: 12px; background: #fff; transition: 0.2s; }
-        .candidate-item:hover { border-color: #7c3aed; background: #fdfaff; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1); }
+        .candidate-item:hover { border-color: #db2777; background: #fff5f9; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(219, 39, 119, 0.1); }
         
-        .loading { text-align: center; padding: 100px; color: #7c3aed; font-weight: 800; font-size: 18px; }
+        .loading { text-align: center; padding: 100px; color: #db2777; font-weight: 800; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -66,7 +66,7 @@
     <div class="header">
         <div>
             <a href="/admin.html" class="back-btn">← 관리자 홈으로</a>
-            <a href="/matching-list.html" class="back-btn" style="background:#ec4899; color:white; margin-left:10px;">💞 매칭 및 입금 확정 명단</a>
+            <a href="/matching-list.html" class="back-btn" style="background:#1e293b; color:white; margin-left:10px;">💞 매칭 및 입금 확정 명단</a>
         </div>
         <div id="stats" style="font-size: 13px; color: #64748b; font-weight: 600;">데이터 로드 중...</div>
     </div>
@@ -116,38 +116,31 @@
         
         const urlParams = new URLSearchParams(window.location.search);
         const targetGender = urlParams.get('gender'); 
-        let allMembers = [];
         let baseMembers = [];
         let currentGradeTab = 'ALL';
 
-        function esc(str) {
-            if (!str) return '-';
-            return str.toString().replace(/[&<>'"]/g, match => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[match]);
-        }
+        function esc(str) { return str ? str.toString().replace(/[&<>'"]/g, match => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[match]) : '-'; }
 
         async function checkAuth() {
             const { data: { session } } = await _supabase.auth.getSession();
-            if (!session) {
-                alert('보안 구역입니다. 관리자 로그인이 필요합니다.');
-                window.location.href = '/login.html';
-                return;
-            }
+            if (!session) { alert('보안 구역입니다.'); window.location.href = '/login.html'; return; }
             document.getElementById('mainContainer').style.display = 'block';
             loadData();
         }
 
         async function loadData() {
             try {
-                const { data, error } = await _supabase.from('members').select('*').order('id', { ascending: false });
-                if (error) throw error;
-                allMembers = data;
-                
-                baseMembers = allMembers.filter(m => {
-                    const g = m.gender || '';
-                    return targetGender === 'woman' ? g.includes('여') : g.includes('남');
-                });
+                const genderStr = targetGender === 'woman' ? '여' : '남';
+                const { data, error } = await _supabase.from('members')
+                    .select('*')
+                    .ilike('gender', `%${genderStr}%`)
+                    .order('id', { ascending: false })
+                    .limit(200); 
 
-                document.getElementById('pageTitle').innerText = (targetGender === 'woman' ? '♀️ 여자' : '♂️ 남자') + ' 매칭 관리';
+                if (error) throw error;
+                baseMembers = data;
+
+                document.getElementById('pageTitle').innerText = (targetGender === 'woman' ? '♀️ 여성' : '♂️ 남성') + ' 매칭 관리';
                 filterByGrade('ALL');
             } catch (e) { alert('데이터 로드 실패'); }
             finally { document.getElementById('loading').style.display = 'none'; }
@@ -168,14 +161,13 @@
 
         function renderList(members) {
             const listBody = document.getElementById('memberList');
-            document.getElementById('stats').textContent = `현재 조회된 회원: ${members.length}명`;
+            document.getElementById('stats').textContent = `조회된 회원: ${members.length}명`;
 
             listBody.innerHTML = members.map(m => `
                 <tr>
                     <td>
                         <div class="select-container">
-                            <select class="status-select" onchange="updateField(${m.id}, 'status', this.value)" 
-                                    style="color: ${m.status==='정회원'?'#059669':'#64748b'}">
+                            <select class="status-select" onchange="updateField(${m.id}, 'status', this.value)" style="color: ${m.status==='정회원'?'#059669':'#64748b'}">
                                 <option value="대기" ${m.status==='대기'?'selected':''}>대기</option>
                                 <option value="정회원" ${m.status==='정회원'?'selected':''}>정회원</option>
                                 <option value="매칭중" ${m.status==='매칭중'?'selected':''}>매칭중</option>
@@ -190,7 +182,7 @@
                         </div>
                     </td>
                     <td><strong>${esc(m.name)}</strong><br><span style="font-size:11px; color:#94a3b8;">(${esc(m.nickname)})</span></td>
-                    <td>${esc(m.birthYear)}년생 / ${esc(m.region)}</td>
+                    <td>${esc(m.birthYear)}년생<br>${esc(m.region)}</td>
                     <td>${esc(m.job)}<br>${esc(m.height)}cm</td>
                     <td><span style="font-weight:700;">${esc(m.mbti)}</span><br>${esc(m.religion)}</td>
                     <td><button class="btn btn-copy" onclick="copyText('${esc(m.phoneNumber)}')">📞 번호복사</button></td>
@@ -206,34 +198,19 @@
             try {
                 const { error } = await _supabase.from('members').update({ [fieldName]: value }).eq('id', id);
                 if(error) throw error;
-                
-                const idx = allMembers.findIndex(x => x.id === id);
-                if(idx > -1) allMembers[idx][fieldName] = value;
-                
                 const baseIdx = baseMembers.findIndex(x => x.id === id);
                 if(baseIdx > -1) baseMembers[baseIdx][fieldName] = value;
-
                 if(fieldName === 'grade') filterByGrade(currentGradeTab);
             } catch (e) { alert('업데이트 실패'); }
         }
 
         async function showDetail(id) {
-            const m = allMembers.find(x => x.id === id);
+            const m = baseMembers.find(x => x.id === id);
             document.getElementById('modalTitle').innerText = `📋 ${esc(m.name)} (${esc(m.nickname)}) 프로필 확인`;
             
             let imagesHtml = '<div class="photo-container">';
-            
-            // 1. 잘 나온 사진
-            if (m.photo_url) {
-                imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">잘 나온 사진</div><img src="${m.photo_url}" class="profile-photo" onclick="window.open('${m.photo_url}')"></div>`;
-            }
-            
-            // 2. 전신 사진 (추가됨!)
-            if (m.photo_url_full) {
-                imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">전신 사진</div><img src="${m.photo_url_full}" class="profile-photo" onclick="window.open('${m.photo_url_full}')"></div>`;
-            }
-            
-            // 3. 비공개 인증 서류
+            if (m.photo_url) imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">잘 나온 사진</div><img src="${m.photo_url}" class="profile-photo" onclick="window.open('${m.photo_url}')"></div>`;
+            if (m.photo_url_full) imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">전신 사진</div><img src="${m.photo_url_full}" class="profile-photo" onclick="window.open('${m.photo_url_full}')"></div>`;
             if (m.cert_url) {
                 try {
                     if(m.cert_url.startsWith('http')) {
@@ -243,13 +220,10 @@
                         if (error) throw error;
                         imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; color:#d63384; margin-bottom:5px;">보안 서류 (60초 유효)</div><img src="${data.signedUrl}" class="profile-photo" style="border:3px solid #fce4ec;" onclick="window.open('${data.signedUrl}')"></div>`;
                     }
-                } catch(err) {
-                    imagesHtml += `<div style="text-align:center; color:#ef4444;">서류 오류</div>`;
-                }
+                } catch(err) { imagesHtml += `<div style="text-align:center; color:#ef4444;">서류 오류</div>`; }
             }
             imagesHtml += '</div>';
 
-            // 모든 누락된 정보 추가 (체형 제거됨)
             document.getElementById('modalBody').innerHTML = `
                 ${imagesHtml}
                 <div class="info-grid">
@@ -261,14 +235,22 @@
                         </div>
                     </div>
                     <div class="info-item"><div class="info-label">공개 직업</div><div class="info-value">${esc(m.job)}</div></div>
+                    <div class="info-item"><div class="info-label">최종학력</div><div class="info-value">${esc(m.finalEducation)}</div></div>
                     <div class="info-item"><div class="info-label">키</div><div class="info-value">${esc(m.height)}cm</div></div>
+                    <div class="info-item"><div class="info-label">특징(체형/외모)</div><div class="info-value">${esc(m.bodyType)}</div></div>
                     <div class="info-item"><div class="info-label">MBTI / 종교</div><div class="info-value">${esc(m.mbti)} / ${esc(m.religion)}</div></div>
                     <div class="info-item"><div class="info-label">음주 / 흡연</div><div class="info-value">${esc(m.drinking)} / ${esc(m.smoking)}</div></div>
-                    <div class="info-item full-width"><div class="info-label">성격 및 취미</div><div class="info-value">${esc(m.personality)}</div></div>
-                    <div class="info-item full-width"><div class="info-label">한 줄 소개</div><div class="info-value">${esc(m.selfIntroduction)}</div></div>
+                    
+                    <div class="info-item full-width"><div class="info-label">취미</div><div class="info-value">${esc(m.hobbies)}</div></div>
+                    <div class="info-item"><div class="info-label">성격 키워드</div><div class="info-value">${esc(m.personalityKeywords)}</div></div>
+                    <div class="info-item"><div class="info-label">주변에서 저를</div><div class="info-value">${esc(m.reputation)}</div></div>
+                    <div class="info-item full-width"><div class="info-label">저는요 (상세 자기소개)</div><div class="info-value">${esc(m.selfIntroduction)}</div></div>
+                    <div class="info-item full-width"><div class="info-label">나만의 매력어필 한 줄</div><div class="info-value">${esc(m.appeal)}</div></div>
+                    
                     <div class="info-item"><div class="info-label">가장 중요한 조건</div><div class="info-value">${esc(m.importantCriteria)}</div></div>
                     <div class="info-item"><div class="info-label">선호 나이대</div><div class="info-value">${esc(m.preferredAgeRange)}</div></div>
                     <div class="info-item full-width"><div class="info-label">이상형 상세</div><div class="info-value">${esc(m.idealType)}</div></div>
+                    
                     <div class="info-item full-width" style="background:#f8fafc;">
                         <div class="info-label">기피 종교 / 지인 차단</div>
                         <div class="info-value">${esc(m.avoidReligion)} <br> <span style="color:#ef4444;">${esc(m.avoidType)}</span></div>
@@ -282,28 +264,55 @@
             document.getElementById('commonModal').style.display = 'flex';
         }
 
-        function showCandidates(id) {
-            const m = allMembers.find(x => x.id === id);
+        async function showCandidates(id) {
+            const m = baseMembers.find(x => x.id === id);
             const oppGender = (m.gender.includes('남')) ? '여' : '남';
             
-            let rawCandidates = allMembers.filter(x => x.gender.includes(oppGender) && x.status === '정회원');
+            const { data: rawCandidates, error } = await _supabase.from('members')
+                .select('*')
+                .eq('status', '정회원')
+                .ilike('gender', `%${oppGender}%`);
+                
+            if(error) { alert('후보 불러오기 실패'); return; }
+
+            // ✨ 필터링 고도화 (쌍방향, 공백 무시, 버그 수정 완료)
             const candidates = rawCandidates.filter(c => {
-                const myBlock = m.avoidType || '';
-                const targetBlock = c.avoidType || '';
-                const targetFormat = `${c.birthYear}년생 ${c.name}`;
-                const myFormat = `${m.birthYear}년생 ${m.name}`;
-                return !(myBlock.includes(targetFormat) || targetBlock.includes(myFormat));
+                // 1. 공백 무시 지인 차단 확인
+                const myBlock = (m.avoidType || '').replace(/\s/g, ''); 
+                const targetBlock = (c.avoidType || '').replace(/\s/g, '');
+                const targetFormat = `${c.birthYear}년생${c.name}`.replace(/\s/g, ''); 
+                const myFormat = `${m.birthYear}년생${m.name}`.replace(/\s/g, '');
+                if (myBlock.includes(targetFormat) || targetBlock.includes(myFormat)) return false;
+
+                // 2. 나이 조건 검증 (상대방 나이가 내 조건에 부합하는지) - 역전 버그 해결
+                let cNum = parseInt(c.birthYear);
+                const cBirthYearFull = cNum < 50 ? 2000 + cNum : 1900 + cNum; 
+                if (m.min_preferred_year && cBirthYearFull > m.min_preferred_year) return false; 
+                if (m.max_preferred_year && cBirthYearFull < m.max_preferred_year) return false; 
+
+                // 3. ✨ 쌍방향 나이 검증 (내 나이가 상대방 조건에 부합하는지)
+                let mNum = parseInt(m.birthYear);
+                const mBirthYearFull = mNum < 50 ? 2000 + mNum : 1900 + mNum;
+                if (c.min_preferred_year && mBirthYearFull > c.min_preferred_year) return false;
+                if (c.max_preferred_year && mBirthYearFull < c.max_preferred_year) return false;
+
+                // 4. ✨ 기피 종교 양방향 검증
+                const mAvoidRel = m.avoidReligion || '';
+                const cAvoidRel = c.avoidReligion || '';
+                if (mAvoidRel.includes('무교만 선호') && c.religion !== '무교') return false;
+                if (cAvoidRel.includes('무교만 선호') && m.religion !== '무교') return false;
+                if (mAvoidRel.includes(c.religion + ' 제외')) return false;
+                if (cAvoidRel.includes(m.religion + ' 제외')) return false;
+
+                return true;
             });
 
             document.getElementById('modalTitle').innerText = `❤️ ${esc(m.name)} 님을 위한 추천 후보`;
             
-            let htmlContent = candidates.length === 0 ? 
-                '<div style="padding:40px; text-align:center; color:#94a3b8;">매칭 가능한 정회원이 없습니다.</div>' : '';
+            let htmlContent = candidates.length === 0 ? '<div style="padding:40px; text-align:center; color:#94a3b8;">조건에 맞는 정회원 후보가 없습니다.</div>' : '';
 
             candidates.forEach(c => {
-                let gradeStyle = '';
-                let gradeText = c.grade || '?';
-                
+                let gradeStyle = ''; let gradeText = c.grade || '?';
                 if(c.grade === 'A') gradeStyle = 'background:#fef2f2; color:#ef4444; border:2px solid #fecaca;';
                 else if(c.grade === 'B') gradeStyle = 'background:#fff7ed; color:#f97316; border:2px solid #ffedd5;';
                 else if(c.grade === 'C') gradeStyle = 'background:#f0f9ff; color:#0ea5e9; border:2px solid #e0f2fe;';
@@ -317,34 +326,42 @@
                         <div style="flex: 1;">
                             <strong style="font-size:16px; color:#1e293b;">${esc(c.name)}</strong>
                             <span style="font-size:13px; color:#64748b; margin-left:4px;">(${esc(c.birthYear)}년생, ${esc(c.region)})</span><br>
-                            <span style="font-size:13px; color:#7c3aed; font-weight:800;">${esc(c.job)}</span>
+                            <span style="font-size:13px; color:#db2777; font-weight:800;">${esc(c.job)}</span>
                             <span style="font-size:12px; color:#64748b;"> / ${esc(c.height)}cm / ${esc(c.mbti)}</span>
                         </div>
                         <div style="display:flex; flex-direction:column; gap:5px;">
                             <button class="btn btn-detail" style="padding: 8px 15px;" onclick="showDetail(${c.id})">상세 확인</button>
-                            <button class="btn" style="background:#ec4899; color:white; padding: 8px 15px;" onclick="createMatch(${m.id}, '${esc(m.name)}', '${esc(m.gender)}', ${c.id}, '${esc(c.name)}')">💞 매칭하기</button>
+                            <button class="btn" style="background:#db2777; color:white; padding: 8px 15px;" onclick="createMatch(${m.id}, '${esc(m.name)}', '${esc(m.gender)}', ${c.id}, '${esc(c.name)}')">💞 매칭하기</button>
                         </div>
                     </div>
                 `;
             });
-
             document.getElementById('modalBody').innerHTML = htmlContent;
             document.getElementById('commonModal').style.display = 'flex';
         }
 
+        // ✨ 상태 이중 동기화 적용 (매칭 리스트 추가 & 상태 업데이트)
         async function createMatch(mId, mName, mGender, cId, cName) {
-            if(!confirm(`[${mName}]님과 [${cName}]님을 매칭 확정 명단으로 보내시겠습니까?`)) return;
-
+            if(!confirm(`[${mName}]님과 [${cName}]님을 매칭 명단으로 보내시겠습니까?`)) return;
+            
             let maleId, femaleId, maleName, femaleName;
             if(mGender.includes('남')) { maleId = mId; maleName = mName; femaleId = cId; femaleName = cName; } 
             else { maleId = cId; maleName = cName; femaleId = mId; femaleName = mName; }
-
+            
             try {
-                const { error } = await _supabase.from('matches').insert([{ male_id: maleId, female_id: femaleId, male_name: maleName, female_name: femaleName, match_status: '매칭진행중' }]);
-                if(error) throw error;
-                alert('💞 성공적으로 매칭 명단에 추가되었습니다!\n화면 상단의 [매칭 및 입금 확정 명단]에서 확인해주세요.');
-                closeModal();
-            } catch(err) { alert('매칭 추가 실패: ' + err.message); }
+                // 1. 매칭 테이블 등록
+                const { error: matchError } = await _supabase.from('matches').insert([{ male_id: maleId, female_id: femaleId, male_name: maleName, female_name: femaleName, match_status: '매칭진행중' }]);
+                if(matchError) throw matchError;
+
+                // 2. ✨ 멤버 상태 '매칭중' 자동 업데이트 (이중 매칭 방지)
+                const { error: updateError } = await _supabase.from('members')
+                    .update({ status: '매칭중' })
+                    .in('id', [maleId, femaleId]);
+                if(updateError) throw updateError;
+
+                alert('💞 매칭 명단에 추가 및 두 회원의 상태가 [매칭중]으로 변경되었습니다!'); 
+                closeModal(); loadData();
+            } catch(err) { alert('매칭 실패: ' + err.message); }
         }
 
         function copyText(t) { navigator.clipboard.writeText(t).then(()=>alert('연락처 복사됨')); }
