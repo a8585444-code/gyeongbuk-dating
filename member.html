@@ -120,13 +120,11 @@
         let baseMembers = [];
         let currentGradeTab = 'ALL';
 
-        // 🔥 XSS 방어 로직 (해커가 스크립트를 넣어도 문자로 렌더링되게 무력화)
         function esc(str) {
             if (!str) return '-';
             return str.toString().replace(/[&<>'"]/g, match => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[match]);
         }
 
-        // 🚨 인증(로그인) 방어막
         async function checkAuth() {
             const { data: { session } } = await _supabase.auth.getSession();
             if (!session) {
@@ -172,7 +170,6 @@
             const listBody = document.getElementById('memberList');
             document.getElementById('stats').textContent = `현재 조회된 회원: ${members.length}명`;
 
-            // 🔥 표를 그릴 때 esc() 함수를 씌워 XSS 공격 원천 차단
             listBody.innerHTML = members.map(m => `
                 <tr>
                     <td>
@@ -220,37 +217,39 @@
             } catch (e) { alert('업데이트 실패'); }
         }
 
-        // 🔥 [핵심 로직] 상세 보기 클릭 시 서류는 임시 링크를 발급받아 보여줌 (async로 변경됨)
         async function showDetail(id) {
             const m = allMembers.find(x => x.id === id);
             document.getElementById('modalTitle').innerText = `📋 ${esc(m.name)} (${esc(m.nickname)}) 프로필 확인`;
             
             let imagesHtml = '<div class="photo-container">';
             
-            // 1. 프로필 사진은 기존처럼 Public URL 사용
+            // 1. 잘 나온 사진
             if (m.photo_url) {
-                imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">프로필 사진</div><img src="${m.photo_url}" class="profile-photo" onclick="window.open('${m.photo_url}')"></div>`;
+                imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">잘 나온 사진</div><img src="${m.photo_url}" class="profile-photo" onclick="window.open('${m.photo_url}')"></div>`;
             }
             
-            // 2. 비공개 인증 서류는 60초짜리 임시 링크(Signed URL) 발급
+            // 2. 전신 사진 (추가됨!)
+            if (m.photo_url_full) {
+                imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">전신 사진</div><img src="${m.photo_url_full}" class="profile-photo" onclick="window.open('${m.photo_url_full}')"></div>`;
+            }
+            
+            // 3. 비공개 인증 서류
             if (m.cert_url) {
                 try {
-                    // 구버전(주소 전체가 저장된 경우) 호환
                     if(m.cert_url.startsWith('http')) {
                         imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; color:#d63384; margin-bottom:5px;">인증 서류</div><img src="${m.cert_url}" class="profile-photo" style="border:3px solid #fce4ec;" onclick="window.open('${m.cert_url}')"></div>`;
                     } else {
-                        // 신버전 (파일명만 저장된 경우) -> Signed URL 60초 발급 발동!
                         const { data, error } = await _supabase.storage.from('cert_documents').createSignedUrl(m.cert_url, 60);
                         if (error) throw error;
                         imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; color:#d63384; margin-bottom:5px;">보안 서류 (60초 유효)</div><img src="${data.signedUrl}" class="profile-photo" style="border:3px solid #fce4ec;" onclick="window.open('${data.signedUrl}')"></div>`;
                     }
                 } catch(err) {
-                    console.error('서류 링크 발급 실패:', err);
-                    imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; color:#ef4444; margin-bottom:5px;">서류 불러오기 실패</div><div class="profile-photo" style="display:flex;align-items:center;justify-content:center;background:#fee2e2;color:#ef4444;">에러 발생</div></div>`;
+                    imagesHtml += `<div style="text-align:center; color:#ef4444;">서류 오류</div>`;
                 }
             }
             imagesHtml += '</div>';
 
+            // 모든 누락된 정보 추가 (체형 제거됨)
             document.getElementById('modalBody').innerHTML = `
                 ${imagesHtml}
                 <div class="info-grid">
@@ -262,17 +261,21 @@
                         </div>
                     </div>
                     <div class="info-item"><div class="info-label">공개 직업</div><div class="info-value">${esc(m.job)}</div></div>
-                    <div class="info-item"><div class="info-label">키 / 체형</div><div class="info-value">${esc(m.height)}cm / ${esc(m.bodyType)}</div></div>
+                    <div class="info-item"><div class="info-label">키</div><div class="info-value">${esc(m.height)}cm</div></div>
                     <div class="info-item"><div class="info-label">MBTI / 종교</div><div class="info-value">${esc(m.mbti)} / ${esc(m.religion)}</div></div>
                     <div class="info-item"><div class="info-label">음주 / 흡연</div><div class="info-value">${esc(m.drinking)} / ${esc(m.smoking)}</div></div>
                     <div class="info-item full-width"><div class="info-label">성격 및 취미</div><div class="info-value">${esc(m.personality)}</div></div>
                     <div class="info-item full-width"><div class="info-label">한 줄 소개</div><div class="info-value">${esc(m.selfIntroduction)}</div></div>
-                    <div class="info-item full-width"><div class="info-label">이상형</div><div class="info-value">${esc(m.idealType)}</div></div>
                     <div class="info-item"><div class="info-label">가장 중요한 조건</div><div class="info-value">${esc(m.importantCriteria)}</div></div>
                     <div class="info-item"><div class="info-label">선호 나이대</div><div class="info-value">${esc(m.preferredAgeRange)}</div></div>
+                    <div class="info-item full-width"><div class="info-label">이상형 상세</div><div class="info-value">${esc(m.idealType)}</div></div>
                     <div class="info-item full-width" style="background:#f8fafc;">
                         <div class="info-label">기피 종교 / 지인 차단</div>
                         <div class="info-value">${esc(m.avoidReligion)} <br> <span style="color:#ef4444;">${esc(m.avoidType)}</span></div>
+                    </div>
+                    <div class="info-item full-width" style="background:#f0f9ff; border-color:#e0f2fe;">
+                        <div class="info-label" style="color:#0ea5e9;">⚙️ 매칭 진행 옵션</div>
+                        <div class="info-value" style="color:#0369a1;">${m.continueMatchingYn === 'N' ? '❌ 매칭 성사 시 자동 중지' : '✅ 계속 매칭 받기 (추천)'}</div>
                     </div>
                 </div>
             `;
@@ -348,7 +351,6 @@
         function closeModal() { document.getElementById('commonModal').style.display = 'none'; }
         window.onclick = (e) => { if (e.target == document.getElementById('commonModal')) closeModal(); }
         
-        // 페이지 시작
         checkAuth();
     </script>
 </body>
