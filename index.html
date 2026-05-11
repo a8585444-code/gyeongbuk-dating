@@ -10,197 +10,432 @@
         body { font-family: 'Apple SD Gothic Neo', '맑은 고딕', sans-serif; background: #f5f0f4; color: #333; min-height: 100vh; }
         .top-banner { background: linear-gradient(135deg, #d63384, #9b2c6b); color: white; text-align: center; padding: 28px 20px 24px; }
         .top-banner h1 { font-size: 1.5rem; font-weight: 700; }
+        .top-banner p { margin-top: 6px; font-size: 0.88rem; opacity: 0.88; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px 14px 70px; }
         
         .intro-box { background: white; border-radius: 14px; padding: 20px; margin-bottom: 14px; font-size: 0.85rem; line-height: 1.75; color: #555; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .intro-box .orange { color: #e8820c; font-weight: 600; }
+        .intro-box .pink { color: #d63384; font-weight: 600; }
+        .intro-box h3 { font-size: 0.9rem; color: #333; margin: 12px 0 6px; }
+        .intro-box ul { padding-left: 16px; }
+        .intro-box li { margin-bottom: 4px; }
+        
         .section { background: white; border-radius: 14px; padding: 22px 20px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .section-title { font-size: 0.78rem; font-weight: 700; color: #d63384; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid #f0e0eb; }
         
         .field { margin-bottom: 20px; }
+        .field:last-child { margin-bottom: 0; }
         label.field-label { display: block; font-size: 0.9rem; font-weight: 700; color: #333; margin-bottom: 5px; }
+        .field-label .req { color: #d63384; margin-left: 2px; }
         .field-desc { font-size: 0.8rem; color: #888; margin-bottom: 8px; line-height: 1.5; }
-        .req { color: #d63384; margin-left: 2px; }
-
-        input[type="text"], select, textarea { width: 100%; padding: 11px 13px; border: 1.5px solid #e5d8e5; border-radius: 9px; font-size: 0.95rem; outline: none; background: #fdfcfd; }
+        .field-desc .pink { color: #d63384; }
+        .badge-public { display: inline-block; background: #e8f5e9; color: #2e7d32; font-size: 0.72rem; font-weight: 700; padding: 2px 9px; border-radius: 20px; border: 1px solid #a5d6a7; margin-bottom: 5px; }
+        
+        .private-box { background: #f7f7f7; border: 1.5px solid #ddd; border-left: 3px solid #aaa; border-radius: 8px; padding: 16px 16px 4px 16px; margin-top: 12px; }
+        .private-box-header { font-size: 0.75rem; font-weight: 700; color: #888; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #e5e5e5; }
+        
+        input[type="text"], select, textarea { width: 100%; padding: 11px 13px; border: 1.5px solid #e5d8e5; border-radius: 9px; font-size: 0.95rem; font-family: inherit; color: #333; background: #fdfcfd; outline: none; transition: border-color 0.2s; }
         input[type="text"]:focus, select:focus, textarea:focus { border-color: #d63384; background: #fff; }
+        textarea { resize: vertical; min-height: 76px; line-height: 1.55; }
+        
+        .radio-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .radio-row label { display: flex; align-items: center; gap: 6px; padding: 9px 16px; border: 1.5px solid #e5d8e5; border-radius: 22px; font-size: 0.88rem; font-weight: 500; cursor: pointer; background: #fdfcfd; transition: 0.2s; }
+        .radio-row input[type="radio"] { display: none; }
+        .radio-row label.selected { border-color: #d63384; background: #fdf0f6; color: #d63384; font-weight: 700; }
+        
+        .file-upload-area { border: 2px dashed #ddd; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; background: #fdfcfd; position: relative; transition: 0.2s; }
+        .file-upload-area:hover { border-color: #d63384; background: #fdf5f9; }
+        .file-upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .file-preview-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center; }
+        .file-preview-item { position: relative; width: 100px; height: 130px; }
+        .file-preview-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1.5px solid #eee; }
+        
+        .ar-tag { display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1.5px solid #d1d5db; background: #fff; color: #374151; transition: 0.2s; margin: 0 4px 6px 0; }
+        .ar-tag.selected { background: #7c3aed; color: #fff; border-color: #7c3aed; }
 
-        /* 📸 사진 업로드 스타일 */
-        .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .file-upload-area { border: 2px dashed #ddd; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; background: #fdfcfd; position: relative; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .file-upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-        .file-preview { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-top: 10px; display: none; border: 1.5px solid #eee; }
-
-        .submit-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #d63384, #9b2c6b); color: white; border: none; border-radius: 12px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .submit-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #d63384, #9b2c6b); color: white; border: none; border-radius: 12px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
         .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        .success-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-        .success-modal.show { display: flex; }
-        .modal-box { background: white; border-radius: 18px; padding: 30px; max-width: 360px; width: 100%; text-align: center; }
-        .kakao-btn { display: inline-block; background: #fee500; color: #333; text-decoration: none; border-radius: 10px; padding: 12px 20px; font-weight: 800; margin-top: 15px; font-size: 0.9rem; }
+        
+        /* 약관 모달 및 성공 모달 스타일 */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.show { display: flex; }
+        .modal-content { background: white; border-radius: 16px; width: 100%; max-width: 450px; max-height: 80vh; overflow-y: auto; padding: 24px; position: relative; }
+        .modal-header { font-size: 1.1rem; font-weight: 800; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .terms-text { font-size: 0.82rem; color: #666; line-height: 1.6; white-space: pre-wrap; }
+        .close-terms { display: block; width: 100%; padding: 12px; background: #f1f5f9; border: none; border-radius: 8px; margin-top: 20px; font-weight: 700; cursor: pointer; text-align: center; }
+        
+        .modal-success { background: white; border-radius: 18px; padding: 36px 26px; max-width: 360px; width: 100%; text-align: center; box-shadow: 0 10px 50px rgba(0,0,0,0.2); }
+        .modal-success .kakao-next { display: inline-block; background: #fee500; color: #333; text-decoration: none; border-radius: 10px; padding: 12px 20px; font-size: 0.9rem; font-weight: 800; margin-top: 16px; box-shadow: 0 4px 10px rgba(254,229,0,0.3); transition: 0.2s; }
+        .modal-success .kakao-next:hover { transform: translateY(-2px); }
+        
+        .char-counter { font-size: 0.78rem; color: #aaa; text-align: right; margin-top: 4px; }
     </style>
 </head>
 <body>
 
 <div class="top-banner">
     <h1>파인드썸 1:1 소개팅 지원서</h1>
+    <p>경상도(대구/경북/경남) 거주자 전용</p>
 </div>
 
 <div class="container">
     <div class="intro-box">
-        <p style="color:#e8820c; font-weight:600; font-size:0.85rem;">기재하는 모든 정보가 사실과 다른 경우, 법적 책임이 발생할 수 있습니다.</p>
+        <p class="orange">기재하는 모든 정보가 사실과 다른 경우, 법적 책임이 발생할 수 있습니다.</p>
+        <h3>지원 자격</h3>
+        <ul><li>경상도 거주자 (86년생 ~ 03년생) / 직장인, 전문직, 사업가</li></ul>
+        <h3>진행 절차 및 비용 (가입비 무료)</h3>
+        <ul><li>이상형 부합 시 프로필 교환 → 상호 수락 시 매칭비 결제</li>
+        <li class="pink">남성: 30,000원 / 여성: 15,000원</li></ul>
     </div>
 
     <form id="applyForm">
         <div class="section">
-            <div class="section-title">프로필 사진 첨부</div>
-            <div class="photo-grid">
-                <div class="field">
-                    <label class="field-label">잘 나온 사진 <span class="req">*</span></label>
-                    <div class="file-upload-area">
-                        <input type="file" id="photo1" accept="image/*" required>
-                        <div id="p1Text">📸 첨부하기</div>
-                        <img id="p1Preview" class="file-preview">
-                    </div>
-                </div>
-                <div class="field">
-                    <label class="field-label">전신 사진 <span class="req">*</span></label>
-                    <div class="file-upload-area">
-                        <input type="file" id="photoFull" accept="image/*" required>
-                        <div id="pfText">🧍 첨부하기</div>
-                        <img id="pfPreview" class="file-preview">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
             <div class="section-title">기본 정보</div>
             <div class="field">
                 <label class="field-label">이름 <span class="req">*</span></label>
-                <input type="text" name="name" required placeholder="성함을 입력해주세요">
+                <div class="field-desc">프로필 카드에는 기재되지 않습니다.</div>
+                <input type="text" name="name" required placeholder="실명을 입력해주세요" data-no-emoji>
+            </div>
+            <div class="field">
+                <label class="field-label">성별 <span class="req">*</span></label>
+                <div class="radio-row">
+                    <label onclick="selectRadio(this)"><input type="radio" name="gender" value="남" required> 남</label>
+                    <label onclick="selectRadio(this)"><input type="radio" name="gender" value="여"> 여</label>
+                </div>
             </div>
             <div class="field">
                 <label class="field-label">닉네임 <span class="req">*</span></label>
-                <input type="text" name="nickname" required placeholder="활동하실 닉네임">
+                <input type="text" name="nickname" required maxlength="7" placeholder="활동 닉네임 (최대 7자)" data-no-emoji>
             </div>
-            <div style="display:flex; gap:10px;">
-                <div class="field" style="flex:1;">
+            <div class="field" style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
                     <label class="field-label">출생년도 <span class="req">*</span></label>
                     <select name="birthYear" required>
                         <option value="">선택</option>
                         <script>for(let i=86; i<=103; i++){ let v=i>99?String(i-100).padStart(2,'0'):i; document.write(`<option value="${v}">${v}년생</option>`); }</script>
                     </select>
                 </div>
-                <div class="field" style="flex:2;">
+                <div style="flex: 2;">
                     <label class="field-label">거주 지역 <span class="req">*</span></label>
-                    <input type="text" name="region" required placeholder="예: 대구 수성구">
+                    <input type="text" name="region" required placeholder="예: 대구 수성구" data-no-emoji>
                 </div>
             </div>
             <div class="field">
-                <label class="field-label">연락처 <span class="req">*</span></label>
+                <label class="field-label">휴대폰 번호 <span class="req">*</span></label>
                 <input type="text" name="phoneNumber" required placeholder="숫자만 입력" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
             </div>
         </div>
 
         <div class="section">
-            <div class="section-title">상세 프로필</div>
+            <div class="section-title">프로필 사진</div>
             <div class="field">
-                <label class="field-label">직업 <span class="req">*</span></label>
-                <input type="text" name="job" required placeholder="예: 공무원, 간호사, 개인사업">
-            </div>
-            <div style="display:flex; gap:10px;">
-                <div class="field" style="flex:1;"><label class="field-label">키 <span class="req">*</span></label><input type="text" name="height" required placeholder="cm"></div>
-                <div class="field" style="flex:1;"><label class="field-label">MBTI <span class="req">*</span></label><input type="text" name="mbti" required placeholder="MBTI"></div>
-                <div class="field" style="flex:1;"><label class="field-label">종교 <span class="req">*</span></label>
-                    <select name="religion" required><option value="무교">무교</option><option value="기독교">기독교</option><option value="불교">불교</option><option value="천주교">천주교</option></select>
+                <label class="field-label">가장 잘 나온 사진 1장 <span class="req">*</span></label>
+                <div class="field-desc">최대 5MB. 얼굴이 잘 보이는 사진으로 올려주세요.</div>
+                <div class="file-upload-area" id="photo1UploadArea">
+                    <input type="file" id="photo1Input" accept="image/*" required>
+                    <div style="font-size: 2rem;">📸</div>
+                    <p>클릭하여 사진 첨부</p>
                 </div>
-            </div>
-            <div class="field">
-                <label class="field-label">성격 및 취미 <span class="req">*</span></label>
-                <textarea name="personality" required placeholder="본인의 매력을 적어주세요"></textarea>
-            </div>
-            <div class="field">
-                <label class="field-label">한 줄 소개 <span class="req">*</span></label>
-                <input type="text" name="selfIntroduction" required placeholder="나를 표현하는 한 줄">
+                <div class="file-preview-list" id="photo1PreviewList"></div>
             </div>
         </div>
 
         <div class="section">
-            <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer;">
-                <input type="checkbox" required style="width:18px; height:18px;">
-                <span>개인정보 처리방침 및 이용약관에 동의합니다.</span>
-            </label>
+            <div class="section-title">나의 프로필 (공개용)</div>
+            <div class="field">
+                <label class="field-label">직업 <span class="req">*</span></label>
+                <div class="field-desc"><span class="badge-public">💬 이성에게 공개됩니다</span> 구체적으로 작성해주세요.</div>
+                <input type="text" name="job" required placeholder="예: 7급 공무원, 대학병원 간호사" data-counter="50">
+            </div>
+            <div class="field" style="display:flex; gap:10px;">
+                <div style="flex:1;"><label class="field-label">키 <span class="req">*</span></label><input type="text" name="height" required placeholder="cm" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+                <div style="flex:1.5;"><label class="field-label">MBTI <span class="req">*</span></label><input type="text" name="mbti" required placeholder="예: ENFP" style="text-transform:uppercase"></div>
+            </div>
+            <div class="field">
+                <label class="field-label">체형 / 성격 / 취미 <span class="req">*</span></label>
+                <textarea name="personality" required placeholder="본인의 특징을 매력적으로 어필해주세요." data-counter="100"></textarea>
+            </div>
+            <div class="field" style="display:flex; gap:10px;">
+                <div style="flex:1;"><label class="field-label">음주 <span class="req">*</span></label><input type="text" name="drinking" required placeholder="주량"></div>
+                <div style="flex:1;"><label class="field-label">흡연 <span class="req">*</span></label>
+                    <select name="smoking" required><option value="비흡연">비흡연</option><option value="전자담배">전자담배</option><option value="흡연">흡연</option></select>
+                </div>
+                <div style="flex:1;"><label class="field-label">종교 <span class="req">*</span></label>
+                    <select name="religion" required><option value="무교">무교</option><option value="기독교">기독교</option><option value="불교">불교</option><option value="천주교">천주교</option></select>
+                </div>
+            </div>
+            <div class="field">
+                <label class="field-label">나를 어필하는 한 줄 소개 <span class="req">*</span></label>
+                <input type="text" name="selfIntroduction" required placeholder="장점을 짧고 굵게 적어주세요">
+            </div>
+        </div>
+
+        <div class="section private-box">
+            <div class="private-box-header">🔒 운영진 매칭 참고자료 · 이성에게 철저히 비공개됩니다</div>
+            <div class="field" style="background:#fff; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
+                <label class="field-label">현재 재직중인 직장/사업체명 <span class="req">*</span></label>
+                <div class="field-desc">사내 매칭 방지용. <span class="pink">절대 공개되지 않습니다.</span></div>
+                <input type="text" name="jobOrganizationName" required placeholder="정확한 회사/기관명을 기재해주세요">
+                <div style="margin-top:15px;">
+                    <label class="field-label">재직증명서 / 사업자등록증 첨부 <span class="req">*</span></label>
+                    <div class="file-upload-area" id="proofUploadArea" style="padding:15px;">
+                        <input type="file" id="certInput" accept="image/*" required>
+                        <div style="font-size: 1.5rem;">📄</div>
+                        <p>클릭하여 비공개 인증 서류 첨부</p>
+                    </div>
+                    <div class="file-preview-list" id="certPreviewList"></div>
+                </div>
+            </div>
+            <div class="field">
+                <label class="field-label">가장 중요한 이성 조건 <span class="req">*</span></label>
+                <select name="importantCriteria" required>
+                    <option value="">선택</option><option value="외모/체형">외모/체형</option><option value="직업/능력">직업/능력</option><option value="성격/가치관">성격/가치관</option>
+                </select>
+            </div>
+            <div class="field">
+                <label class="field-label">이상형 상세 <span class="req">*</span></label>
+                <textarea name="idealType" required placeholder="원하는 외모, 성격 등을 자세히 적어주세요."></textarea>
+            </div>
+            <div class="field" style="display:flex; gap:10px;">
+                <div style="flex:1;">
+                    <label class="field-label">선호 최소 나이</label>
+                    <select id="ageMinSel" required onchange="checkAgeOrder()"><option value="">선택</option></select>
+                </div>
+                <div style="flex:1;">
+                    <label class="field-label">선호 최대 나이</label>
+                    <select id="ageMaxSel" required onchange="checkAgeOrder()"><option value="">선택</option></select>
+                </div>
+            </div>
+            <input type="hidden" name="preferredAgeRange" id="preferredAgeRangeHidden">
+
+            <div class="field" style="margin-top:20px; border-top:1px dashed #ccc; padding-top:15px;">
+                <label class="field-label">특정 지인 차단 <span style="font-size:12px;color:#888;">(선택)</span></label>
+                <div id="excludePersonList">
+                    <div class="exclude-row" style="display:flex; gap:5px; margin-bottom:5px;">
+                        <select class="ex-birth" style="flex:1;"><option value="">년생</option></select>
+                        <input type="text" class="ex-name" placeholder="이름" style="flex:1;">
+                        <button type="button" onclick="addExcludeRow()" style="padding:0 10px; background:#7c3aed; color:#fff; border:none; border-radius:5px;">+</button>
+                    </div>
+                </div>
+                <input type="hidden" name="avoidType" id="avoidTypeHidden">
+            </div>
+
+            <div class="field" style="margin-top:15px;">
+                <label class="field-label">피하고 싶은 종교</label>
+                <div id="avoidReligionTags">
+                    <span class="ar-tag" onclick="this.classList.toggle('selected')">기독교 제외</span>
+                    <span class="ar-tag" onclick="this.classList.toggle('selected')">불교 제외</span>
+                    <span class="ar-tag" onclick="this.classList.toggle('selected')">무교만 선호</span>
+                </div>
+                <input type="hidden" name="avoidReligion" id="avoidReligionHidden">
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">매칭 진행 옵션</div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <label style="padding:15px; border:2px solid #e74c8b; border-radius:10px; background:#fff0f5; cursor:pointer;">
+                    <input type="radio" name="continueMatchingYn" value="Y" checked style="accent-color:#e74c8b;"> 
+                    <strong>계속 매칭 받기 (추천)</strong>
+                </label>
+                <label style="padding:15px; border:2px solid #ddd; border-radius:10px; cursor:pointer;">
+                    <input type="radio" name="continueMatchingYn" value="N" style="accent-color:#e74c8b;"> 
+                    <strong>매칭 성사 시 자동 중지</strong>
+                </label>
+            </div>
+        </div>
+
+        <div class="section">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 5px;">
+                <input type="checkbox" id="termsCheck" required style="width: 20px; height: 20px; accent-color: #d63384;">
+                <label for="termsCheck" style="font-size: 0.9rem; font-weight: 600; color: #444;">
+                    <span style="color: #d63384; text-decoration: underline; cursor: pointer;" onclick="openTerms(); return false;">개인정보 처리방침 및 이용 약관</span>에 동의합니다. <span class="req">*</span>
+                </label>
+            </div>
         </div>
 
         <button type="submit" class="submit-btn" id="submitBtn">소개팅 지원서 제출하기</button>
     </form>
 </div>
 
-<div class="success-modal" id="successModal">
-    <div class="modal-box">
-        <div style="font-size:3rem;">🎉</div>
-        <h2 style="margin-top:10px;">제출 완료!</h2>
-        <p style="font-size:0.9rem; color:#666; margin-top:5px;">카카오톡 채널로<br><strong>'성함/닉네임'</strong>을 보내주세요!</p>
-        <a href="http://pf.kakao.com/_xxxxxx/chat" target="_blank" class="kakao-btn">카톡 채널 바로가기 💬</a>
-        <button onclick="location.reload()" style="margin-top:20px; border:none; background:none; color:#aaa; cursor:pointer;">창 닫기</button>
+<div class="modal-overlay" id="termsModal">
+    <div class="modal-content">
+        <div class="modal-header">파인드썸 서비스 이용 약관</div>
+        <div class="terms-text">
+[개인정보 수집 및 이용 안내]
+1. 수집 항목: 이름, 성별, 나이, 지역, 연락처, 직업, 사진, 인증 서류 등
+2. 수집 목적: 1:1 소개팅 매칭 서비스 제공 및 본인 확인
+3. 보유 및 파기: 매칭 서비스 종료 또는 회원 요청 시 즉시 파기
+
+[이용 약관]
+- 본 서비스는 신원 인증을 거친 회원만 이용 가능합니다.
+- 허위 사실 기재 시 서비스 이용이 제한될 수 있습니다.
+- 매칭 수락 후 노쇼 또는 예절 위반 시 블랙리스트 처리됩니다.
+            
+[환불 규정]
+- 프로필 제공 후에는 서비스 특성상 환불이 불가합니다.
+        </div>
+        <button class="close-terms" onclick="closeTerms()">내용을 확인했습니다</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="successModal">
+    <div class="modal-success">
+        <div style="font-size: 3rem; margin-bottom:10px;">🎉</div>
+        <h2 style="margin-bottom:10px;">지원서 제출 완료!</h2>
+        <p style="color:#666; font-size:0.9rem; line-height:1.5;">지원서가 데이터베이스에 안전하게 암호화되어 저장되었습니다.<br>아래 버튼을 눌러 카카오톡 채널로 <strong>'본인 년생_이름_닉네임'</strong>을 꼭 보내주세요!</p>
+        
+        <a href="http://pf.kakao.com/_xxxxxx/chat" target="_blank" class="kakao-next">파인드썸 카카오톡 바로가기 💬</a>
+        
+        <div style="margin-top: 25px;">
+            <button onclick="location.reload()" style="padding: 10px 25px; background: #e2e8f0; color: #475569; border: none; border-radius: 30px; font-weight: 700; cursor:pointer;">창 닫기</button>
+        </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+    // 🚨 수파베이스 URL과 KEY 
     const SUPABASE_URL = 'https://teeutkxfzxdsaqdvwrwt.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 사진 미리보기 로직
-    function setupPreview(inputId, imgId, textId) {
+    // 약관 모달 제어
+    function openTerms() { document.getElementById('termsModal').classList.add('show'); }
+    function closeTerms() { document.getElementById('termsModal').classList.remove('show'); }
+
+    function selectRadio(labelEl) {
+        labelEl.parentNode.querySelectorAll('label').forEach(l => l.classList.remove('selected'));
+        labelEl.classList.add('selected');
+        labelEl.querySelector('input').checked = true;
+    }
+
+    const emojiRegex = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu;
+    document.querySelectorAll('[data-no-emoji]').forEach(el => {
+        el.addEventListener('input', function() { if (emojiRegex.test(this.value)) { this.value = this.value.replace(emojiRegex, ''); alert('이모티콘은 입력 불가합니다.'); }});
+    });
+    
+    document.querySelectorAll('[data-counter]').forEach(el => {
+        const max = el.getAttribute('data-counter');
+        const counter = document.createElement('div'); counter.className = 'char-counter'; counter.textContent = `0 / ${max}자`;
+        el.parentNode.insertBefore(counter, el.nextSibling);
+        el.addEventListener('input', () => { counter.textContent = `${el.value.length} / ${max}자`; });
+    });
+
+    (function buildAgeSelects() {
+        let opts = '<option value="">선택</option>';
+        for(let i=86; i<=103; i++){ let v=i>99?String(i-100).padStart(2,'0'):i; opts += `<option value="${v}">${v}년생</option>`; }
+        document.getElementById('ageMinSel').innerHTML = opts; document.getElementById('ageMaxSel').innerHTML = opts;
+        document.querySelectorAll('.ex-birth').forEach(el => el.innerHTML = opts);
+    })();
+
+    function checkAgeOrder() {
+        const minVal = document.getElementById('ageMinSel').value;
+        const maxVal = document.getElementById('ageMaxSel').value;
+        if(minVal && maxVal) {
+            let minNum = parseInt(minVal); let maxNum = parseInt(maxVal);
+            if(minNum < 50) minNum += 100; if(maxNum < 50) maxNum += 100;
+            if(minNum > maxNum) {
+                alert("선호 최대 나이가 선호 최소 나이보다 어릴 수 없습니다.");
+                document.getElementById('ageMaxSel').value = '';
+            }
+        }
+    }
+
+    function addExcludeRow() {
+        const list = document.getElementById('excludePersonList');
+        const row = document.createElement('div'); row.className = 'exclude-row'; row.style.cssText = 'display:flex; gap:5px; margin-bottom:5px;';
+        row.innerHTML = `<select class="ex-birth" style="flex:1;">${document.getElementById('ageMinSel').innerHTML}</select>
+                         <input type="text" class="ex-name" placeholder="이름" style="flex:1;">
+                         <button type="button" onclick="this.parentElement.remove()" style="padding:0 10px; background:#ef4444; color:#fff; border:none; border-radius:5px;">-</button>`;
+        list.appendChild(row);
+    }
+
+    function setupPreview(inputId, listId) {
         document.getElementById(inputId).addEventListener('change', function() {
             const file = this.files[0];
             if(file) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    document.getElementById(imgId).src = e.target.result;
-                    document.getElementById(imgId).style.display = 'block';
-                    document.getElementById(textId).style.display = 'none';
+                if(file.size > 5 * 1024 * 1024) {
+                    alert('첨부하신 사진의 용량이 너무 큽니다. (최대 5MB)\n용량을 줄이거나 다른 사진을 선택해주세요.');
+                    this.value = ''; return;
                 }
-                reader.readAsDataURL(file);
+                const list = document.getElementById(listId); list.innerHTML = '';
+                const img = document.createElement('img'); img.src = URL.createObjectURL(file);
+                const item = document.createElement('div'); item.className = 'file-preview-item'; item.appendChild(img);
+                list.appendChild(item);
             }
         });
     }
-    setupPreview('photo1', 'p1Preview', 'p1Text');
-    setupPreview('photoFull', 'pfPreview', 'pfText');
+    setupPreview('photo1Input', 'photo1PreviewList');
+    setupPreview('certInput', 'certPreviewList');
 
     document.getElementById('applyForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('submitBtn');
-        btn.disabled = true; btn.innerText = '제출 중... ⏳';
+        const submitBtn = document.getElementById('submitBtn'); submitBtn.disabled = true; submitBtn.textContent = '안전하게 데이터 암호화 전송 중... ⏳';
 
         try {
-            async function uploadFile(elementId, prefix) {
-                const file = document.getElementById(elementId).files[0];
-                if(!file) return '';
-                const fileName = `${prefix}_${Date.now()}.${file.name.split('.').pop()}`;
-                await _supabase.storage.from('profile_photos').upload(fileName, file);
-                return _supabase.storage.from('profile_photos').getPublicUrl(fileName).data.publicUrl;
+            const avoidTags = [...document.querySelectorAll('#avoidReligionTags .ar-tag.selected')].map(t => t.innerText).join(', ');
+            document.getElementById('avoidReligionHidden').value = avoidTags;
+            
+            const minVal = document.getElementById('ageMinSel').value;
+            const maxVal = document.getElementById('ageMaxSel').value;
+            document.getElementById('preferredAgeRangeHidden').value = minVal + '년생 ~ ' + maxVal + '년생';
+            
+            let minYear = null;
+            let maxYear = null;
+            
+            if(minVal) {
+                let minNum = parseInt(minVal);
+                minYear = minNum < 50 ? 2000 + minNum : 1900 + minNum;
+            }
+            if(maxVal) {
+                let maxNum = parseInt(maxVal);
+                maxYear = maxNum < 50 ? 2000 + maxNum : 1900 + maxNum;
             }
 
-            const url1 = await uploadFile('photo1', 'best');
-            const urlFull = await uploadFile('photoFull', 'full');
+            let avoidPersons = [];
+            document.querySelectorAll('.exclude-row').forEach(row => {
+                const b = row.querySelector('.ex-birth').value; const n = row.querySelector('.ex-name').value;
+                if(b && n) avoidPersons.push(`${b}년생 ${n}`);
+            });
+            document.getElementById('avoidTypeHidden').value = avoidPersons.length > 0 ? '차단: ' + avoidPersons.join(', ') : '';
 
-            const formData = new FormData(e.target);
+            async function uploadOptimizedFile(fileElementId, prefix, bucketName, isPrivate) {
+                const file = document.getElementById(fileElementId).files[0];
+                if (!file) return '';
+                const randomStr = Math.random().toString(36).substring(2, 10);
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${prefix}_${Date.now()}_${randomStr}.${fileExt}`;
+
+                await _supabase.storage.from(bucketName).upload(fileName, file);
+
+                if(isPrivate) {
+                    return fileName; 
+                } else {
+                    return _supabase.storage.from(bucketName).getPublicUrl(fileName).data.publicUrl; 
+                }
+            }
+
+            const photo1 = await uploadOptimizedFile('photo1Input', 'p1', 'profile_photos', false);
+            const certPath = await uploadOptimizedFile('certInput', 'cert', 'cert_documents', true);
+            
+            const formData = new FormData(document.getElementById('applyForm'));
             const finalData = Object.fromEntries(formData.entries());
-            finalData.photo_url = url1;
-            finalData.photo_url_full = urlFull;
-            finalData.status = '대기';
+            finalData.photo_url = photo1; 
+            finalData.cert_url = certPath; 
+            finalData.status = "대기";
+            
+            finalData.min_preferred_year = minYear;
+            finalData.max_preferred_year = maxYear;
 
-            const { error } = await _supabase.from('members').insert([finalData]);
-            if(error) throw error;
+            const { error: dbError } = await _supabase.from('members').insert([finalData]);
+            if (dbError) throw dbError;
 
             document.getElementById('successModal').classList.add('show');
-        } catch(err) {
-            alert('제출 실패: ' + err.message);
+        } catch (error) {
+            alert('오류 발생: ' + error.message); console.error(error);
         } finally {
-            btn.disabled = false; btn.innerText = '소개팅 지원서 제출하기';
+            submitBtn.disabled = false; submitBtn.textContent = '소개팅 지원서 제출하기';
         }
     });
 </script>
