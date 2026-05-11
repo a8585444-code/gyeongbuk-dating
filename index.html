@@ -1,521 +1,142 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="/favicon.png">
-    <meta name="viewport" content="width=device-width, maximum-scale=1, user-scalable=yes">
-    <title>당신의 계절 - 1:1 소개팅 지원서</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Apple SD Gothic Neo', '맑은 고딕', sans-serif; background: #fdf6f9; color: #333; min-height: 100vh; }
-        .top-banner { background: linear-gradient(135deg, #f472b6, #db2777); color: white; text-align: center; padding: 35px 20px 30px; }
-        .top-banner h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; }
-        .top-banner p { margin-top: 8px; font-size: 0.95rem; opacity: 0.9; font-weight: 600; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px 14px 70px; }
-        
-        .intro-box { background: white; border-radius: 18px; padding: 25px; margin-bottom: 20px; font-size: 0.9rem; line-height: 1.8; color: #444; box-shadow: 0 4px 15px rgba(219, 39, 119, 0.08); border: 1px solid #fce4ec; }
-        .intro-box h3 { font-size: 1rem; color: #db2777; margin: 20px 0 10px; border-left: 4px solid #db2777; padding-left: 10px; }
-        .intro-box ul { list-style: none; padding-left: 0; }
-        .intro-box li { margin-bottom: 6px; position: relative; padding-left: 18px; }
-        .intro-box li::before { content: '✨'; position: absolute; left: 0; font-size: 0.8rem; }
-        .highlight { color: #db2777; font-weight: 800; }
-        .warning-text { background: #fff5f5; color: #e53e3e; padding: 12px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; margin-top: 15px; border: 1px dashed #feb2b2; }
+🚨 1. (논리 오류) "계속 매칭 받기" 옵션이 작동하지 않음
+문제 상황: 유저가 지원서에서 계속 매칭 받기(Y) 옵션을 선택했습니다. 관리자가 이 유저를 누군가와 매칭하면 상태가 매칭중으로 정상 변경됩니다.
 
-        .section { background: white; border-radius: 16px; padding: 25px 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
-        .section-title { font-size: 0.85rem; font-weight: 800; color: #db2777; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #fce4ec; display: flex; align-items: center; gap: 6px; }
-        
-        .field { margin-bottom: 22px; }
-        .field:last-child { margin-bottom: 0; }
-        label.field-label { display: block; font-size: 0.92rem; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
-        .field-desc { font-size: 0.82rem; color: #718096; margin-bottom: 10px; line-height: 1.5; }
-        .req { color: #db2777; margin-left: 3px; }
-        .badge-public { display: inline-block; background: #e8f5e9; color: #2e7d32; font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; border: 1px solid #a5d6a7; margin-bottom: 8px; }
+모순점: member-matching.html의 추천 로직(showCandidates)에서는 무조건 status가 '정회원'인 사람만 불러옵니다. 즉, "계속 매칭 받기"를 선택했음에도 불구하고 상태가 '매칭중'이 되었기 때문에 다른 사람의 추천 후보 목록에서 영원히 사라져 버리는 모순이 발생합니다.
 
-        input[type="text"], select, textarea { width: 100%; padding: 12px 15px; border: 1.5px solid #edf2f7; border-radius: 10px; font-size: 0.95rem; background: #fdfcfd; outline: none; transition: 0.2s; font-family: inherit; }
-        input[type="text"]:focus, select:focus, textarea:focus { border-color: #f472b6; background: #fff; box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.1); }
-        textarea { resize: vertical; min-height: 80px; line-height: 1.55; }
-        
-        .radio-row { display: flex; flex-wrap: wrap; gap: 10px; }
-        .radio-row label { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: 1.5px solid #edf2f7; border-radius: 25px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: 0.2s; background: #fff; }
-        .radio-row input[type="radio"] { display: none; }
-        .radio-row label.selected { border-color: #db2777; background: #fff0f6; color: #db2777; }
+해결 방안: 매칭 후보를 불러올 때, '정회원'이거나 또는(OR) '매칭중'이면서 continueMatchingYn이 'Y'인 사람까지 포함해야 합니다.
 
-        .file-upload-area { border: 2px dashed #e2e8f0; border-radius: 14px; padding: 25px; text-align: center; cursor: pointer; transition: 0.2s; background: #f8fafc; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px; }
-        .file-upload-area:hover { border-color: #f472b6; background: #fff5f9; }
-        .file-upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-        .file-preview-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center; }
-        .file-preview-item { position: relative; width: 110px; height: 140px; }
-        .file-preview-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; border: 1.5px solid #eee; }
+JavaScript
+// 📍 member-matching.html 의 showCandidates 함수 내 쿼리 수정
 
-        .ar-tag { display: inline-block; padding: 8px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1.5px solid #d1d5db; background: #fff; color: #374151; transition: 0.2s; margin: 0 4px 6px 0; }
-        .ar-tag.selected { background: #db2777; color: #fff; border-color: #db2777; }
+// ❌ 기존 코드
+// .eq('status', '정회원')
 
-        .private-box { background: #f7f7f7; border: 1px solid #ddd; border-left: 4px solid #a0aec0; border-radius: 10px; padding: 20px; margin-top: 12px; }
-        .private-box-header { font-size: 0.8rem; font-weight: 800; color: #718096; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; }
+// ✅ 수정된 코드 (정회원이거나, 매칭중인데 계속받기 옵션이 켜진 사람)
+const { data: rawCandidates, error } = await _supabase.from('members')
+    .select('*')
+    .or('status.eq.정회원,and(status.eq.매칭중,continueMatchingYn.eq.Y)')
+    .ilike('gender', `%${oppGender}%`);
+👻 2. (운영 마비) .limit(200)의 함정: 과거 회원 증발 사태
+문제 상황: member-matching.html에서 브라우저 과부하를 막기 위해 .limit(200)을 아주 훌륭하게 적용하셨습니다. 하지만 서비스가 흥행하여 타겟 성별의 회원이 250명이 되면, 과거에 가입한 50명은 리스트에 아예 나타나지 않아 영원히 방치됩니다.
 
-        .submit-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #f472b6, #db2777); color: white; border: none; border-radius: 14px; font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 15px; box-shadow: 0 10px 20px rgba(219, 39, 119, 0.2); }
-        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(219, 39, 119, 0.3); }
+해결 방안: 당장 복잡한 페이지네이션을 구현하기보다는, 상단에 이름이나 닉네임으로 숨겨진 회원을 바로 찾을 수 있는 '검색 기능'을 추가하는 것이 관리자 입장에서 가장 효율적입니다.
 
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-        .modal-overlay.show { display: flex; }
-        .modal-content { background: white; border-radius: 20px; width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto; padding: 30px; position: relative; }
-        .modal-header { font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; color: #1a1a2e; border-bottom: 1px solid #eee; padding-bottom: 12px; }
-        .terms-text { font-size: 0.88rem; color: #4a5568; line-height: 1.7; text-align: left; word-break: keep-all; }
-        .terms-text p { margin-bottom: 15px; }
-        .terms-text strong { color: #db2777; }
-        .close-terms { display: block; width: 100%; padding: 15px; background: #db2777; color: white; border: none; border-radius: 10px; margin-top: 25px; font-size: 1rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(219, 39, 119, 0.3); transition: 0.2s; }
-        
-        .modal-success { background: white; border-radius: 18px; padding: 36px 26px; max-width: 360px; width: 100%; text-align: center; box-shadow: 0 10px 50px rgba(0,0,0,0.2); }
-        .modal-success .kakao-next { display: inline-block; background: #fee500; color: #333; text-decoration: none; border-radius: 10px; padding: 12px 20px; font-size: 0.9rem; font-weight: 800; margin-top: 16px; box-shadow: 0 4px 10px rgba(254,229,0,0.3); transition: 0.2s; }
-        
-        .char-counter { font-size: 0.78rem; color: #aaa; text-align: right; margin-top: 4px; }
-    </style>
-</head>
-<body>
-
-<div class="top-banner">
-    <h1>당신의 계절 1:1 소개팅</h1>
-    <p>대구/경북 거주자 전용</p>
+HTML
+<div style="margin-bottom: 20px; display: flex; gap: 10px;">
+    <input type="text" id="searchInput" placeholder="이름/닉네임 검색" style="padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; width: 250px; outline: none;">
+    <button class="btn btn-match" style="padding: 10px 20px;" onclick="searchMembers()">검색</button>
 </div>
-
-<div class="container">
-    <div class="intro-box">
-        <p style="margin-bottom: 15px;">당신의 계절에서 소중한 인연을 만나기 위해 작성해 주세요!<br>
-        소개팅 어플은 신원이 보장되지 않아 신뢰가 가지 않을 수 있으실 텐데요!<br>
-        저희 <strong>당신의 계절</strong>은 철저히 신원 확인하여 진행하고 있어서 걱정 안 하셔도 됩니다😉</p>
-        
-        <h3 style="color:#d63384;">[신청 자격]</h3>
-        <p style="margin-bottom: 10px; font-weight: 600;">외적인 부분을 포함해 [체형 관리 등 기본적인 자기관리가 되어 있는 분] 신청해주세요!</p>
-        
-        <p class="pink" style="margin-bottom: 5px;">✅ 남성 회원</p>
-        <ul>
-            <li>키 173cm 이상 (-172cm 미만이신 분들은 가입 불가)</li>
-            <li>단정한 외모와 자기관리를 하시는 분</li>
-            <li>1986년생 ~ 2005년생 직장인 · 자영업 · 사업가</li>
-        </ul>
-        
-        <p class="pink" style="margin-bottom: 5px; margin-top: 10px;">✅ 여성 회원</p>
-        <ul>
-            <li>키 153cm 이상</li>
-            <li>단정한 외모와 자기관리를 하시는 분</li>
-            <li>1986년생 ~ 2005년생 직장인 · 자영업 · 사업가</li>
-        </ul>
-
-        <h3 style="color:#d63384; margin-top: 15px;">[진행 비용]</h3>
-        <ul>
-            <li>남성회원 -> 30,000원 / 여성회원 -> 15,000원</li>
-            <li>상호 매칭되었을 때 결제하시면 됩니다🫶</li>
-        </ul>
-
-        <div class="warning-text">
-            🚨 <strong>주의사항</strong><br>
-            - 📷 사진은 악용 우려로 인해 절대 공개되지 않으며, 매칭 후에도 제공되지 않습니다!<br>
-            - 프로필은 매칭 기준의 중요한 자료이며 작성 완료 후 수정이 어렵습니다.<br>
-            - 비매너적인 언행 및 행동 시 영구 참여 제한됩니다.<br>
-            - 모든 정보가 사실과 다를 경우 형법상 사기죄 등 관련 법령에 따라 민·형사상 책임이 발생할 수 있습니다.
-        </div>
-    </div>
-
-    <form id="applyForm">
-        <div class="section">
-            <div class="section-title">👤 기본 정보</div>
-            <div class="field">
-                <label class="field-label">이름 <span class="req">*</span></label>
-                <div class="field-desc">프로필 카드에는 기재되지 않습니다.</div>
-                <input type="text" name="name" required placeholder="실명을 입력해주세요" data-no-emoji>
-            </div>
-            <div class="field">
-                <label class="field-label">성별 <span class="req">*</span></label>
-                <div class="radio-row">
-                    <label onclick="selectRadio(this)"><input type="radio" name="gender" value="남" required> 남</label>
-                    <label onclick="selectRadio(this)"><input type="radio" name="gender" value="여"> 여</label>
-                </div>
-            </div>
-            <div class="field">
-                <label class="field-label">닉네임 <span class="req">*</span></label>
-                <input type="text" name="nickname" required maxlength="7" placeholder="활동 닉네임 (최대 7자)" data-no-emoji>
-            </div>
-            <div class="field" style="display: flex; gap: 10px;">
-                <div style="flex: 1;">
-                    <label class="field-label">출생년도 <span class="req">*</span></label>
-                    <select name="birthYear" required>
-                        <option value="">선택</option>
-                        <script>for(let i=86; i<=105; i++){ let v=i>99?String(i-100).padStart(2,'0'):i; document.write(`<option value="${v}">${v}년생</option>`); }</script>
-                    </select>
-                </div>
-                <div style="flex: 2;">
-                    <label class="field-label">거주지 (대구/경북) <span class="req">*</span></label>
-                    <input type="text" name="region" required placeholder="예: 대구 수성구" data-no-emoji>
-                </div>
-            </div>
-            <div class="field">
-                <label class="field-label">휴대폰 번호 <span class="req">*</span></label>
-                <input type="text" name="phoneNumber" required placeholder="숫자만 입력" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">📷 프로필 사진 첨부</div>
-            <div class="field-desc" style="margin-bottom: 15px;">⚠️ 사진은 상대방에게 절대 공개되지 않으며 운영진 확인용입니다.</div>
-            
-            <div class="field" style="display:flex; gap:15px;">
-                <div style="flex:1;">
-                    <label class="field-label">잘 나온 사진 <span class="req">*</span></label>
-                    <div class="file-upload-area" id="photo1UploadArea">
-                        <input type="file" id="photo1Input" accept="image/*" required>
-                        <div style="font-size: 1.8rem; margin-bottom:5px;">📸</div>
-                        <p style="font-size:0.75rem; color:#888;">클릭하여 첨부</p>
-                    </div>
-                    <div class="file-preview-list" id="photo1PreviewList"></div>
-                </div>
-                <div style="flex:1;">
-                    <label class="field-label">전신 사진 <span class="req">*</span></label>
-                    <div class="file-upload-area" id="photoFullUploadArea">
-                        <input type="file" id="photoFullInput" accept="image/*" required>
-                        <div style="font-size: 1.8rem; margin-bottom:5px;">🧍</div>
-                        <p style="font-size:0.75rem; color:#888;">클릭하여 첨부</p>
-                    </div>
-                    <div class="file-preview-list" id="photoFullPreviewList"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">📝 나의 프로필 (공개용)</div>
-            <div class="field-desc" style="margin-bottom: 20px;"><span class="badge-public">💬 아래 작성되는 모든 내용은 이성에게 전달되는 프로필 카드에 그대로 들어갑니다.</span></div>
-            
-            <div class="field">
-                <label class="field-label">직업 <span class="req">*</span></label>
-                <input type="text" name="job" required placeholder="예: 7급 공무원, 대학병원 간호사, UX/UI 디자이너">
-            </div>
-            <div class="field">
-                <label class="field-label">최종학력 <span class="req">*</span></label>
-                <input type="text" name="finalEducation" required placeholder="예: 4년제 대졸, 대학원 석사">
-            </div>
-            <div class="field" style="display:flex; gap:10px;">
-                <div style="flex:1;"><label class="field-label">키 <span class="req">*</span></label><input type="text" name="height" required placeholder="cm" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
-                <div style="flex:1.5;"><label class="field-label">MBTI <span class="req">*</span></label><input type="text" name="mbti" required placeholder="예: ENFP" style="text-transform:uppercase"></div>
-            </div>
-            <div class="field" style="display:flex; gap:10px;">
-                <div style="flex:1;"><label class="field-label">음주 <span class="req">*</span></label><input type="text" name="drinking" required placeholder="예: 소주 1병, 술X"></div>
-                <div style="flex:1;"><label class="field-label">흡연 <span class="req">*</span></label>
-                    <select name="smoking" required><option value="비흡연">비흡연</option><option value="전자담배">전자담배</option><option value="흡연">흡연</option></select>
-                </div>
-                <div style="flex:1;"><label class="field-label">종교 <span class="req">*</span></label>
-                    <select name="religion" required><option value="무교">무교</option><option value="기독교">기독교</option><option value="불교">불교</option><option value="천주교">천주교</option></select>
-                </div>
-            </div>
-            
-            <div class="field">
-                <label class="field-label">특징 (체형 및 외모) <span class="req">*</span></label>
-                <input type="text" name="bodyType" required placeholder="예: 무쌍, 슬림탄탄, 키큼, 어깨넓음 등">
-            </div>
-            <div class="field">
-                <label class="field-label">취미 <span class="req">*</span></label>
-                <input type="text" name="hobbies" required placeholder="예: 헬스, 러닝, 커피맛집투어, 전시관람">
-            </div>
-            <div class="field">
-                <label class="field-label">성격 키워드 <span class="req">*</span></label>
-                <input type="text" name="personalityKeywords" required placeholder="예: 다정함, 밝고 긍정적인, 침착한">
-            </div>
-            <div class="field">
-                <label class="field-label">주변에서 저를 <span class="req">*</span></label>
-                <input type="text" name="reputation" required placeholder="예: 여우상, 고양이상, 리액션 봇">
-            </div>
-            <div class="field">
-                <label class="field-label">저는요 (상세 자기소개) <span class="req">*</span></label>
-                <textarea name="selfIntroduction" required placeholder="본인의 평소 성격, 연애 스타일, 취향 등을 자세하고 정성스럽게 적어주세요!" data-counter="150"></textarea>
-            </div>
-            <div class="field">
-                <label class="field-label">나만의 매력어필 한 줄 <span class="req">*</span></label>
-                <input type="text" name="appeal" required placeholder="예: 리액션을 잘 해주고 웃음이 많습니다!">
-            </div>
-        </div>
-
-        <div class="section private-box">
-            <div class="private-box-header">🔒 운영진 매칭 참고자료 · 이성에게 철저히 비공개됩니다</div>
-            <div class="field" style="background:#fff; padding:20px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:20px;">
-                <label class="field-label">현재 재직중인 직장/사업체명 <span class="req">*</span></label>
-                <div class="field-desc">사내 매칭 방지용. <span class="pink">절대 공개되지 않습니다.</span></div>
-                <input type="text" name="jobOrganizationName" required placeholder="정확한 회사/기관명을 기재해주세요">
-                <div style="margin-top:15px;">
-                    <label class="field-label">재직증명서 / 사업자등록증 첨부 <span class="req">*</span></label>
-                    <div class="file-upload-area" id="proofUploadArea" style="min-height: 100px; padding:15px;">
-                        <input type="file" id="certInput" accept="image/*" required>
-                        <div style="font-size: 1.5rem;">📄</div>
-                        <p style="font-size:0.75rem; margin-top:5px; color:#888;">클릭하여 비공개 인증 서류 첨부</p>
-                    </div>
-                    <div class="file-preview-list" id="certPreviewList"></div>
-                </div>
-            </div>
-            <div class="field">
-                <label class="field-label">가장 중요한 이성 조건 <span class="req">*</span></label>
-                <select name="importantCriteria" required>
-                    <option value="">선택</option><option value="외모/체형">외모/체형</option><option value="직업/능력">직업/능력</option><option value="성격/가치관">성격/가치관</option>
-                </select>
-            </div>
-            <div class="field">
-                <label class="field-label">이상형 상세 <span class="req">*</span></label>
-                <textarea name="idealType" required placeholder="원하는 외모, 성격 등을 자세히 적어주세요."></textarea>
-            </div>
-            <div class="field" style="display:flex; gap:10px;">
-                <div style="flex:1;">
-                    <label class="field-label">선호 최소 나이</label>
-                    <select id="ageMinSel" required onchange="checkAgeOrder()"><option value="">선택</option></select>
-                </div>
-                <div style="flex:1;">
-                    <label class="field-label">선호 최대 나이</label>
-                    <select id="ageMaxSel" required onchange="checkAgeOrder()"><option value="">선택</option></select>
-                </div>
-            </div>
-            <input type="hidden" name="preferredAgeRange" id="preferredAgeRangeHidden">
-
-            <div class="field" style="margin-top:20px; border-top:1px dashed #cbd5e1; padding-top:20px;">
-                <label class="field-label">특정 지인 차단 <span style="font-size:12px;color:#888;">(선택)</span></label>
-                <div id="excludePersonList">
-                    <div class="exclude-row" style="display:flex; gap:5px; margin-bottom:8px;">
-                        <select class="ex-birth" style="flex:1;"><option value="">년생</option></select>
-                        <input type="text" class="ex-name" placeholder="이름" style="flex:1;">
-                        <button type="button" onclick="addExcludeRow()" style="padding:0 12px; background:#db2777; color:#fff; border:none; border-radius:8px; font-weight:800;">+</button>
-                    </div>
-                </div>
-                <input type="hidden" name="avoidType" id="avoidTypeHidden">
-            </div>
-
-            <div class="field" style="margin-top:15px;">
-                <label class="field-label">피하고 싶은 종교</label>
-                <div id="avoidReligionTags">
-                    <span class="ar-tag" onclick="this.classList.toggle('selected')">기독교 제외</span>
-                    <span class="ar-tag" onclick="this.classList.toggle('selected')">불교 제외</span>
-                    <span class="ar-tag" onclick="this.classList.toggle('selected')">무교만 선호</span>
-                </div>
-                <input type="hidden" name="avoidReligion" id="avoidReligionHidden">
-            </div>
-        </div>
-        
-        <div class="section">
-            <div class="section-title">⚙️ 매칭 진행 옵션</div>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-                <label style="padding:15px; border:2px solid #f472b6; border-radius:12px; background:#fff5f9; cursor:pointer;">
-                    <input type="radio" name="continueMatchingYn" value="Y" checked style="accent-color:#db2777;"> 
-                    <strong style="color:#db2777;">계속 매칭 받기 (추천)</strong>
-                </label>
-                <label style="padding:15px; border:2px solid #e2e8f0; border-radius:12px; cursor:pointer;">
-                    <input type="radio" name="continueMatchingYn" value="N" style="accent-color:#db2777;"> 
-                    <strong style="color:#64748b;">매칭 성사 시 자동 중지</strong>
-                </label>
-            </div>
-        </div>
-
-        <div class="section" style="border: 2px solid #db2777; background: #fff0f6;">
-            <div style="display: flex; align-items: center; gap: 10px; padding: 5px;">
-                <input type="checkbox" id="termsCheck" required style="width: 22px; height: 22px; accent-color: #db2777;" onclick="openTerms(); return false;">
-                <label for="termsCheck" style="font-size: 0.95rem; font-weight: 800; color: #1a1a2e; cursor: pointer;" onclick="openTerms(); return false;">
-                    <span style="color: #db2777; text-decoration: underline;">필수 이용 약관 및 개인정보 처리방침</span>을 확인해주세요. <span class="req">*</span>
-                </label>
-            </div>
-            <div style="font-size: 0.75rem; color: #e8820c; margin-left: 32px; margin-top: 5px; font-weight: 700;">👆 글씨를 클릭하여 약관을 직접 읽으셔야 동의가 가능합니다.</div>
-        </div>
-
-        <button type="submit" class="submit-btn" id="submitBtn">소개팅 지원서 제출하기</button>
-    </form>
-</div>
-
-<div class="modal-overlay" id="termsModal">
-    <div class="modal-content">
-        <div class="modal-header">당신의 계절 필수 이용 약관</div>
-        <div class="terms-text" style="text-align: left;">
-            <p><strong>[1. 법적 미혼 상태 및 정보 진실성 확인]</strong><br>
-            - 법적으로 미혼인 남녀만 신청 가능하며, 모든 정보는 사실이어야 합니다.<br>
-            - 허위 기재(나이, 직장, 혼인 여부 등) 시 형법상 사기죄 등 민·형사상 법적 책임이 발생하며, 환불 없이 영구 제명됩니다.</p>
-
-            <p><strong>[2. 🚫 사진 절대 비공개 동의]</strong><br>
-            - 무단 사용 방지를 위해 사진은 절대 공개되지 않으며 당일 직접 만나 확인합니다. (이에 동의하지 않을 경우 이용 불가)</p>
-
-            <p><strong>[3. 🚨 작성 후 수정 불가]</strong><br>
-            - 작성하신 내용은 자동 시스템을 통해 프로필 카드에 즉시 반영되므로 오타 확인 필수이며 제출 후 수정이 절대 불가합니다.</p>
-
-            <p><strong>[4. 가입 제한 규정]</strong><br>
-            - 키 제한 및 기본적인 자기관리 상태에 따라 가입이 제한될 수 있음을 확인하였습니다.</p>
-
-            <p><strong>[5. 환불 및 비매너 규정]</strong><br>
-            - 상호 프로필 동의 시점부터 취소 및 환불은 절대 불가합니다.<br>
-            - 무단 불참이나 비매너 언행 시 영구 차단 조치됩니다.</p>
-
-            <p><strong>[6. 면책 조항 및 대기 안내]</strong><br>
-            - 만남 주선 이후의 일들은 개인적인 영역이므로 당사는 개입하거나 책임지지 않습니다.<br>
-            - 매칭은 순차적으로 진행되므로 바로 연락이 가지 않더라도 대기해 주시기 바랍니다.</p>
-
-            <p style="border-top: 1px dashed #ccc; margin-top: 15px; padding-top: 15px;">
-            <strong>[개인정보 수집 및 이용 동의]</strong><br>
-            - 수집 목적: 신원 확인 및 매칭 서비스 제공<br>
-            - 보유 및 파기: 인증 서류는 확인 즉시 폐기하며, 프로필 정보는 1년 보관 후 파기됩니다. (거부 시 이용 불가)</p>
-        </div>
-        <button class="close-terms" onclick="agreeAndCloseTerms()">모든 약관을 확인하였으며, 동의합니다 ✅</button>
-    </div>
-</div>
-
-<div class="modal-overlay" id="successModal">
-    <div class="modal-success">
-        <div style="font-size: 3rem; margin-bottom:10px;">🎉</div>
-        <h2 style="margin-bottom:10px; color:#1a1a2e; font-weight:800;">지원서 제출 완료!</h2>
-        <p style="color:#64748b; font-size:0.9rem; line-height:1.6;">데이터가 안전하게 암호화되어 저장되었습니다.<br>아래 버튼을 눌러 카카오톡 채널로 <strong>'본인 년생_이름_닉네임'</strong>을 꼭 보내주세요!</p>
-        
-        <a href="http://pf.kakao.com/_xxxxxx/chat" target="_blank" class="kakao-next">당신의 계절 카카오톡 바로가기 💬</a>
-        
-        <div style="margin-top: 25px;">
-            <button onclick="location.reload()" style="padding: 10px 25px; background: #e2e8f0; color: #475569; border: none; border-radius: 30px; font-weight: 700; cursor:pointer;">창 닫기</button>
-        </div>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    const SUPABASE_URL = 'https://teeutkxfzxdsaqdvwrwt.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    function openTerms() { document.getElementById('termsModal').classList.add('show'); }
-    function closeTerms() { document.getElementById('termsModal').classList.remove('show'); }
-    function agreeAndCloseTerms() { document.getElementById('termsCheck').checked = true; closeTerms(); }
-
-    function selectRadio(labelEl) {
-        labelEl.parentNode.querySelectorAll('label').forEach(l => l.classList.remove('selected'));
-        labelEl.classList.add('selected'); labelEl.querySelector('input').checked = true;
-    }
-
-    const emojiRegex = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu;
-    document.querySelectorAll('[data-no-emoji]').forEach(el => {
-        el.addEventListener('input', function() { if (emojiRegex.test(this.value)) { this.value = this.value.replace(emojiRegex, ''); alert('이모티콘은 입력 불가합니다.'); }});
-    });
+JavaScript
+// 📍 스크립트에 검색 기능 추가
+async function searchMembers() {
+    const keyword = document.getElementById('searchInput').value.trim();
+    document.getElementById('loading').style.display = 'block';
     
-    document.querySelectorAll('[data-counter]').forEach(el => {
-        const max = el.getAttribute('data-counter');
-        const counter = document.createElement('div'); counter.className = 'char-counter'; counter.textContent = `0 / ${max}자`;
-        el.parentNode.insertBefore(counter, el.nextSibling);
-        el.addEventListener('input', () => { counter.textContent = `${el.value.length} / ${max}자`; });
-    });
+    const genderStr = targetGender === 'woman' ? '여' : '남';
+    let query = _supabase.from('members').select('*').ilike('gender', `%${genderStr}%`).order('id', { ascending: false });
+    
+    // 검색어가 있으면 limit을 풀고 이름/닉네임으로 검색
+    if (keyword) {
+        query = query.or(`name.ilike.%${keyword}%,nickname.ilike.%${keyword}%`);
+    } else {
+        query = query.limit(200);
+    }
+    
+    const { data, error } = await query;
+    if(!error) {
+        baseMembers = data;
+        filterByGrade('ALL');
+    }
+    document.getElementById('loading').style.display = 'none';
+}
+🚫 3. (비용 낭비) 전화번호 중복 가입 방어 부재
+문제 상황: apply.html에 중복 가입을 막는 로직이 없습니다. 유저가 매칭이 안 잡힌다고 며칠 뒤 사진이나 닉네임만 바꿔서 다시 지원서를 제출하면, 관리자는 동명이인인 줄 알고 또 승인해 주게 됩니다. 결과적으로 스토리지 낭비와 이중 매칭 혼선이 일어납니다.
 
-    (function buildAgeSelects() {
-        let opts = '<option value="">선택</option>';
-        for(let i=86; i<=105; i++){ let v=i>99?String(i-100).padStart(2,'0'):i; opts += `<option value="${v}">${v}년생</option>`; }
-        document.getElementById('ageMinSel').innerHTML = opts; document.getElementById('ageMaxSel').innerHTML = opts;
-        document.querySelectorAll('.ex-birth').forEach(el => el.innerHTML = opts);
-    })();
+해결 방안: 무거운 파일 업로드가 시작되기 전에, DB를 가장 먼저 조회하여 동일한 번호가 있는지 선검증 해야 합니다.
 
-    // ✨ 산술 오류 수정 완료 (부등호 방향 정정)
-    function checkAgeOrder() {
-        const minVal = document.getElementById('ageMinSel').value;
-        const maxVal = document.getElementById('ageMaxSel').value;
-        if(minVal && maxVal) {
-            let minNum = parseInt(minVal); let maxNum = parseInt(maxVal);
-            if(minNum < 50) minNum += 100; if(maxNum < 50) maxNum += 100;
-            if(minNum < maxNum) {
-                alert("선호 최대 나이가 선호 최소 나이보다 어릴 수 없습니다.");
-                document.getElementById('ageMaxSel').value = '';
-            }
-        }
+JavaScript
+// 📍 apply.html의 submit 이벤트 리스너 내부 (try 구문 시작 직후 추가)
+try {
+    const phoneVal = document.querySelector('input[name="phoneNumber"]').value;
+
+    // ✨ 1. 전화번호 중복 체크 로직 (파일 업로드 전 검사)
+    const { data: existUser } = await _supabase.from('members')
+        .select('id').eq('phoneNumber', phoneVal).limit(1);
+
+    if (existUser && existUser.length > 0) {
+        alert('이미 해당 휴대폰 번호로 접수된 지원서가 존재합니다.\n(내용 수정이 필요하신 경우 카카오톡 채널로 문의해주세요.)');
+        submitBtn.disabled = false; submitBtn.textContent = '소개팅 지원서 제출하기';
+        return; // 로직 완전 중단
+    }
+    
+    // ... 이후 기존 스토리지 업로드 로직 (const avoidTags = ...) 진행
+🗑️ 4. (관리자 락) 파일 삭제 실패 시 DB 영구 삭제 불가
+문제 상황: new-members.html에서 거절(반려) 처리를 할 때 스토리지 파일과 DB를 지우는 로직이 하나의 try/catch로 묶여 있습니다. 만약 스토리지 통신 오류가 나거나 파일을 관리자가 미리 지운 상태라면 .remove() 단계에서 에러가 발생하여 catch로 넘어가 버립니다.
+
+결과: 그 아래에 있는 DB 삭제 코드(.delete())가 영원히 실행되지 않아, 해당 회원을 대기 목록에서 영영 지울 수 없는 '좀비 상태'가 됩니다.
+
+해결 방안: 파일 삭제 로직은 실패해도 무시하도록 독립적인 try/catch로 분리하고, URL 파라미터 꼬임을 막기 위해 split('?')[0] 처리를 해야 합니다.
+
+JavaScript
+// 📍 new-members.html 의 rejectMember 함수 수정
+async function rejectMember() {
+    if(!currentViewId) return;
+    if(!confirm("이 회원의 가입을 반려하시겠습니까?\n업로드된 데이터가 모두 영구 삭제됩니다.")) return;
+    
+    const member = pendingMembers.find(x => x.id === currentViewId);
+    
+    // ✨ 1. 스토리지 삭제 (실패해도 무시하고 넘어가도록 분리)
+    try {
+        const photosToDelete = [];
+        if (member.photo_url) photosToDelete.push(member.photo_url.split('?')[0].split('/').pop());
+        if (member.photo_url_full) photosToDelete.push(member.photo_url_full.split('?')[0].split('/').pop());
+        
+        if (photosToDelete.length > 0) await _supabase.storage.from('profile_photos').remove(photosToDelete);
+        if (member.cert_url && !member.cert_url.startsWith('http')) await _supabase.storage.from('cert_documents').remove([member.cert_url]);
+    } catch(storageErr) {
+        console.warn("스토리지 삭제 실패 (무시하고 DB 삭제 진행)");
     }
 
-    function addExcludeRow() {
-        const list = document.getElementById('excludePersonList');
-        const row = document.createElement('div'); row.className = 'exclude-row'; row.style.cssText = 'display:flex; gap:5px; margin-bottom:8px;';
-        row.innerHTML = `<select class="ex-birth" style="flex:1;">${document.getElementById('ageMinSel').innerHTML}</select>
-                         <input type="text" class="ex-name" placeholder="이름" style="flex:1;">
-                         <button type="button" onclick="this.parentElement.remove()" style="padding:0 12px; background:#ef4444; color:#fff; border:none; border-radius:8px; font-weight:800;">-</button>`;
-        list.appendChild(row);
+    // ✨ 2. DB 삭제는 무조건 확실하게 실행
+    try {
+        await _supabase.from('members').delete().eq('id', currentViewId);
+        alert("가입 반려 및 모든 데이터 영구 파기가 완료되었습니다.");
+        closeModal(); loadData();
+    } catch(dbErr) { alert("DB 데이터 삭제 실패"); }
+}
+🖱️ 5. 한국인 특유의 "버튼 연타" 방어 및 아이폰 이미지 깨짐 방지
+① 다중 클릭(Double Submit) 방어 (member-matching.html)
+
+관리자가 네트워크가 느릴 때 [💞 매칭하기]를 '따닥!' 두 번 누르면 DB에 매칭 내역이 두 번 삽입되는 치명적 오류가 생깁니다.
+
+JavaScript
+let isProcessing = false; // ✨ 연타 방지 플래그 추가
+
+async function createMatch(mId, mName, mGender, cId, cName) {
+    if (isProcessing) return; // 처리 중이면 무시
+    if(!confirm(`[${mName}]님과 [${cName}]님을 매칭 명단으로 보내시겠습니까?`)) return;
+    
+    isProcessing = true; // 플래그 잠금
+    try {
+        // ... (기존 매칭 insert / update 로직) ...
+    } catch(err) { 
+        alert('매칭 실패: ' + err.message); 
+    } finally {
+        isProcessing = false; // 플래그 해제
     }
+}
+② 아이폰(iOS) 유저의 .HEIC 이미지 업로드 대참사 차단 (apply.html)
 
-    function setupPreview(inputId, listId) {
-        document.getElementById(inputId).addEventListener('change', function() {
-            const file = this.files[0];
-            if(file) {
-                if(file.size > 5 * 1024 * 1024) {
-                    alert('첨부하신 사진의 용량이 너무 큽니다. (최대 5MB)\n용량을 줄이거나 다른 사진을 선택해주세요.');
-                    this.value = ''; return;
-                }
-                const list = document.getElementById(listId); list.innerHTML = '';
-                const img = document.createElement('img'); img.src = URL.createObjectURL(file);
-                const item = document.createElement('div'); item.className = 'file-preview-item'; item.appendChild(img);
-                list.appendChild(item);
-            }
-        });
-    }
-    setupPreview('photo1Input', 'photo1PreviewList');
-    setupPreview('photoFullInput', 'photoFullPreviewList');
-    setupPreview('certInput', 'certPreviewList');
+아이폰 유저가 갤러리에서 직접 찍은 사진을 올리면 확장자가 .heic로 올라가는 경우가 많습니다. 웹 브라우저는 이를 지원하지 않아 관리자 창에서 사진이 엑스박스로 뜹니다.
 
-    document.getElementById('applyForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const submitBtn = document.getElementById('submitBtn'); submitBtn.disabled = true; submitBtn.textContent = '안전하게 데이터 암호화 전송 중... ⏳';
+JavaScript
+// apply.html 의 setupPreview 함수 내부 file.size 검사 바로 윗줄에 추가
+const fileExt = file.name.split('.').pop().toLowerCase();
+if(!['jpg', 'jpeg', 'png'].includes(fileExt)) {
+    alert('사진은 JPG, PNG 형식만 업로드 가능합니다.\n(아이폰의 경우 카카오톡으로 나에게 보낸 후 다시 저장한 사진을 올려주세요.)');
+    this.value = ''; return;
+}
+💡 총평 및 마무리
+단기간에 개발하신 프로덕트라고 믿기 힘들 정도로 기획력과 로직의 완성도가 뛰어납니다. 특히 URL.revokeObjectURL() 처리나 트랜잭션 롤백 아이디어는 실무 시니어 수준의 사고방식입니다.
 
-        let uploadedFiles = []; // ✨ 롤백(Rollback)을 위한 업로드 파일 추적 배열
-
-        try {
-            const avoidTags = [...document.querySelectorAll('#avoidReligionTags .ar-tag.selected')].map(t => t.innerText).join(', ');
-            document.getElementById('avoidReligionHidden').value = avoidTags;
-            
-            const minVal = document.getElementById('ageMinSel').value;
-            const maxVal = document.getElementById('ageMaxSel').value;
-            document.getElementById('preferredAgeRangeHidden').value = minVal + '년생 ~ ' + maxVal + '년생';
-            
-            let minYear = null; let maxYear = null;
-            if(minVal) { let minNum = parseInt(minVal); minYear = minNum < 50 ? 2000 + minNum : 1900 + minNum; }
-            if(maxVal) { let maxNum = parseInt(maxVal); maxYear = maxNum < 50 ? 2000 + maxNum : 1900 + maxNum; }
-
-            let avoidPersons = [];
-            document.querySelectorAll('.exclude-row').forEach(row => {
-                const b = row.querySelector('.ex-birth').value; const n = row.querySelector('.ex-name').value;
-                if(b && n) avoidPersons.push(`${b}년생 ${n}`);
-            });
-            document.getElementById('avoidTypeHidden').value = avoidPersons.length > 0 ? '차단: ' + avoidPersons.join(', ') : '';
-
-            async function uploadOptimizedFile(fileElementId, prefix, bucketName, isPrivate) {
-                const file = document.getElementById(fileElementId).files[0];
-                if (!file) return '';
-                const randomStr = Math.random().toString(36).substring(2, 10);
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${prefix}_${Date.now()}_${randomStr}.${fileExt}`;
-
-                await _supabase.storage.from(bucketName).upload(fileName, file);
-                uploadedFiles.push({ bucket: bucketName, path: fileName }); // 파일 업로드 성공 시 추적 기록
-
-                if(isPrivate) {
-                    return fileName; 
-                } else {
-                    return _supabase.storage.from(bucketName).getPublicUrl(fileName).data.publicUrl; 
-                }
-            }
-
-            const photo1 = await uploadOptimizedFile('photo1Input', 'p1', 'profile_photos', false);
-            const photoFull = await uploadOptimizedFile('photoFullInput', 'pFull', 'profile_photos', false);
-            const certPath = await uploadOptimizedFile('certInput', 'cert', 'cert_documents', true);
-            
-            const formData = new FormData(document.getElementById('applyForm'));
-            const finalData = Object.fromEntries(formData.entries());
-            finalData.photo_url = photo1; 
-            finalData.photo_url_full = photoFull;
-            finalData.cert_url = certPath; 
-            finalData.status = "대기";
-            finalData.min_preferred_year = minYear;
-            finalData.max_preferred_year = maxYear;
-
-            const { error: dbError } = await _supabase.from('members').insert([finalData]);
-            if (dbError) throw dbError;
-
-            document.getElementById('successModal').classList.add('show');
-        } catch (error) {
-            // ✨ 파일 롤백 처리 (DB 오류 시 올라간 파일 삭제)
-            for (let f of uploadedFiles) {
-                await _supabase.storage.from(f.bucket).remove([f.path]);
-            }
-            alert('오류 발생: ' + error.message); 
-            console.error(error);
-        } finally {
-            submitBtn.disabled = false; submitBtn.textContent = '소개팅 지원서 제출하기';
-        }
-    });
-</script>
-</body>
-</html>
+마지막으로 짚어드린 HEIC 이미지 방어, 계속 매칭 받기 쿼리 수정, 중복 번호 가입 방지 등은 실제 운영 시 발생할 수 있는 대형 사고와 금전적 손실을 막아주는 든든한 방패가 될 것입니다. 이 내용들만 추가 적용하신다면 당장 본격적인 마케팅을 돌려도 문제없는 완벽한 플랫폼이 될 것입니다. 대박 나시기를 진심으로 응원합니다! 🎉
