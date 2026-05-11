@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>신규 신청 회원 관리 - 파인드썸</title>
+    <title>신규 신청 회원 관리 - 당신의 계절</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
         .header { max-width: 1400px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
-        .back-btn { text-decoration: none; color: #7c3aed; font-weight: 700; font-size: 14px; background: #fff; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .back-btn { text-decoration: none; color: #db2777; font-weight: 700; font-size: 14px; background: #fff; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; max-width: 1400px; margin: 0 auto; overflow-x: auto; }
         h1 { font-size: 20px; color: #1a1a2e; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; white-space: nowrap; }
         th, td { padding: 14px 10px; border-bottom: 1px solid #eee; }
         th { background: #f8fafc; color: #64748b; font-weight: 700; }
         .btn { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; margin: 2px; }
-        .btn-detail { background: #ede9fe; color: #7c3aed; }
+        .btn-detail { background: #fce7f3; color: #db2777; }
         .btn-approve { background: #10b981; color: white; }
         
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
@@ -28,7 +28,7 @@
         
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .info-item { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #f1f5f9; }
-        .info-label { font-size: 11px; color: #7c3aed; font-weight: 800; margin-bottom: 6px; text-transform: uppercase; }
+        .info-label { font-size: 11px; color: #db2777; font-weight: 800; margin-bottom: 6px; text-transform: uppercase; }
         .info-value { font-size: 14px; font-weight: 600; color: #1e293b; line-height: 1.5; }
         .full-width { grid-column: span 2; }
     </style>
@@ -40,11 +40,11 @@
     </div>
     <div class="card" id="mainContainer" style="display:none;">
         <h1>🚨 신규 신청 회원 관리 (미승인 명단)</h1>
-        <div id="loading" style="text-align:center; padding:50px; color:#7c3aed; font-weight:700;">불러오는 중...</div>
+        <div id="loading" style="text-align:center; padding:50px; color:#db2777; font-weight:700;">불러오는 중...</div>
         <table>
             <thead>
                 <tr>
-                    <th>관리</th><th>상태</th><th>접수일시</th><th>이름</th><th>성별</th><th>연락처</th><th>지역</th><th>직업</th>
+                    <th>관리</th><th>상태</th><th>접수일시</th><th>이름(닉네임)</th><th>성별/나이</th><th>연락처</th><th>지역</th><th>직업</th>
                 </tr>
             </thead>
             <tbody id="memberList"></tbody>
@@ -103,7 +103,7 @@
                     <td><span style="color:#ef4444; font-weight:800;">${m.status}</span></td>
                     <td>${new Date(m.created_at).toLocaleDateString()}</td>
                     <td><strong>${esc(m.name)}</strong><br><span style="font-size:11px; color:#94a3b8;">(${esc(m.nickname)})</span></td>
-                    <td>${esc(m.gender)}</td>
+                    <td>${esc(m.gender)}<br>${esc(m.birthYear)}년생</td>
                     <td>${esc(m.phoneNumber)}</td>
                     <td>${esc(m.region)}</td>
                     <td>${esc(m.job)}</td>
@@ -117,18 +117,8 @@
             document.getElementById('modalTitle').innerText = `📋 ${esc(m.name)} (${esc(m.nickname)}) 님 프로필 심사`;
             
             let imagesHtml = '<div class="photo-container">';
-            
-            // 1. 잘 나온 사진
-            if (m.photo_url) {
-                imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">잘 나온 사진</div><img src="${m.photo_url}" class="profile-photo" onclick="window.open('${m.photo_url}')"></div>`;
-            }
-            
-            // 2. 전신 사진 (추가됨)
-            if (m.photo_url_full) {
-                imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">전신 사진</div><img src="${m.photo_url_full}" class="profile-photo" onclick="window.open('${m.photo_url_full}')"></div>`;
-            }
-
-            // 3. 보안 서류
+            if (m.photo_url) imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">잘 나온 사진</div><img src="${m.photo_url}" class="profile-photo" onclick="window.open('${m.photo_url}')"></div>`;
+            if (m.photo_url_full) imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">전신 사진</div><img src="${m.photo_url_full}" class="profile-photo" onclick="window.open('${m.photo_url_full}')"></div>`;
             if (m.cert_url) {
                 try {
                     if(m.cert_url.startsWith('http')) {
@@ -142,22 +132,26 @@
             }
             imagesHtml += '</div>';
 
-            // 모든 누락된 정보 추가 (체형 제거)
             document.getElementById('modalBody').innerHTML = `
                 ${imagesHtml}
                 <div class="info-grid">
                     <div class="info-item full-width" style="background:#fff0f6; border-color:#f8e5f0;">
-                        <div class="info-label" style="color:#d63384;">🔒 실제 직장/사업체</div>
+                        <div class="info-label" style="color:#d63384;">🔒 실제 직장/사업체명</div>
                         <div class="info-value" style="font-size:16px;">${esc(m.jobOrganizationName)}</div>
                     </div>
                     
                     <div class="info-item"><div class="info-label">공개 직업</div><div class="info-value">${esc(m.job)}</div></div>
+                    <div class="info-item"><div class="info-label">최종학력</div><div class="info-value">${esc(m.finalEducation)}</div></div>
                     <div class="info-item"><div class="info-label">키</div><div class="info-value">${esc(m.height)}cm</div></div>
+                    <div class="info-item"><div class="info-label">특징(체형/외모)</div><div class="info-value">${esc(m.bodyType)}</div></div>
                     <div class="info-item"><div class="info-label">MBTI / 종교</div><div class="info-value">${esc(m.mbti)} / ${esc(m.religion)}</div></div>
                     <div class="info-item"><div class="info-label">음주 / 흡연</div><div class="info-value">${esc(m.drinking)} / ${esc(m.smoking)}</div></div>
                     
-                    <div class="info-item full-width"><div class="info-label">성격 및 취미</div><div class="info-value">${esc(m.personality)}</div></div>
-                    <div class="info-item full-width"><div class="info-label">한 줄 소개</div><div class="info-value">${esc(m.selfIntroduction)}</div></div>
+                    <div class="info-item full-width"><div class="info-label">취미</div><div class="info-value">${esc(m.hobbies)}</div></div>
+                    <div class="info-item"><div class="info-label">성격 키워드</div><div class="info-value">${esc(m.personalityKeywords)}</div></div>
+                    <div class="info-item"><div class="info-label">주변에서 저를</div><div class="info-value">${esc(m.reputation)}</div></div>
+                    <div class="info-item full-width"><div class="info-label">저는요 (상세 자기소개)</div><div class="info-value">${esc(m.selfIntroduction)}</div></div>
+                    <div class="info-item full-width"><div class="info-label">나만의 매력어필 한 줄</div><div class="info-value">${esc(m.appeal)}</div></div>
                     
                     <div class="info-item"><div class="info-label">가장 중요한 이성 조건</div><div class="info-value">${esc(m.importantCriteria)}</div></div>
                     <div class="info-item"><div class="info-label">선호 나이대</div><div class="info-value">${esc(m.preferredAgeRange)}</div></div>
@@ -177,16 +171,28 @@
             document.getElementById('detailModal').style.display = 'flex';
         }
 
+        // ✨ 법적 컴플라이언스 준수 (승인 시 즉시 파일 삭제)
         async function approveMember() {
             if(!currentViewId) return;
-            if(!confirm("이 회원을 정회원으로 승인하시겠습니까?")) return;
+            if(!confirm("이 회원을 정회원으로 승인하시겠습니까?\n(승인과 동시에 고객의 인증 서류는 서버에서 영구 삭제됩니다.)")) return;
+            
             try {
-                const { error } = await _supabase.from('members').update({ status: '정회원' }).eq('id', currentViewId);
+                const member = pendingMembers.find(x => x.id === currentViewId);
+
+                // 1. 스토리지에서 인증 서류 파일 완전 파기
+                if (member.cert_url && !member.cert_url.startsWith('http')) {
+                    await _supabase.storage.from('cert_documents').remove([member.cert_url]);
+                }
+
+                // 2. DB 업데이트 시 cert_url을 null로 초기화하여 법적 요건 충족
+                const { error } = await _supabase.from('members')
+                    .update({ status: '정회원', cert_url: null })
+                    .eq('id', currentViewId);
+                    
                 if (error) throw error;
-                alert("정회원으로 승인되었습니다!");
-                closeModal();
-                loadData();
-            } catch(e) { alert("승인 실패"); }
+                alert("정회원 승인 및 서류 영구 파기가 완료되었습니다!");
+                closeModal(); loadData();
+            } catch(e) { alert("승인 처리 실패"); console.error(e); }
         }
 
         function closeModal() { document.getElementById('detailModal').style.display = 'none'; currentViewId = null; }
