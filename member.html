@@ -74,6 +74,12 @@
     <div class="card" id="mainContainer" style="display:none;">
         <h1 id="pageTitle">회원 매칭 관리</h1>
         
+        <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+            <input type="text" id="searchInput" placeholder="이름 또는 닉네임 검색" style="padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; width: 250px; outline: none;">
+            <button class="btn btn-match" style="padding: 10px 20px;" onclick="searchMembers()">검색</button>
+            <button class="btn btn-copy" style="padding: 10px 20px;" onclick="loadData()">초기화</button>
+        </div>
+
         <div class="tab-container">
             <button class="tab-btn active" id="tab-ALL" onclick="filterByGrade('ALL')">전체보기</button>
             <button class="tab-btn" id="tab-A" onclick="filterByGrade('A')">A 등급</button>
@@ -129,6 +135,7 @@
         }
 
         async function loadData() {
+            document.getElementById('searchInput').value = '';
             try {
                 const genderStr = targetGender === 'woman' ? '여' : '남';
                 const { data, error } = await _supabase.from('members')
@@ -144,6 +151,28 @@
                 filterByGrade('ALL');
             } catch (e) { alert('데이터 로드 실패'); }
             finally { document.getElementById('loading').style.display = 'none'; }
+        }
+
+        // ✨ 검색 기능 추가 로직
+        async function searchMembers() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            document.getElementById('loading').style.display = 'block';
+            
+            const genderStr = targetGender === 'woman' ? '여' : '남';
+            let query = _supabase.from('members').select('*').ilike('gender', `%${genderStr}%`).order('id', { ascending: false });
+            
+            if (keyword) {
+                query = query.or(`name.ilike.%${keyword}%,nickname.ilike.%${keyword}%`);
+            } else {
+                query = query.limit(200);
+            }
+            
+            const { data, error } = await query;
+            if(!error) {
+                baseMembers = data;
+                filterByGrade('ALL');
+            }
+            document.getElementById('loading').style.display = 'none';
         }
 
         function filterByGrade(grade) {
@@ -268,35 +297,31 @@
             const m = baseMembers.find(x => x.id === id);
             const oppGender = (m.gender.includes('남')) ? '여' : '남';
             
+            // ✨ 계속 매칭 옵션 버그 픽스 완료 (or 쿼리)
             const { data: rawCandidates, error } = await _supabase.from('members')
                 .select('*')
-                .eq('status', '정회원')
+                .or('status.eq.정회원,and(status.eq.매칭중,continueMatchingYn.eq.Y)')
                 .ilike('gender', `%${oppGender}%`);
                 
             if(error) { alert('후보 불러오기 실패'); return; }
 
-            // ✨ 필터링 고도화 (쌍방향, 공백 무시, 버그 수정 완료)
             const candidates = rawCandidates.filter(c => {
-                // 1. 공백 무시 지인 차단 확인
                 const myBlock = (m.avoidType || '').replace(/\s/g, ''); 
                 const targetBlock = (c.avoidType || '').replace(/\s/g, '');
                 const targetFormat = `${c.birthYear}년생${c.name}`.replace(/\s/g, ''); 
                 const myFormat = `${m.birthYear}년생${m.name}`.replace(/\s/g, '');
                 if (myBlock.includes(targetFormat) || targetBlock.includes(myFormat)) return false;
 
-                // 2. 나이 조건 검증 (상대방 나이가 내 조건에 부합하는지) - 역전 버그 해결
                 let cNum = parseInt(c.birthYear);
                 const cBirthYearFull = cNum < 50 ? 2000 + cNum : 1900 + cNum; 
                 if (m.min_preferred_year && cBirthYearFull > m.min_preferred_year) return false; 
                 if (m.max_preferred_year && cBirthYearFull < m.max_preferred_year) return false; 
 
-                // 3. ✨ 쌍방향 나이 검증 (내 나이가 상대방 조건에 부합하는지)
                 let mNum = parseInt(m.birthYear);
                 const mBirthYearFull = mNum < 50 ? 2000 + mNum : 1900 + mNum;
                 if (c.min_preferred_year && mBirthYearFull > c.min_preferred_year) return false;
                 if (c.max_preferred_year && mBirthYearFull < c.max_preferred_year) return false;
 
-                // 4. ✨ 기피 종교 양방향 검증
                 const mAvoidRel = m.avoidReligion || '';
                 const cAvoidRel = c.avoidReligion || '';
                 if (mAvoidRel.includes('무교만 선호') && c.religion !== '무교') return false;
@@ -340,20 +365,22 @@
             document.getElementById('commonModal').style.display = 'flex';
         }
 
-        // ✨ 상태 이중 동기화 적용 (매칭 리스트 추가 & 상태 업데이트)
+        // ✨ 다중 클릭(더블클릭) 방지 플래그 적용
+        let isProcessing = false; 
+
         async function createMatch(mId, mName, mGender, cId, cName) {
+            if (isProcessing) return; 
             if(!confirm(`[${mName}]님과 [${cName}]님을 매칭 명단으로 보내시겠습니까?`)) return;
             
+            isProcessing = true; 
             let maleId, femaleId, maleName, femaleName;
             if(mGender.includes('남')) { maleId = mId; maleName = mName; femaleId = cId; femaleName = cName; } 
             else { maleId = cId; maleName = cName; femaleId = mId; femaleName = mName; }
             
             try {
-                // 1. 매칭 테이블 등록
                 const { error: matchError } = await _supabase.from('matches').insert([{ male_id: maleId, female_id: femaleId, male_name: maleName, female_name: femaleName, match_status: '매칭진행중' }]);
                 if(matchError) throw matchError;
 
-                // 2. ✨ 멤버 상태 '매칭중' 자동 업데이트 (이중 매칭 방지)
                 const { error: updateError } = await _supabase.from('members')
                     .update({ status: '매칭중' })
                     .in('id', [maleId, femaleId]);
@@ -361,7 +388,11 @@
 
                 alert('💞 매칭 명단에 추가 및 두 회원의 상태가 [매칭중]으로 변경되었습니다!'); 
                 closeModal(); loadData();
-            } catch(err) { alert('매칭 실패: ' + err.message); }
+            } catch(err) { 
+                alert('매칭 실패: ' + err.message); 
+            } finally {
+                isProcessing = false; 
+            }
         }
 
         function copyText(t) { navigator.clipboard.writeText(t).then(()=>alert('연락처 복사됨')); }
