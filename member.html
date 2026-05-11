@@ -71,7 +71,7 @@
         <div id="stats" style="font-size: 13px; color: #64748b; font-weight: 600;">데이터 로드 중...</div>
     </div>
 
-    <div class="card">
+    <div class="card" id="mainContainer" style="display:none;">
         <h1 id="pageTitle">회원 매칭 관리</h1>
         
         <div class="tab-container">
@@ -120,6 +120,24 @@
         let baseMembers = [];
         let currentGradeTab = 'ALL';
 
+        // 🔥 XSS 방어 로직 (해커가 스크립트를 넣어도 문자로 렌더링되게 무력화)
+        function esc(str) {
+            if (!str) return '-';
+            return str.toString().replace(/[&<>'"]/g, match => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[match]);
+        }
+
+        // 🚨 인증(로그인) 방어막
+        async function checkAuth() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) {
+                alert('보안 구역입니다. 관리자 로그인이 필요합니다.');
+                window.location.href = '/login.html';
+                return;
+            }
+            document.getElementById('mainContainer').style.display = 'block';
+            loadData();
+        }
+
         async function loadData() {
             try {
                 const { data, error } = await _supabase.from('members').select('*').order('id', { ascending: false });
@@ -139,18 +157,13 @@
 
         function filterByGrade(grade) {
             currentGradeTab = grade;
-
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('tab-' + grade).classList.add('active');
 
             let filteredList = [];
-            if (grade === 'ALL') {
-                filteredList = baseMembers;
-            } else if (grade === 'NONE') {
-                filteredList = baseMembers.filter(m => !m.grade || m.grade === '');
-            } else {
-                filteredList = baseMembers.filter(m => m.grade === grade);
-            }
+            if (grade === 'ALL') filteredList = baseMembers;
+            else if (grade === 'NONE') filteredList = baseMembers.filter(m => !m.grade || m.grade === '');
+            else filteredList = baseMembers.filter(m => m.grade === grade);
 
             renderList(filteredList);
         }
@@ -159,6 +172,7 @@
             const listBody = document.getElementById('memberList');
             document.getElementById('stats').textContent = `현재 조회된 회원: ${members.length}명`;
 
+            // 🔥 표를 그릴 때 esc() 함수를 씌워 XSS 공격 원천 차단
             listBody.innerHTML = members.map(m => `
                 <tr>
                     <td>
@@ -178,11 +192,11 @@
                             </select>
                         </div>
                     </td>
-                    <td><strong>${m.name}</strong><br><span style="font-size:11px; color:#94a3b8;">(${m.nickname})</span></td>
-                    <td>${m.birthYear}년생 / ${m.region}</td>
-                    <td>${m.job}<br>${m.height}cm</td>
-                    <td><span style="font-weight:700;">${m.mbti}</span><br>${m.religion}</td>
-                    <td><button class="btn btn-copy" onclick="copyText('${m.phoneNumber}')">📞 번호복사</button></td>
+                    <td><strong>${esc(m.name)}</strong><br><span style="font-size:11px; color:#94a3b8;">(${esc(m.nickname)})</span></td>
+                    <td>${esc(m.birthYear)}년생 / ${esc(m.region)}</td>
+                    <td>${esc(m.job)}<br>${esc(m.height)}cm</td>
+                    <td><span style="font-weight:700;">${esc(m.mbti)}</span><br>${esc(m.religion)}</td>
+                    <td><button class="btn btn-copy" onclick="copyText('${esc(m.phoneNumber)}')">📞 번호복사</button></td>
                     <td>
                         <button class="btn btn-detail" onclick="showDetail(${m.id})">상세/사진</button>
                         <button class="btn btn-match" onclick="showCandidates(${m.id})">💡 매칭후보</button>
@@ -206,139 +220,39 @@
             } catch (e) { alert('업데이트 실패'); }
         }
 
-        function showDetail(id) {
+        // 🔥 [핵심 로직] 상세 보기 클릭 시 서류는 임시 링크를 발급받아 보여줌 (async로 변경됨)
+        async function showDetail(id) {
             const m = allMembers.find(x => x.id === id);
-            document.getElementById('modalTitle').innerText = `📋 ${m.name} (${m.nickname}) 프로필 확인`;
+            document.getElementById('modalTitle').innerText = `📋 ${esc(m.name)} (${esc(m.nickname)}) 프로필 확인`;
             
             let imagesHtml = '<div class="photo-container">';
-            if (m.photo_url) imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">프로필 사진</div><img src="${m.photo_url}" class="profile-photo" onclick="window.open('${m.photo_url}')"></div>`;
-            if (m.cert_url) imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; color:#d63384; margin-bottom:5px;">인증 서류</div><img src="${m.cert_url}" class="profile-photo" style="border:3px solid #fce4ec;" onclick="window.open('${m.cert_url}')"></div>`;
+            
+            // 1. 프로필 사진은 기존처럼 Public URL 사용
+            if (m.photo_url) {
+                imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">프로필 사진</div><img src="${m.photo_url}" class="profile-photo" onclick="window.open('${m.photo_url}')"></div>`;
+            }
+            
+            // 2. 비공개 인증 서류는 60초짜리 임시 링크(Signed URL) 발급
+            if (m.cert_url) {
+                try {
+                    // 구버전(주소 전체가 저장된 경우) 호환
+                    if(m.cert_url.startsWith('http')) {
+                        imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; color:#d63384; margin-bottom:5px;">인증 서류</div><img src="${m.cert_url}" class="profile-photo" style="border:3px solid #fce4ec;" onclick="window.open('${m.cert_url}')"></div>`;
+                    } else {
+                        // 신버전 (파일명만 저장된 경우) -> Signed URL 60초 발급 발동!
+                        const { data, error } = await _supabase.storage.from('cert_documents').createSignedUrl(m.cert_url, 60);
+                        if (error) throw error;
+                        imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; color:#d63384; margin-bottom:5px;">보안 서류 (60초 유효)</div><img src="${data.signedUrl}" class="profile-photo" style="border:3px solid #fce4ec;" onclick="window.open('${data.signedUrl}')"></div>`;
+                    }
+                } catch(err) {
+                    console.error('서류 링크 발급 실패:', err);
+                    imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; color:#ef4444; margin-bottom:5px;">서류 불러오기 실패</div><div class="profile-photo" style="display:flex;align-items:center;justify-content:center;background:#fee2e2;color:#ef4444;">에러 발생</div></div>`;
+                }
+            }
             imagesHtml += '</div>';
 
             document.getElementById('modalBody').innerHTML = `
                 ${imagesHtml}
                 <div class="info-grid">
                     <div class="info-item full-width" style="background:#fff0f6; border-color:#f8e5f0;">
-                        <div class="info-label" style="color:#d63384;">🔒 실제 직장/사업체 및 회원 등급</div>
-                        <div class="info-value" style="font-size:16px;">
-                            ${m.jobOrganizationName || '미입력'} 
-                            <span class="grade-badge grade-${m.grade || 'NONE'}">${m.grade || '미정'}등급</span>
-                        </div>
-                    </div>
-                    <div class="info-item"><div class="info-label">공개 직업</div><div class="info-value">${m.job || '-'}</div></div>
-                    <div class="info-item"><div class="info-label">키 / 체형</div><div class="info-value">${m.height}cm / ${m.bodyType || '-'}</div></div>
-                    <div class="info-item"><div class="info-label">MBTI / 종교</div><div class="info-value">${m.mbti} / ${m.religion}</div></div>
-                    <div class="info-item"><div class="info-label">음주 / 흡연</div><div class="info-value">${m.drinking} / ${m.smoking}</div></div>
-                    <div class="info-item full-width"><div class="info-label">성격 및 취미</div><div class="info-value">${m.personality || '-'}</div></div>
-                    <div class="info-item full-width"><div class="info-label">한 줄 소개</div><div class="info-value">${m.selfIntroduction || '-'}</div></div>
-                    <div class="info-item full-width"><div class="info-label">이상형</div><div class="info-value">${m.idealType || '-'}</div></div>
-                    <div class="info-item"><div class="info-label">가장 중요한 조건</div><div class="info-value">${m.importantCriteria || '-'}</div></div>
-                    <div class="info-item"><div class="info-label">선호 나이대</div><div class="info-value">${m.preferredAgeRange || '-'}</div></div>
-                    <div class="info-item full-width" style="background:#f8fafc;">
-                        <div class="info-label">기피 종교 / 지인 차단</div>
-                        <div class="info-value">${m.avoidReligion || '-'} <br> <span style="color:#ef4444;">${m.avoidType || '-'}</span></div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('commonModal').style.display = 'flex';
-        }
-
-        function showCandidates(id) {
-            const m = allMembers.find(x => x.id === id);
-            const oppGender = (m.gender.includes('남')) ? '여' : '남';
-            
-            let rawCandidates = allMembers.filter(x => x.gender.includes(oppGender) && x.status === '정회원');
-            const candidates = rawCandidates.filter(c => {
-                const myBlock = m.avoidType || '';
-                const targetBlock = c.avoidType || '';
-                const targetFormat = `${c.birthYear}년생 ${c.name}`;
-                const myFormat = `${m.birthYear}년생 ${m.name}`;
-                return !(myBlock.includes(targetFormat) || targetBlock.includes(myFormat));
-            });
-
-            document.getElementById('modalTitle').innerText = `❤️ ${m.name} 님을 위한 추천 후보`;
-            
-            let htmlContent = candidates.length === 0 ? 
-                '<div style="padding:40px; text-align:center; color:#94a3b8;">매칭 가능한 정회원이 없습니다.</div>' : '';
-
-            candidates.forEach(c => {
-                let gradeStyle = '';
-                let gradeText = c.grade || '?';
-                
-                if(c.grade === 'A') gradeStyle = 'background:#fef2f2; color:#ef4444; border:2px solid #fecaca;';
-                else if(c.grade === 'B') gradeStyle = 'background:#fff7ed; color:#f97316; border:2px solid #ffedd5;';
-                else if(c.grade === 'C') gradeStyle = 'background:#f0f9ff; color:#0ea5e9; border:2px solid #e0f2fe;';
-                else gradeStyle = 'background:#f8fafc; color:#cbd5e1; border:2px dashed #e2e8f0; font-size:14px;';
-
-                htmlContent += `
-                    <div class="candidate-item">
-                        <div style="width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; flex-shrink: 0; ${gradeStyle}">
-                            ${gradeText}
-                        </div>
-                        <div style="flex: 1;">
-                            <strong style="font-size:16px; color:#1e293b;">${c.name}</strong>
-                            <span style="font-size:13px; color:#64748b; margin-left:4px;">(${c.birthYear}년생, ${c.region})</span><br>
-                            <span style="font-size:13px; color:#7c3aed; font-weight:800;">${c.job}</span>
-                            <span style="font-size:12px; color:#64748b;"> / ${c.height}cm / ${c.mbti}</span>
-                        </div>
-                        <div style="display:flex; flex-direction:column; gap:5px;">
-                            <button class="btn btn-detail" style="padding: 8px 15px;" onclick="showDetail(${c.id})">상세 확인</button>
-                            <button class="btn" style="background:#ec4899; color:white; padding: 8px 15px;" onclick="createMatch(${m.id}, '${m.name}', '${m.gender}', ${c.id}, '${c.name}')">💞 매칭하기</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            document.getElementById('modalBody').innerHTML = htmlContent;
-            document.getElementById('commonModal').style.display = 'flex';
-        }
-
-        // 🔥 매칭을 DB(matches 테이블)로 쏘는 함수
-        async function createMatch(mId, mName, mGender, cId, cName) {
-            if(!confirm(`[${mName}]님과 [${cName}]님을 매칭 확정 명단으로 보내시겠습니까?`)) return;
-
-            let maleId, femaleId, maleName, femaleName;
-            
-            // 누가 남자인지 여자인지 구분해서 넣기
-            if(mGender.includes('남')) {
-                maleId = mId; maleName = mName;
-                femaleId = cId; femaleName = cName;
-            } else {
-                maleId = cId; maleName = cName;
-                femaleId = mId; femaleName = mName;
-            }
-
-            try {
-                const { error } = await _supabase.from('matches').insert([{
-                    male_id: maleId,
-                    female_id: femaleId,
-                    male_name: maleName,
-                    female_name: femaleName,
-                    match_status: '매칭진행중'
-                }]);
-
-                if(error) throw error;
-                
-                alert('💞 성공적으로 매칭 명단에 추가되었습니다!\n화면 상단의 [매칭 및 입금 확정 명단]에서 확인해주세요.');
-                closeModal();
-            } catch(err) {
-                alert('매칭 추가 실패: ' + err.message);
-            }
-        }
-
-        function copyText(t) { navigator.clipboard.writeText(t).then(()=>alert('연락처 복사됨')); }
-        function closeModal() { document.getElementById('commonModal').style.display = 'none'; }
-        window.onclick = (e) => { if (e.target == document.getElementById('commonModal')) closeModal(); }
-        async function checkAuth() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            if (!session) {
-                alert('보안 구역입니다. 관리자 로그인이 필요합니다.');
-                window.location.href = '/login.html';
-                return;
-            }
-            loadData();
-        }
-        checkAuth();
-    </script>
-</body>
-</html>
+                        <div class="
