@@ -75,7 +75,7 @@
         <h1 id="pageTitle">회원 매칭 관리</h1>
         
         <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-            <input type="text" id="searchInput" placeholder="이름 또는 닉네임 검색" style="padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; width: 250px; outline: none;">
+            <input type="text" id="searchInput" placeholder="이름 또는 닉네임 검색" style="padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; width: 250px; outline: none;" onkeypress="if(event.key === 'Enter') searchMembers();">
             <button class="btn btn-match" style="padding: 10px 20px;" onclick="searchMembers()">검색</button>
             <button class="btn btn-copy" style="padding: 10px 20px;" onclick="loadData()">초기화</button>
         </div>
@@ -153,7 +153,6 @@
             finally { document.getElementById('loading').style.display = 'none'; }
         }
 
-        // ✨ 검색 기능 추가 로직
         async function searchMembers() {
             const keyword = document.getElementById('searchInput').value.trim();
             document.getElementById('loading').style.display = 'block';
@@ -297,7 +296,6 @@
             const m = baseMembers.find(x => x.id === id);
             const oppGender = (m.gender.includes('남')) ? '여' : '남';
             
-            // ✨ 계속 매칭 옵션 버그 픽스 완료 (or 쿼리)
             const { data: rawCandidates, error } = await _supabase.from('members')
                 .select('*')
                 .or('status.eq.정회원,and(status.eq.매칭중,continueMatchingYn.eq.Y)')
@@ -365,7 +363,6 @@
             document.getElementById('commonModal').style.display = 'flex';
         }
 
-        // ✨ 다중 클릭(더블클릭) 방지 플래그 적용
         let isProcessing = false; 
 
         async function createMatch(mId, mName, mGender, cId, cName) {
@@ -377,9 +374,14 @@
             if(mGender.includes('남')) { maleId = mId; maleName = mName; femaleId = cId; femaleName = cName; } 
             else { maleId = cId; maleName = cName; femaleId = mId; femaleName = mName; }
             
+            // ✨ 부분 실패 방지 (트랜잭션 롤백 로직 적용 완료)
+            let createdMatchId = null;
             try {
-                const { error: matchError } = await _supabase.from('matches').insert([{ male_id: maleId, female_id: femaleId, male_name: maleName, female_name: femaleName, match_status: '매칭진행중' }]);
+                const { data: matchData, error: matchError } = await _supabase.from('matches')
+                    .insert([{ male_id: maleId, female_id: femaleId, male_name: maleName, female_name: femaleName, match_status: '매칭진행중' }])
+                    .select('id').single();
                 if(matchError) throw matchError;
+                createdMatchId = matchData.id;
 
                 const { error: updateError } = await _supabase.from('members')
                     .update({ status: '매칭중' })
@@ -389,13 +391,18 @@
                 alert('💞 매칭 명단에 추가 및 두 회원의 상태가 [매칭중]으로 변경되었습니다!'); 
                 closeModal(); loadData();
             } catch(err) { 
+                if (createdMatchId) await _supabase.from('matches').delete().eq('id', createdMatchId);
                 alert('매칭 실패: ' + err.message); 
             } finally {
                 isProcessing = false; 
             }
         }
 
-        function copyText(t) { navigator.clipboard.writeText(t).then(()=>alert('연락처 복사됨')); }
+        // ✨ 하이픈 복사 기능 완벽 적용
+        function copyText(t) { 
+            const formatted = t.replace(/^(\d{2,3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
+            navigator.clipboard.writeText(formatted).then(()=>alert('연락처 복사됨: ' + formatted)); 
+        }
         function closeModal() { document.getElementById('commonModal').style.display = 'none'; }
         window.onclick = (e) => { if (e.target == document.getElementById('commonModal')) closeModal(); }
         
