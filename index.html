@@ -302,7 +302,6 @@
         document.querySelectorAll('.ex-birth').forEach(el => el.innerHTML = opts);
     })();
 
-    // 🔥 나이 선택 역전 방지 로직 (86년생이 95년생보다 숫자가 작음 유의)
     function checkAgeOrder() {
         const minVal = document.getElementById('ageMinSel').value;
         const maxVal = document.getElementById('ageMaxSel').value;
@@ -329,7 +328,6 @@
         document.getElementById(inputId).addEventListener('change', function() {
             const file = this.files[0];
             if(file) {
-                // 🔥 5MB 용량 제한
                 if(file.size > 5 * 1024 * 1024) {
                     alert('첨부하신 사진의 용량이 너무 큽니다. (최대 5MB)\n용량을 줄이거나 다른 사진을 선택해주세요.');
                     this.value = ''; return;
@@ -351,8 +349,25 @@
         try {
             const avoidTags = [...document.querySelectorAll('#avoidReligionTags .ar-tag.selected')].map(t => t.innerText).join(', ');
             document.getElementById('avoidReligionHidden').value = avoidTags;
-            document.getElementById('preferredAgeRangeHidden').value = document.getElementById('ageMinSel').value + '년생 ~ ' + document.getElementById('ageMaxSel').value + '년생';
             
+            // 🔥 [고도화 핵심 로직] 문자로 된 범위를 만들고, 숫자로 변환하는 부분
+            const minVal = document.getElementById('ageMinSel').value;
+            const maxVal = document.getElementById('ageMaxSel').value;
+            document.getElementById('preferredAgeRangeHidden').value = minVal + '년생 ~ ' + maxVal + '년생';
+            
+            let minYear = null;
+            let maxYear = null;
+            
+            // 86~99는 1900년대, 00~03은 2000년대로 변환해서 DB에 꽂아줌
+            if(minVal) {
+                let minNum = parseInt(minVal);
+                minYear = minNum < 50 ? 2000 + minNum : 1900 + minNum;
+            }
+            if(maxVal) {
+                let maxNum = parseInt(maxVal);
+                maxYear = maxNum < 50 ? 2000 + maxNum : 1900 + maxNum;
+            }
+
             let avoidPersons = [];
             document.querySelectorAll('.exclude-row').forEach(row => {
                 const b = row.querySelector('.ex-birth').value; const n = row.querySelector('.ex-name').value;
@@ -360,12 +375,9 @@
             });
             document.getElementById('avoidTypeHidden').value = avoidPersons.length > 0 ? '차단: ' + avoidPersons.join(', ') : '';
 
-            // 🔥 파일 업로드 통합 함수 (난수화 및 비공개 처리 포함)
             async function uploadOptimizedFile(fileElementId, prefix, bucketName, isPrivate) {
                 const file = document.getElementById(fileElementId).files[0];
                 if (!file) return '';
-                
-                // 파일명 난수화 (인코딩 에러 및 이름 유출 방지)
                 const randomStr = Math.random().toString(36).substring(2, 10);
                 const fileExt = file.name.split('.').pop();
                 const fileName = `${prefix}_${Date.now()}_${randomStr}.${fileExt}`;
@@ -373,21 +385,24 @@
                 await _supabase.storage.from(bucketName).upload(fileName, file);
 
                 if(isPrivate) {
-                    return fileName; // 비공개는 이름(경로)만 저장
+                    return fileName; 
                 } else {
-                    return _supabase.storage.from(bucketName).getPublicUrl(fileName).data.publicUrl; // 공개는 주소 통째로 저장
+                    return _supabase.storage.from(bucketName).getPublicUrl(fileName).data.publicUrl; 
                 }
             }
 
-            // 사진은 공개 버킷(profile_photos)에, 서류는 비공개 버킷(cert_documents)에 저장
             const photo1 = await uploadOptimizedFile('photo1Input', 'p1', 'profile_photos', false);
             const certPath = await uploadOptimizedFile('certInput', 'cert', 'cert_documents', true);
             
             const formData = new FormData(document.getElementById('applyForm'));
             const finalData = Object.fromEntries(formData.entries());
             finalData.photo_url = photo1; 
-            finalData.cert_url = certPath; // 서류는 경로만 저장됨!
+            finalData.cert_url = certPath; 
             finalData.status = "대기";
+            
+            // 🔥 변환된 숫자를 최종 데이터에 몰래 끼워넣음!
+            finalData.min_preferred_year = minYear;
+            finalData.max_preferred_year = maxYear;
 
             const { error: dbError } = await _supabase.from('members').insert([finalData]);
             if (dbError) throw dbError;
