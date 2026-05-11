@@ -7,56 +7,62 @@
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #f0f2f5; padding: 20px; }
-        .header { max-width: 1200px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
-        .back-btn { text-decoration: none; color: #7c3aed; font-weight: 600; font-size: 14px; }
+        body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+        .header { max-width: 1000px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { text-decoration: none; color: #7c3aed; font-weight: 700; font-size: 14px; background: #fff; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; max-width: 1000px; margin: 0 auto; overflow-x: auto; }
+        h1 { font-size: 20px; color: #1a1a2e; margin-bottom: 20px; }
         
-        .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; max-width: 1200px; margin: 0 auto; overflow-x: auto; }
-        h1 { font-size: 20px; color: #1a1a2e; margin-bottom: 24px; }
-
-        .main-table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; margin-bottom: 20px; }
-        .main-table th, .main-table td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
-        .main-table th { background: #f8fafc; color: #64748b; font-weight: 600; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; }
+        th { background: #f8fafc; color: #64748b; padding: 15px; border-bottom: 2px solid #edf2f7; }
+        td { padding: 15px; border-bottom: 1px solid #eee; }
         
-        .gen-btn { background: #7c3aed; color: white; padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .btn-create { background: #fce7f3; color: #db2777; padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 800; transition: 0.2s; }
+        .btn-create:hover { background: #fbcfe8; transform: translateY(-1px); }
 
-        /* 팝업 모달 스타일 */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-        .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 500px; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        /* 모달 및 프로필 카드 UI */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.show { display: flex; }
+        .modal-content { display: flex; flex-direction: column; align-items: center; gap: 20px; max-height: 95vh; overflow-y: auto; padding: 20px; }
         
-        /* 💖 프로필 카드 디자인 (이미지 저장 영역) */
-        #captureArea { width: 500px; background: #fff; border: 2px solid #000; margin: 0 auto; }
-        .profile-header { background: #fce7f3; color: #db2777; padding: 12px; text-align: center; font-weight: 800; font-size: 20px; border-bottom: 2px solid #000; }
-        .profile-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .profile-table th { background: #eff6ff; color: #1e3a8a; width: 30%; padding: 12px; border: 1px solid #000; font-size: 14px; text-align: left; }
-        .profile-table td { background: #fff; color: #000; padding: 12px; border: 1px solid #000; font-size: 14px; text-align: left; line-height: 1.5; word-break: break-all; }
+        /* 📸 저장될 프로필 카드 본체 디자인 */
+        .profile-card { background: #fff; width: 380px; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; font-family: 'Apple SD Gothic Neo', sans-serif; }
+        .card-header { text-align: center; color: #db2777; font-size: 18px; font-weight: 800; margin-bottom: 20px; letter-spacing: 1px; }
+        .card-photo-wrapper { width: 100%; height: 380px; border-radius: 12px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: #f8fafc; display: flex; align-items: center; justify-content: center; }
+        .card-photo { width: 100%; height: 100%; object-fit: cover; }
+        
+        .card-info-row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; }
+        .card-label { font-size: 13px; color: #64748b; font-weight: 600; }
+        .card-value { font-size: 14px; color: #1e293b; font-weight: 800; text-align: right; }
+        
+        .card-intro { background: #fdf2f8; padding: 15px; border-radius: 12px; margin-top: 20px; font-size: 13px; color: #db2777; font-weight: 600; text-align: center; line-height: 1.5; }
+        .card-footer { text-align: center; margin-top: 25px; font-size: 11px; color: #cbd5e1; font-weight: 700; letter-spacing: 2px; }
 
-        .modal-footer { background: #f8fafc; padding: 15px; display: flex; justify-content: center; gap: 10px; border-top: 1px solid #ddd; }
-        .btn-close { background: #64748b; color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
-        .btn-download { background: #db2777; color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
-
-        .loading { text-align: center; padding: 50px; color: #7c3aed; font-weight: bold; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn-download { background: #db2777; color: white; padding: 14px 28px; border-radius: 30px; font-size: 15px; font-weight: 800; cursor: pointer; border: none; box-shadow: 0 4px 12px rgba(219,39,119,0.3); transition: 0.2s; }
+        .btn-download:hover { transform: translateY(-2px); }
+        .btn-close { background: #fff; color: #333; padding: 14px 28px; border-radius: 30px; font-size: 15px; font-weight: 800; cursor: pointer; border: none; transition: 0.2s; }
+        .btn-close:hover { background: #f1f5f9; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <a href="/admin.html" class="back-btn">← 관리자 홈으로</a>
-        <div id="stats" style="font-size: 13px; color: #64748b;">활성 정회원: 0명</div>
+        <div style="font-size: 13px; color: #64748b; font-weight: 600;">활성 정회원: <span id="activeCount">0</span>명</div>
     </div>
 
-    <div class="card">
+    <div class="card" id="mainContainer" style="display:none;">
         <h1>💌 In Your Season 프로필 카드 생성</h1>
-        <div id="loading" class="loading">데이터 로딩 중...</div>
-        
-        <table class="main-table">
+        <div id="loading" style="text-align:center; padding:50px; color:#db2777; font-weight:700;">데이터 로딩 중... ⏳</div>
+        <table>
             <thead>
                 <tr>
                     <th>회원번호</th>
-                    <th>이름</th>
+                    <th>이름(닉네임)</th>
                     <th>성별</th>
                     <th>나이</th>
-                    <th>지역</th>
+                    <th>지역 / 직업</th>
                     <th>프로필 카드</th>
                 </tr>
             </thead>
@@ -64,114 +70,152 @@
         </table>
     </div>
 
-    <div id="profileModal" class="modal-overlay">
+    <div class="modal-overlay" id="cardModal">
         <div class="modal-content">
-            <div id="captureArea">
-                <div class="profile-header">♥In Your Season Profile♥</div>
-                <table class="profile-table">
-                    <tbody id="profileData"></tbody>
-                </table>
+            <div class="profile-card" id="captureCard">
+                <div class="card-header">♥ In Your Season Profile ♥</div>
+                <div class="card-photo-wrapper">
+                    <img src="" id="cPhoto" class="card-photo" crossorigin="anonymous">
+                </div>
+                
+                <div class="card-info-row">
+                    <div class="card-label">성별 / 나이</div>
+                    <div class="card-value" id="cGenderAge"></div>
+                </div>
+                <div class="card-info-row">
+                    <div class="card-label">지역</div>
+                    <div class="card-value" id="cRegion"></div>
+                </div>
+                <div class="card-info-row">
+                    <div class="card-label">직업</div>
+                    <div class="card-value" id="cJob"></div>
+                </div>
+                <div class="card-info-row">
+                    <div class="card-label">키 / 체형</div>
+                    <div class="card-value" id="cHeightBody"></div>
+                </div>
+                <div class="card-info-row">
+                    <div class="card-label">MBTI / 종교</div>
+                    <div class="card-value" id="cMbtiReligion"></div>
+                </div>
+                
+                <div class="card-intro" id="cIntro"></div>
+                
+                <div class="card-footer">FIND SOME BLIND DATE</div>
             </div>
-            <div class="modal-footer">
+            
+            <div class="btn-group">
                 <button class="btn-close" onclick="closeModal()">닫기</button>
-                <button class="btn-download" id="downloadBtn">JPEG 저장하기</button>
+                <button class="btn-download" id="downloadBtn" onclick="downloadJPEG()">📸 JPEG 저장하기</button>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://teeutkxfzxdsaqdvwrwt.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        let globalMembers = [];
-        let currentMemberName = "";
+        let activeMembers = [];
 
-        async function fetchActiveMembers() {
+        function esc(str) { return str ? str.toString().replace(/[&<>'"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[m]) : '-'; }
+
+        // 🚨 관리자 인증 방어막 (이게 빠져서 그동안 로딩이 멈췄던 것입니다!)
+        async function checkAuth() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) {
+                alert('보안 구역입니다. 관리자 로그인이 필요합니다.');
+                window.location.href = '/login.html';
+                return;
+            }
+            document.getElementById('mainContainer').style.display = 'block';
+            loadData();
+        }
+
+        async function loadData() {
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/members?status=eq.정회원&order=id.desc`, {
-                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-                });
-                globalMembers = await response.json();
-                renderMembers(globalMembers);
-            } catch (error) { alert('로드 실패'); }
-            finally { document.getElementById('loading').style.display = 'none'; }
+                // '정회원' 인 사람만 쏙쏙 뽑아오기
+                const { data, error } = await _supabase.from('members')
+                    .select('*')
+                    .eq('status', '정회원')
+                    .order('id', { ascending: false });
+                    
+                if (error) throw error;
+                activeMembers = data;
+                
+                document.getElementById('activeCount').innerText = activeMembers.length;
+                const listBody = document.getElementById('memberList');
+                
+                if(activeMembers.length === 0) {
+                    listBody.innerHTML = '<tr><td colspan="6" style="padding:40px; color:#94a3b8;">활성 상태인 정회원이 없습니다.</td></tr>';
+                    return;
+                }
+
+                listBody.innerHTML = activeMembers.map(m => `
+                    <tr>
+                        <td style="color:#94a3b8; font-weight:700;">${m.id}</td>
+                        <td><strong>${esc(m.name)}</strong><br><span style="font-size:11px; color:#94a3b8;">(${esc(m.nickname)})</span></td>
+                        <td>${esc(m.gender)}</td>
+                        <td>${esc(m.birthYear)}년생</td>
+                        <td>${esc(m.region)} / ${esc(m.job)}</td>
+                        <td><button class="btn-create" onclick="openCard(${m.id})">💌 카드 생성</button></td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                alert('데이터 로드 실패: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
         }
 
-        function renderMembers(members) {
-            const listBody = document.getElementById('memberList');
-            document.getElementById('stats').textContent = `활성 정회원: ${members.length}명`;
-            listBody.innerHTML = members.map(m => `
-                <tr>
-                    <td>${m.id}</td>
-                    <td><strong>${m.name || '-'}</strong></td>
-                    <td>${m.gender || '-'}</td>
-                    <td>${m.birthYear || '-'}</td>
-                    <td>${m.region || '-'}</td>
-                    <td><button class="gen-btn" onclick="showProfileCard(${m.id})">카드 생성하기</button></td>
-                </tr>
-            `).join('');
-        }
-
-        function showProfileCard(id) {
-            const m = globalMembers.find(member => member.id === id);
-            if(!m) return;
-
-            currentMemberName = m.name || "profile";
-
-            const rows = [
-                ['닉네임', m.nickname || '-'],
-                ['출생년도', m.birthYear || '-'],
-                ['거주지', m.region || '-'],
-                ['키', m.height ? m.height + 'cm' : '-'],
-                ['특징', m.personality || '-'],
-                ['직업', `${m.jobCategory || ''} / ${m.job || ''}`],
-                ['MBTI', m.mbti || '-'],
-                ['종교', m.religion || '무교'],
-                ['최종학력', '4년제 대졸'],
-                ['흡연유무', m.smoking || '-'],
-                ['주량', m.drinking || '-'],
-                ['취미', m.hobby || '-'],
-                ['주변에서 저를', m.avoidType || '강아지상'], // 예시 데이터 매칭
-                ['성격 키워드', '다정함, 배려심, 유머러스'],
-                ['저는요', m.selfIntroduction || '-']
-            ];
-
-            document.getElementById('profileData').innerHTML = rows.map(row => `
-                <tr>
-                    <th>${row[0]}</th>
-                    <td>${row[1]}</td>
-                </tr>
-            `).join('');
-
-            document.getElementById('profileModal').style.display = 'flex';
-        }
-
-        function closeModal() { document.getElementById('profileModal').style.display = 'none'; }
-
-        // 📷 핵심 기능: JPEG 이미지로 저장하기
-        document.getElementById('downloadBtn').onclick = function() {
-            const captureArea = document.getElementById('captureArea');
-            const btn = this;
+        function openCard(id) {
+            const m = activeMembers.find(x => x.id === id);
             
-            btn.innerText = "저장 중...";
+            // 모달에 회원 데이터 예쁘게 매핑
+            document.getElementById('cPhoto').src = m.photo_url || '';
+            document.getElementById('cGenderAge').innerText = `${esc(m.gender)} / ${esc(m.birthYear)}년생`;
+            document.getElementById('cRegion').innerText = esc(m.region);
+            document.getElementById('cJob').innerText = esc(m.job);
+            document.getElementById('cHeightBody').innerText = `${esc(m.height)}cm / ${esc(m.bodyType || '보통')}`;
+            document.getElementById('cMbtiReligion').innerText = `${esc(m.mbti)} / ${esc(m.religion)}`;
+            document.getElementById('cIntro').innerText = `"${esc(m.selfIntroduction)}"`;
+
+            document.getElementById('cardModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('cardModal').classList.remove('show');
+        }
+
+        // 📸 HTML2Canvas를 이용한 JPEG 캡처 로직
+        function downloadJPEG() {
+            const btn = document.getElementById('downloadBtn');
+            btn.innerText = '저장 중... ⏳';
             btn.disabled = true;
 
-            html2canvas(captureArea, {
-                scale: 2, // 화질을 2배 선명하게
-                useCORS: true,
-                backgroundColor: "#ffffff"
-            }).then(canvas => {
+            const card = document.getElementById('captureCard');
+            
+            // useCORS: true 옵션이 있어야 수파베이스 외부 이미지가 까맣게 깨지지 않습니다.
+            html2canvas(card, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `파인드썸_${currentMemberName}_프로필.jpg`;
-                link.href = canvas.toDataURL('image/jpeg', 0.9); // 0.9는 품질(90%)
+                link.download = `InYourSeason_Profile_${Date.now()}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.9);
                 link.click();
                 
-                btn.innerText = "JPEG 저장하기";
+                btn.innerText = '📸 JPEG 저장하기';
+                btn.disabled = false;
+            }).catch(err => {
+                alert('이미지 생성 중 오류가 발생했습니다.');
+                console.error(err);
+                btn.innerText = '📸 JPEG 저장하기';
                 btn.disabled = false;
             });
-        };
+        }
 
-        window.onload = fetchActiveMembers;
+        // 실행!
+        checkAuth();
     </script>
 </body>
 </html>
