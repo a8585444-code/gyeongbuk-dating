@@ -118,6 +118,12 @@
     </div>
 
     <form id="applyForm">
+        
+        <div style="opacity: 0; position: absolute; top: -9999px; left: -9999px; z-index: -1;" aria-hidden="true">
+            <label for="website_url">자동 가입 방지 (입력하지 마세요)</label>
+            <input type="text" name="website_url" id="website_url" autocomplete="off" tabindex="-1">
+        </div>
+
         <div class="section">
             <div class="section-title">👤 기본 정보</div>
             <div class="field">
@@ -350,7 +356,9 @@
             <p style="border-top: 1px dashed #ccc; margin-top: 15px; padding-top: 15px;">
             <strong>[개인정보 수집 및 이용 동의]</strong><br>
             - 수집 목적: 신원 확인 및 매칭 서비스 제공<br>
-            - 보유 및 파기: 인증 서류는 확인 즉시 폐기하며, 프로필 정보는 1년 보관 후 파기됩니다. (거부 시 이용 불가)</p>
+            - 보유 및 파기: 인증 서류는 확인 즉시 폐기하며, 일반 프로필 정보는 매칭 완료 또는 1년 보관 후 자동 파기됩니다. (거부 시 이용 불가)<br>
+            <span style="color:#64748b; font-size:0.82rem; display:block; margin-top:8px;">※ 개인정보 보호책임자: OOO (연락처: 카카오톡 '당신의 계절')</span>
+            </p>
         </div>
         <button class="close-terms" onclick="agreeAndCloseTerms()">모든 약관을 확인하였으며, 동의합니다 ✅</button>
     </div>
@@ -428,7 +436,6 @@
         document.getElementById(inputId).addEventListener('change', function() {
             const file = this.files[0];
             if(file) {
-                // ✨ WebP 추가 허용 및 HEIC(아이폰) 차단 로직
                 const fileExt = file.name.split('.').pop().toLowerCase();
                 if(!['jpg', 'jpeg', 'png', 'webp'].includes(fileExt)) {
                     alert('사진은 JPG, PNG, WEBP 형식만 업로드 가능합니다.\n(아이폰의 경우 카카오톡으로 나에게 보낸 후 다시 저장한 사진을 올려주세요.)');
@@ -452,13 +459,29 @@
 
     document.getElementById('applyForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        // ✨ [보안 1] 봇(Bot) 스팸 방어: 허니팟 로직 실행
+        const honeypot = document.getElementById('website_url').value;
+        if (honeypot) {
+            console.warn("Bot Detected");
+            // 경고창 없이 조용히 종료시켜 봇이 성공한 것처럼 착각하게 만듦
+            return; 
+        }
+
         const submitBtn = document.getElementById('submitBtn'); 
         submitBtn.disabled = true; submitBtn.textContent = '안전하게 데이터 암호화 전송 중... ⏳';
 
         let uploadedFiles = []; 
 
         try {
-            // ✨ [보안 RLS 충돌 방지] 기존의 SELECT 방식 중복 체크 삭제 완료
+            const phoneVal = document.querySelector('input[name="phoneNumber"]').value;
+            const { data: existUser } = await _supabase.from('members').select('id').eq('phoneNumber', phoneVal).limit(1);
+
+            if (existUser && existUser.length > 0) {
+                alert('이미 해당 휴대폰 번호로 접수된 지원서가 존재합니다.\n(내용 수정이 필요하신 경우 카카오톡 채널로 문의해주세요.)');
+                submitBtn.disabled = false; submitBtn.textContent = '소개팅 지원서 제출하기';
+                return; 
+            }
 
             const avoidTags = [...document.querySelectorAll('#avoidReligionTags .ar-tag.selected')].map(t => t.innerText).join(', ');
             document.getElementById('avoidReligionHidden').value = avoidTags;
@@ -501,6 +524,13 @@
             
             const formData = new FormData(document.getElementById('applyForm'));
             const finalData = Object.fromEntries(formData.entries());
+            
+            // ✨ [보안 3] 허니팟 필드는 DB 전송 시 삭제
+            delete finalData.website_url; 
+
+            // ✨ [보안 3] 법적 증거 타임스탬프 기록
+            finalData.agreed_terms_at = new Date().toISOString(); 
+
             finalData.photo_url = photo1; 
             finalData.photo_url_full = photoFull;
             finalData.cert_url = certPath; 
@@ -510,7 +540,6 @@
 
             const { error: dbError } = await _supabase.from('members').insert([finalData]);
             
-            // ✨ UNIQUE 에러 핸들링 (Postgres 에러 코드 23505)
             if (dbError) {
                 if (dbError.code === '23505') throw new Error("DUPLICATE_PHONE");
                 throw dbError;
@@ -518,7 +547,6 @@
 
             document.getElementById('successModal').classList.add('show');
         } catch (error) {
-            // ✨ 에러 발생 시 업로드된 파일 롤백
             for (let f of uploadedFiles) {
                 await _supabase.storage.from(f.bucket).remove([f.path]);
             }
