@@ -17,15 +17,19 @@
         .btn { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; margin: 2px; }
         .btn-detail { background: #ede9fe; color: #7c3aed; }
         .btn-approve { background: #10b981; color: white; }
+        
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
         .modal-content { background: white; border-radius: 20px; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; padding: 30px; position: relative; }
         .close-modal { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px; color: #94a3b8; }
+        
         .photo-container { display: flex; gap: 20px; overflow-x: auto; padding: 5px 0 20px; justify-content: center; }
-        .profile-photo { width: 180px; height: 240px; object-fit: cover; border-radius: 12px; border: 1px solid #eee; cursor: pointer; }
+        .profile-photo { width: 180px; height: 240px; object-fit: cover; border-radius: 12px; border: 1px solid #eee; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .profile-photo:hover { transform: scale(1.02); }
+        
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .info-item { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #f1f5f9; }
-        .info-label { font-size: 11px; color: #7c3aed; font-weight: 800; margin-bottom: 6px; }
-        .info-value { font-size: 14px; font-weight: 600; color: #1e293b; }
+        .info-label { font-size: 11px; color: #7c3aed; font-weight: 800; margin-bottom: 6px; text-transform: uppercase; }
+        .info-value { font-size: 14px; font-weight: 600; color: #1e293b; line-height: 1.5; }
         .full-width { grid-column: span 2; }
     </style>
 </head>
@@ -50,10 +54,10 @@
     <div id="detailModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal()">×</span>
-            <h2 id="modalTitle" style="margin-bottom:25px;">프로필 심사</h2>
+            <h2 id="modalTitle" style="margin-bottom:25px; font-size: 20px; color: #1e293b;">프로필 심사</h2>
             <div id="modalBody"></div>
-            <div style="margin-top:20px; text-align:center;">
-                <button class="btn btn-approve" style="padding:12px 30px; font-size:14px;" onclick="approveMember()">✅ 이 회원을 '정회원'으로 승인하기</button>
+            <div style="margin-top:25px; text-align:center;">
+                <button class="btn btn-approve" style="padding:14px 35px; font-size:15px; border-radius: 30px; font-weight: 800; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);" onclick="approveMember()">✅ 이 회원을 '정회원'으로 승인하기</button>
             </div>
         </div>
     </div>
@@ -110,24 +114,35 @@
         async function showDetail(id) {
             currentViewId = id;
             const m = pendingMembers.find(x => x.id === id);
-            document.getElementById('modalTitle').innerText = `📋 ${esc(m.name)} 님 프로필 심사`;
+            document.getElementById('modalTitle').innerText = `📋 ${esc(m.name)} (${esc(m.nickname)}) 님 프로필 심사`;
             
             let imagesHtml = '<div class="photo-container">';
-            if (m.photo_url) imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800;">프로필 사진</div><img src="${m.photo_url}" class="profile-photo" onclick="window.open('${m.photo_url}')"></div>`;
             
+            // 1. 잘 나온 사진
+            if (m.photo_url) {
+                imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">잘 나온 사진</div><img src="${m.photo_url}" class="profile-photo" onclick="window.open('${m.photo_url}')"></div>`;
+            }
+            
+            // 2. 전신 사진 (추가됨)
+            if (m.photo_url_full) {
+                imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">전신 사진</div><img src="${m.photo_url_full}" class="profile-photo" onclick="window.open('${m.photo_url_full}')"></div>`;
+            }
+
+            // 3. 보안 서류
             if (m.cert_url) {
                 try {
                     if(m.cert_url.startsWith('http')) {
-                        imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; color:#d63384;">인증 서류</div><img src="${m.cert_url}" class="profile-photo" style="border:3px solid #fce4ec;" onclick="window.open('${m.cert_url}')"></div>`;
+                        imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; color:#d63384; margin-bottom:5px;">인증 서류</div><img src="${m.cert_url}" class="profile-photo" style="border:3px solid #fce4ec;" onclick="window.open('${m.cert_url}')"></div>`;
                     } else {
                         const { data, error } = await _supabase.storage.from('cert_documents').createSignedUrl(m.cert_url, 60);
                         if (error) throw error;
-                        imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; color:#d63384;">보안 서류 (60초 유효)</div><img src="${data.signedUrl}" class="profile-photo" style="border:3px solid #fce4ec;" onclick="window.open('${data.signedUrl}')"></div>`;
+                        imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; color:#d63384; margin-bottom:5px;">보안 서류 (60초 유효)</div><img src="${data.signedUrl}" class="profile-photo" style="border:3px solid #fce4ec;" onclick="window.open('${data.signedUrl}')"></div>`;
                     }
                 } catch(err) { imagesHtml += `<div style="text-align:center; color:#ef4444;">서류 오류</div>`; }
             }
             imagesHtml += '</div>';
 
+            // 모든 누락된 정보 추가 (체형 제거)
             document.getElementById('modalBody').innerHTML = `
                 ${imagesHtml}
                 <div class="info-grid">
@@ -135,10 +150,28 @@
                         <div class="info-label" style="color:#d63384;">🔒 실제 직장/사업체</div>
                         <div class="info-value" style="font-size:16px;">${esc(m.jobOrganizationName)}</div>
                     </div>
+                    
                     <div class="info-item"><div class="info-label">공개 직업</div><div class="info-value">${esc(m.job)}</div></div>
-                    <div class="info-item"><div class="info-label">키 / 체형</div><div class="info-value">${esc(m.height)}cm / ${esc(m.bodyType)}</div></div>
+                    <div class="info-item"><div class="info-label">키</div><div class="info-value">${esc(m.height)}cm</div></div>
                     <div class="info-item"><div class="info-label">MBTI / 종교</div><div class="info-value">${esc(m.mbti)} / ${esc(m.religion)}</div></div>
+                    <div class="info-item"><div class="info-label">음주 / 흡연</div><div class="info-value">${esc(m.drinking)} / ${esc(m.smoking)}</div></div>
+                    
+                    <div class="info-item full-width"><div class="info-label">성격 및 취미</div><div class="info-value">${esc(m.personality)}</div></div>
                     <div class="info-item full-width"><div class="info-label">한 줄 소개</div><div class="info-value">${esc(m.selfIntroduction)}</div></div>
+                    
+                    <div class="info-item"><div class="info-label">가장 중요한 이성 조건</div><div class="info-value">${esc(m.importantCriteria)}</div></div>
+                    <div class="info-item"><div class="info-label">선호 나이대</div><div class="info-value">${esc(m.preferredAgeRange)}</div></div>
+                    <div class="info-item full-width"><div class="info-label">이상형 상세</div><div class="info-value">${esc(m.idealType)}</div></div>
+                    
+                    <div class="info-item full-width" style="background:#f8fafc;">
+                        <div class="info-label">기피 종교 / 지인 차단</div>
+                        <div class="info-value">${esc(m.avoidReligion)} <br> <span style="color:#ef4444;">${esc(m.avoidType)}</span></div>
+                    </div>
+                    
+                    <div class="info-item full-width" style="background:#f0f9ff; border-color:#e0f2fe;">
+                        <div class="info-label" style="color:#0ea5e9;">⚙️ 매칭 진행 옵션</div>
+                        <div class="info-value" style="color:#0369a1;">${m.continueMatchingYn === 'N' ? '❌ 매칭 성사 시 자동 중지' : '✅ 계속 매칭 받기 (추천)'}</div>
+                    </div>
                 </div>
             `;
             document.getElementById('detailModal').style.display = 'flex';
@@ -157,6 +190,7 @@
         }
 
         function closeModal() { document.getElementById('detailModal').style.display = 'none'; currentViewId = null; }
+        
         checkAuth();
     </script>
 </body>
