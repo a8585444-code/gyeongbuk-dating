@@ -234,7 +234,8 @@
 
         async function showDetail(id) {
             const m = baseMembers.find(x => x.id === id);
-            document.getElementById('modalTitle').innerText = `📋 ${esc(m.name)} (${esc(m.nickname)}) 프로필 확인`;
+            // ✨ innerHTML 방어 로직 적용
+            document.getElementById('modalTitle').innerHTML = `📋 ${esc(m.name)} (${esc(m.nickname)}) 프로필 확인`;
             
             let imagesHtml = '<div class="photo-container">';
             if (m.photo_url) imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; margin-bottom:5px;">잘 나온 사진</div><img src="${m.photo_url}" class="profile-photo" onclick="window.open('${m.photo_url}')"></div>`;
@@ -330,7 +331,8 @@
                 return true;
             });
 
-            document.getElementById('modalTitle').innerText = `❤️ ${esc(m.name)} 님을 위한 추천 후보`;
+            // ✨ innerHTML 방어 로직 적용
+            document.getElementById('modalTitle').innerHTML = `❤️ ${esc(m.name)} 님을 위한 추천 후보`;
             
             let htmlContent = candidates.length === 0 ? '<div style="padding:40px; text-align:center; color:#94a3b8;">조건에 맞는 정회원 후보가 없습니다.</div>' : '';
 
@@ -374,7 +376,6 @@
             if(mGender.includes('남')) { maleId = mId; maleName = mName; femaleId = cId; femaleName = cName; } 
             else { maleId = cId; maleName = cName; femaleId = mId; femaleName = mName; }
             
-            // ✨ 부분 실패 방지 (트랜잭션 롤백 로직 적용 완료)
             let createdMatchId = null;
             try {
                 const { data: matchData, error: matchError } = await _supabase.from('matches')
@@ -398,9 +399,10 @@
             }
         }
 
-        // ✨ 하이픈 복사 기능 완벽 적용
+        // ✨ 정규식 파이프라인 완벽 구성 (숫자 선추출)
         function copyText(t) { 
-            const formatted = t.replace(/^(\d{2,3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
+            const onlyNumbers = t.replace(/[^0-9]/g, '');
+            const formatted = onlyNumbers.replace(/^(\d{2,3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
             navigator.clipboard.writeText(formatted).then(()=>alert('연락처 복사됨: ' + formatted)); 
         }
         function closeModal() { document.getElementById('commonModal').style.display = 'none'; }
