@@ -145,33 +145,33 @@
         function openCard(id) {
             const m = activeMembers.find(x => x.id === id);
             
-            document.getElementById('cNickname').innerText = esc(m.nickname);
-            document.getElementById('cBirthYear').innerText = esc(m.birthYear);
-            document.getElementById('cRegion').innerText = esc(m.region);
-            document.getElementById('cHeight').innerText = esc(m.height) + "cm"; 
+            // ✨ innerHTML을 통한 완벽한 XSS & 이중 이스케이프 방어
+            document.getElementById('cNickname').innerHTML = esc(m.nickname);
+            document.getElementById('cBirthYear').innerHTML = esc(m.birthYear);
+            document.getElementById('cRegion').innerHTML = esc(m.region);
+            document.getElementById('cHeight').innerHTML = esc(m.height) + "cm"; 
             
-            document.getElementById('cBodyType').innerText = esc(m.bodyType);
-            document.getElementById('cJob').innerText = esc(m.job);
-            document.getElementById('cMbti').innerText = esc(m.mbti);
-            document.getElementById('cReligion').innerText = esc(m.religion);
-            document.getElementById('cFinalEducation').innerText = esc(m.finalEducation);
-            document.getElementById('cSmoking').innerText = esc(m.smoking);
-            document.getElementById('cDrinking').innerText = esc(m.drinking);
+            document.getElementById('cBodyType').innerHTML = esc(m.bodyType);
+            document.getElementById('cJob').innerHTML = esc(m.job);
+            document.getElementById('cMbti').innerHTML = esc(m.mbti);
+            document.getElementById('cReligion').innerHTML = esc(m.religion);
+            document.getElementById('cFinalEducation').innerHTML = esc(m.finalEducation);
+            document.getElementById('cSmoking').innerHTML = esc(m.smoking);
+            document.getElementById('cDrinking').innerHTML = esc(m.drinking);
             
-            document.getElementById('cHobbies').innerText = esc(m.hobbies);
-            document.getElementById('cReputation').innerText = esc(m.reputation);
-            document.getElementById('cPersonalityKeywords').innerText = esc(m.personalityKeywords);
-            document.getElementById('cIntro').innerText = esc(m.selfIntroduction);
-            document.getElementById('cAppeal').innerText = esc(m.appeal);
+            document.getElementById('cHobbies').innerHTML = esc(m.hobbies);
+            document.getElementById('cReputation').innerHTML = esc(m.reputation);
+            document.getElementById('cPersonalityKeywords').innerHTML = esc(m.personalityKeywords);
+            document.getElementById('cIntro').innerHTML = esc(m.selfIntroduction);
+            document.getElementById('cAppeal').innerHTML = esc(m.appeal);
 
             document.getElementById('cardModal').classList.add('show');
         }
 
         function closeModal() { document.getElementById('cardModal').classList.remove('show'); }
 
-        // ✨ 캡처 스크롤 잘림 현상 방지 완벽 반영
         function downloadJPEG() {
-            window.scrollTo(0, 0); // 캡처 전 최상단으로 강제 스크롤 이동
+            window.scrollTo(0, 0); 
             const btn = document.getElementById('downloadBtn');
             btn.innerText = '저장 중...'; btn.disabled = true;
             
