@@ -7,108 +7,59 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #f4f5f7; color: #333; padding: 20px; }
-        
         .header-link { text-decoration: none; color: #7c3aed; font-size: 14px; font-weight: 700; display: inline-block; margin-bottom: 20px; background: white; padding: 8px 16px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        
         .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; max-width: 1000px; margin: 0 auto; }
         h1 { font-size: 18px; margin-bottom: 20px; color: #111; }
-        
         table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; }
         th, td { padding: 12px; border-bottom: 1px solid #eee; }
         th { background: #f8fafc; color: #666; font-weight: 600; }
-        
-        .btn-edit { background: #7c3aed; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: 0.2s; }
-        .btn-edit:hover { background: #6d28d9; }
-
-        /* 모달 스타일 */
+        .btn-edit { background: #7c3aed; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; padding: 20px; }
         .modal-overlay.show { display: flex; }
-        .modal { background: white; border-radius: 12px; width: 100%; max-width: 450px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
-        .modal h2 { font-size: 16px; margin-bottom: 15px; }
-        
-        /* 사진 보기 영역 */
+        .modal { background: white; border-radius: 12px; width: 100%; max-width: 450px; padding: 24px; max-height: 90vh; overflow-y: auto; }
         .photo-preview-box { display: flex; gap: 10px; margin-bottom: 20px; background: #f8fafc; padding: 10px; border-radius: 8px; justify-content: center; }
         .photo-item { text-align: center; }
         .photo-label { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px; }
-        .photo-img { width: 100px; height: 130px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; cursor: pointer; transition: 0.2s; }
-        .photo-img:hover { transform: scale(1.05); }
-        .no-photo { width: 100px; height: 130px; background: #eee; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #aaa; }
-
-        /* 폼 입력 영역 */
-        .form-group { margin-bottom: 15px; }
+        .photo-img { width: 100px; height: 130px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; cursor: pointer; }
+        .form-group { margin-bottom: 15px; text-align: left; }
         .form-group label { display: block; font-size: 12px; font-weight: 700; color: #555; margin-bottom: 6px; }
         .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; font-family: inherit; }
-        .form-control:focus { outline: none; border-color: #7c3aed; }
-        
-        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
-        .btn-cancel { background: #f1f5f9; color: #475569; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
-        .btn-save { background: #7c3aed; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .btn-cancel { background: #f1f5f9; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; }
+        .btn-save { background: #7c3aed; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
     </style>
 </head>
 <body>
-
     <a href="/admin.html" class="header-link">← 관리자 홈으로</a>
-
-    <div class="card">
+    <div class="card" id="mainContainer" style="display:none;">
         <h1>프로필 정보 수정</h1>
-        <div id="loading" style="text-align:center; padding:30px; color:#7c3aed;">데이터를 불러오는 중입니다...</div>
-        
+        <div id="loading" style="text-align:center; padding:30px; color:#7c3aed;">불러오는 중입니다...</div>
         <table>
-            <thead>
-                <tr>
-                    <th>회원번호</th>
-                    <th>상태</th>
-                    <th>등급</th>
-                    <th>이름</th>
-                    <th>성별</th>
-                    <th>연락처</th>
-                    <th>직업</th>
-                    <th>관리</th>
-                </tr>
-            </thead>
+            <thead><tr><th>상태</th><th>등급</th><th>이름</th><th>성별</th><th>연락처</th><th>직업</th><th>관리</th></tr></thead>
             <tbody id="memberList"></tbody>
         </table>
     </div>
 
     <div class="modal-overlay" id="editModal">
         <div class="modal">
-            <h2>회원 정보 수정</h2>
-            
-            <div class="photo-preview-box" id="modalPhotos">
-                </div>
-
+            <h2 style="margin-bottom:15px; font-size:16px;">회원 정보 수정</h2>
+            <div class="photo-preview-box" id="modalPhotos"></div>
             <div class="form-group">
                 <label>진행 상태</label>
                 <select id="editStatus" class="form-control">
-                    <option value="대기">대기</option>
-                    <option value="정회원">정회원 (승인완료)</option>
-                    <option value="매칭중">매칭중</option>
-                    <option value="휴면">휴면</option>
+                    <option value="대기">대기</option><option value="정회원">정회원 (승인완료)</option>
+                    <option value="매칭중">매칭중</option><option value="휴면">휴면</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>회원 등급 (관리자 전용)</label>
+                <label>회원 등급</label>
                 <select id="editGrade" class="form-control">
-                    <option value="">등급 미정</option>
-                    <option value="A">A 등급</option>
-                    <option value="B">B 등급</option>
-                    <option value="C">C 등급</option>
+                    <option value="">등급 미정</option><option value="A">A 등급</option><option value="B">B 등급</option><option value="C">C 등급</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label>이름</label>
-                <input type="text" id="editName" class="form-control">
-            </div>
-            <div class="form-group">
-                <label>연락처</label>
-                <input type="text" id="editPhone" class="form-control">
-            </div>
-            <div class="form-group">
-                <label>직업</label>
-                <input type="text" id="editJob" class="form-control">
-            </div>
-            
-            <div class="modal-actions">
+            <div class="form-group"><label>이름</label><input type="text" id="editName" class="form-control"></div>
+            <div class="form-group"><label>연락처</label><input type="text" id="editPhone" class="form-control"></div>
+            <div class="form-group"><label>직업</label><input type="text" id="editJob" class="form-control"></div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
                 <button class="btn-cancel" onclick="closeModal()">취소</button>
                 <button class="btn-save" onclick="saveData()">저장하기</button>
             </div>
@@ -124,98 +75,82 @@
         let allMembers = [];
         let currentEditId = null;
 
+        function esc(str) { return str ? str.toString().replace(/[&<>'"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[m]) : '-'; }
+
+        async function checkAuth() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) { alert('보안 구역입니다.'); window.location.href = '/login.html'; return; }
+            document.getElementById('mainContainer').style.display = 'block';
+            loadData();
+        }
+
         async function loadData() {
             try {
                 const { data, error } = await _supabase.from('members').select('*').order('id', { ascending: false });
                 if (error) throw error;
                 allMembers = data;
                 renderList();
-            } catch (e) {
-                alert('데이터를 불러오는데 실패했습니다.');
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
+            } catch (e) { alert('데이터 로드 실패'); }
+            finally { document.getElementById('loading').style.display = 'none'; }
         }
 
         function renderList() {
-            const listBody = document.getElementById('memberList');
-            listBody.innerHTML = allMembers.map(m => `
+            document.getElementById('memberList').innerHTML = allMembers.map(m => `
                 <tr>
-                    <td>${m.id}</td>
                     <td><strong style="color:${m.status==='정회원'?'#7c3aed':'#333'}">${m.status || '대기'}</strong></td>
                     <td><strong style="color:#d63384;">${m.grade || '-'}</strong></td>
-                    <td>${m.name}</td>
-                    <td>${m.gender}</td>
-                    <td>${m.phoneNumber}</td>
-                    <td>${m.job}</td>
+                    <td>${esc(m.name)}</td><td>${esc(m.gender)}</td><td>${esc(m.phoneNumber)}</td><td>${esc(m.job)}</td>
                     <td><button class="btn-edit" onclick="openModal(${m.id})">정보 수정</button></td>
                 </tr>
             `).join('');
         }
 
-        function openModal(id) {
+        async function openModal(id) {
             currentEditId = id;
             const m = allMembers.find(x => x.id === id);
-            
-            // 사진 렌더링
             const photoBox = document.getElementById('modalPhotos');
-            let photoHtml = '';
+            photoBox.innerHTML = '<div style="color:#7c3aed; font-size:12px;">사진을 불러오는 중...</div>';
             
-            // 프로필 사진
-            if(m.photo_url) {
-                photoHtml += `<div class="photo-item"><div class="photo-label">프로필 사진</div><img src="${m.photo_url}" class="photo-img" onclick="window.open('${m.photo_url}')" title="크게 보기"></div>`;
-            } else {
-                photoHtml += `<div class="photo-item"><div class="photo-label">프로필 사진</div><div class="no-photo">없음</div></div>`;
-            }
-            // 증명서 사진
+            let photoHtml = '';
+            if(m.photo_url) photoHtml += `<div class="photo-item"><div class="photo-label">프로필 사진</div><img src="${m.photo_url}" class="photo-img" onclick="window.open('${m.photo_url}')"></div>`;
+            
             if(m.cert_url) {
-                photoHtml += `<div class="photo-item"><div class="photo-label" style="color:#d63384;">인증 서류</div><img src="${m.cert_url}" class="photo-img" style="border-color:#fce4ec;" onclick="window.open('${m.cert_url}')" title="크게 보기"></div>`;
-            } else {
-                photoHtml += `<div class="photo-item"><div class="photo-label" style="color:#d63384;">인증 서류</div><div class="no-photo">없음</div></div>`;
+                try {
+                    if(m.cert_url.startsWith('http')) {
+                        photoHtml += `<div class="photo-item"><div class="photo-label" style="color:#d63384;">인증 서류</div><img src="${m.cert_url}" class="photo-img" onclick="window.open('${m.cert_url}')"></div>`;
+                    } else {
+                        const { data, error } = await _supabase.storage.from('cert_documents').createSignedUrl(m.cert_url, 60);
+                        if(error) throw error;
+                        photoHtml += `<div class="photo-item"><div class="photo-label" style="color:#d63384;">보안 서류 (60초)</div><img src="${data.signedUrl}" class="photo-img" style="border-color:#fce4ec;" onclick="window.open('${data.signedUrl}')"></div>`;
+                    }
+                } catch(e) { photoHtml += `<div class="photo-item"><div class="photo-label">서류 오류</div></div>`; }
             }
-            photoBox.innerHTML = photoHtml;
-
-            // 폼 데이터 채우기
+            
+            photoBox.innerHTML = photoHtml || '첨부된 사진이 없습니다.';
             document.getElementById('editStatus').value = m.status || '대기';
             document.getElementById('editGrade').value = m.grade || '';
             document.getElementById('editName').value = m.name || '';
             document.getElementById('editPhone').value = m.phoneNumber || '';
             document.getElementById('editJob').value = m.job || '';
-            
             document.getElementById('editModal').classList.add('show');
         }
 
-        function closeModal() {
-            document.getElementById('editModal').classList.remove('show');
-            currentEditId = null;
-        }
+        function closeModal() { document.getElementById('editModal').classList.remove('show'); currentEditId = null; }
 
         async function saveData() {
             if(!currentEditId) return;
-
             const updatedData = {
-                status: document.getElementById('editStatus').value,
-                grade: document.getElementById('editGrade').value,
-                name: document.getElementById('editName').value,
-                phoneNumber: document.getElementById('editPhone').value,
-                job: document.getElementById('editJob').value
+                status: document.getElementById('editStatus').value, grade: document.getElementById('editGrade').value,
+                name: document.getElementById('editName').value, phoneNumber: document.getElementById('editPhone').value, job: document.getElementById('editJob').value
             };
-
             try {
                 const { error } = await _supabase.from('members').update(updatedData).eq('id', currentEditId);
                 if (error) throw error;
-                
-                alert('정보가 성공적으로 수정되었습니다.');
-                closeModal();
-                // 데이터 다시 로드
-                document.getElementById('loading').style.display = 'block';
-                loadData();
-            } catch (error) {
-                alert('수정 실패: ' + error.message);
-            }
+                alert('수정 완료!'); closeModal(); loadData();
+            } catch (error) { alert('수정 실패'); }
         }
 
-        window.onload = loadData;
+        checkAuth();
     </script>
 </body>
 </html>
