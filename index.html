@@ -464,7 +464,6 @@
         const honeypot = document.getElementById('website_url').value;
         if (honeypot) {
             console.warn("Bot Detected");
-            // 경고창 없이 조용히 종료시켜 봇이 성공한 것처럼 착각하게 만듦
             return; 
         }
 
@@ -474,14 +473,7 @@
         let uploadedFiles = []; 
 
         try {
-            const phoneVal = document.querySelector('input[name="phoneNumber"]').value;
-            const { data: existUser } = await _supabase.from('members').select('id').eq('phoneNumber', phoneVal).limit(1);
-
-            if (existUser && existUser.length > 0) {
-                alert('이미 해당 휴대폰 번호로 접수된 지원서가 존재합니다.\n(내용 수정이 필요하신 경우 카카오톡 채널로 문의해주세요.)');
-                submitBtn.disabled = false; submitBtn.textContent = '소개팅 지원서 제출하기';
-                return; 
-            }
+            // ✨ 🚨 여기에 있던 구형 SELECT 조회 로직 완전 삭제 완료 🚨
 
             const avoidTags = [...document.querySelectorAll('#avoidReligionTags .ar-tag.selected')].map(t => t.innerText).join(', ');
             document.getElementById('avoidReligionHidden').value = avoidTags;
@@ -541,6 +533,7 @@
             const { error: dbError } = await _supabase.from('members').insert([finalData]);
             
             if (dbError) {
+                // ✨ DB UNIQUE 설정에 의한 완벽한 중복 튕겨내기
                 if (dbError.code === '23505') throw new Error("DUPLICATE_PHONE");
                 throw dbError;
             }
