@@ -9,45 +9,32 @@
         body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
         .header { max-width: 1200px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
         .back-btn { text-decoration: none; color: #7c3aed; font-weight: 700; background: #fff; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        
         .card { background: #fff; border-radius: 16px; padding: 24px; max-width: 1200px; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         h1 { font-size: 20px; margin-bottom: 20px; color: #1a1a2e; display: flex; align-items: center; gap: 10px; }
-
         table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; }
         th { background: #f8fafc; color: #64748b; padding: 15px; border-bottom: 2px solid #edf2f7; }
         td { padding: 15px; border-bottom: 1px solid #eee; }
-
-        /* 상태별 색상 */
         .pay-done { background: #e8f5e9; color: #2e7d32; }
-        
         select { padding: 6px; border-radius: 6px; border: 1px solid #ddd; font-family: inherit; font-size: 12px; cursor: pointer; outline: none; }
         .match-done-select { background: #7c3aed; color: white; font-weight: 800; }
-
-        .btn-delete { background: #fee2e2; color: #ef4444; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; }
+        .btn-delete { background: #fee2e2; color: #ef4444; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; transition: 0.2s; }
         .btn-delete:hover { background: #ef4444; color: white; }
-
         .couple-box { display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; font-size: 14px; }
         .vs { color: #cbd5e1; font-weight: 400; font-size: 12px; }
     </style>
 </head>
 <body>
-
     <div class="header">
         <a href="/admin.html" class="back-btn">← 관리자 홈</a>
         <div style="font-weight: 700; color: #d63384;">💰 누적 확정: <span id="totalMatch">0</span>건</div>
     </div>
-
-    <div class="card">
+    
+    <div class="card" id="mainContainer" style="display:none;">
         <h1>🤝 매칭 및 입금 확정 명단</h1>
         <table>
             <thead>
                 <tr>
-                    <th>매칭 날짜</th>
-                    <th>매칭 커플 (남 ❤️ 여)</th>
-                    <th>남성 입금상태</th>
-                    <th>여성 입금상태</th>
-                    <th>최종 진행상태</th>
-                    <th>관리</th>
+                    <th>매칭 날짜</th><th>매칭 커플 (남 ❤️ 여)</th><th>남성 입금상태</th><th>여성 입금상태</th><th>최종 진행상태</th><th>관리</th>
                 </tr>
             </thead>
             <tbody id="matchList"></tbody>
@@ -60,22 +47,37 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        function esc(str) { return str ? str.toString().replace(/[&<>'"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[m]) : '-'; }
+
+        // 🚨 로그인 안 한 사람 쫓아내는 자물쇠
+        async function checkAuth() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) { alert('보안 구역입니다.'); window.location.href = '/login.html'; return; }
+            document.getElementById('mainContainer').style.display = 'block';
+            loadMatches();
+        }
+
         async function loadMatches() {
-            const { data, error } = await _supabase.from('matches').select('*').order('id', { ascending: false });
+            // 🔥 핵심: 전체를 다 가져오지 않고, is_deleted가 false(안 지워짐)인 것만 골라서 가져옵니다!
+            const { data, error } = await _supabase.from('matches')
+                .select('*')
+                .eq('is_deleted', false) 
+                .order('id', { ascending: false });
+            
             if (error) return;
 
             document.getElementById('totalMatch').innerText = data.length;
             const list = document.getElementById('matchList');
+            
+            if(data.length === 0) {
+                list.innerHTML = '<tr><td colspan="6" style="padding:40px; color:#94a3b8;">현재 진행 중인 매칭 내역이 없습니다.</td></tr>';
+                return;
+            }
+
             list.innerHTML = data.map(m => `
                 <tr>
                     <td style="color:#94a3b8;">${new Date(m.created_at).toLocaleDateString()}</td>
-                    <td>
-                        <div class="couple-box">
-                            <span style="color:#3b82f6;">${m.male_name}</span>
-                            <span class="vs">❤️</span>
-                            <span style="color:#ec4899;">${m.female_name}</span>
-                        </div>
-                    </td>
+                    <td><div class="couple-box"><span style="color:#3b82f6;">${esc(m.male_name)}</span><span class="vs">❤️</span><span style="color:#ec4899;">${esc(m.female_name)}</span></div></td>
                     <td>
                         <select onchange="updateMatch(${m.id}, 'male_pay_status', this.value)" class="${m.male_pay_status === '입금완료' ? 'pay-done' : ''}">
                             <option value="미입금" ${m.male_pay_status === '미입금' ? 'selected' : ''}>미입금</option>
@@ -89,42 +91,32 @@
                         </select>
                     </td>
                     <td>
-                        <select onchange="updateMatch(${m.id}, 'match_status', this.value)" 
-                                class="${m.match_status === '매칭완료' ? 'match-done-select' : ''}">
+                        <select onchange="updateMatch(${m.id}, 'match_status', this.value)" class="${m.match_status === '매칭완료' ? 'match-done-select' : ''}">
                             <option value="매칭진행중" ${m.match_status === '매칭진행중' ? 'selected' : ''}>매칭진행중</option>
                             <option value="연락처교환" ${m.match_status === '연락처교환' ? 'selected' : ''}>연락처교환</option>
                             <option value="매칭완료" ${m.match_status === '매칭완료' ? 'selected' : ''}>✅ 매칭완료</option>
                             <option value="매칭취소" ${m.match_status === '매칭취소' ? 'selected' : ''}>❌ 매칭취소</option>
                         </select>
                     </td>
-                    <td>
-                        <button class="btn-delete" onclick="deleteMatch(${m.id})">삭제</button>
-                    </td>
+                    <td><button class="btn-delete" onclick="deleteMatch(${m.id})">숨기기(삭제)</button></td>
                 </tr>
             `).join('');
         }
 
         async function updateMatch(id, field, value) {
             const { error } = await _supabase.from('matches').update({ [field]: value }).eq('id', id);
-            if (error) alert('수정 실패');
+            if (error) alert('수정 실패'); else loadMatches();
+        }
+
+        // 🔥 핵심: 진짜 지우지(.delete) 않고 꼬리표만 바꿉니다(.update)
+        async function deleteMatch(id) {
+            if(!confirm('이 매칭 기록을 명단에서 숨기시겠습니까?\\n(데이터베이스에는 안전하게 보관됩니다)')) return;
+            
+            const { error } = await _supabase.from('matches').update({ is_deleted: true }).eq('id', id);
+            if (error) alert('숨기기 처리 중 오류가 발생했습니다.');
             else loadMatches();
         }
 
-        async function deleteMatch(id) {
-            if(!confirm('이 매칭 기록을 삭제하시겠습니까?')) return;
-            const { error } = await _supabase.from('matches').delete().eq('id', id);
-            loadMatches();
-        }
-
-        async function checkAuth() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            if (!session) {
-                alert('보안 구역입니다. 관리자 로그인이 필요합니다.');
-                window.location.href = '/login.html';
-                return;
-            }
-            loadMatches();
-        }
         checkAuth();
     </script>
 </body>
