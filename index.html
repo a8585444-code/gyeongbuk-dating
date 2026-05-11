@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, maximum-scale=1, user-scalable=yes">
     <title>파인드썸 1:1 소개팅 지원서</title>
     <style>
-        /* 고급 디자인 CSS 그대로 이식 */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Apple SD Gothic Neo', '맑은 고딕', sans-serif; background: #f5f0f4; color: #333; min-height: 100vh; }
         .top-banner { background: linear-gradient(135deg, #d63384, #9b2c6b); color: white; text-align: center; padding: 28px 20px 24px; }
@@ -44,7 +43,6 @@
         .radio-row input[type="radio"] { display: none; }
         .radio-row label.selected { border-color: #d63384; background: #fdf0f6; color: #d63384; font-weight: 700; }
         
-        /* 다중 파일 업로드 UI */
         .file-upload-area { border: 2px dashed #ddd; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; background: #fdfcfd; position: relative; transition: 0.2s; }
         .file-upload-area:hover { border-color: #d63384; background: #fdf5f9; }
         .file-upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
@@ -56,7 +54,6 @@
         .ar-tag.selected { background: #7c3aed; color: #fff; border-color: #7c3aed; }
 
         .agree-item { border: 1.5px solid #e5d8e5; border-radius: 10px; padding: 14px; margin-bottom: 10px; }
-        .agree-text { font-size: 0.85rem; color: #555; line-height: 1.6; margin-bottom: 10px; }
         .agree-label { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
         .agree-label input[type="checkbox"] { accent-color: #d63384; width: 18px; height: 18px; }
 
@@ -66,10 +63,10 @@
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
         .modal-overlay.show { display: flex; }
         .modal { background: white; border-radius: 18px; padding: 36px 26px; max-width: 360px; width: 100%; text-align: center; box-shadow: 0 10px 50px rgba(0,0,0,0.2); }
-        .modal .kakao-next { background: #fee500; color: #333; border-radius: 10px; padding: 12px 16px; font-size: 0.88rem; font-weight: 700; margin-top: 16px; line-height: 1.6; }
+        .modal .kakao-next { display: inline-block; background: #fee500; color: #333; text-decoration: none; border-radius: 10px; padding: 12px 20px; font-size: 0.9rem; font-weight: 800; margin-top: 16px; box-shadow: 0 4px 10px rgba(254,229,0,0.3); transition: 0.2s; }
+        .modal .kakao-next:hover { transform: translateY(-2px); }
         
         .char-counter { font-size: 0.78rem; color: #aaa; text-align: right; margin-top: 4px; }
-        .char-counter.over { color: #d63384; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -87,8 +84,6 @@
         <h3>진행 절차 및 비용 (가입비 무료)</h3>
         <ul><li>이상형 부합 시 프로필 교환 → 상호 수락 시 매칭비 결제</li>
         <li class="pink">남성: 30,000원 / 여성: 15,000원</li></ul>
-        <p style="margin-top:10px;">지원서 작성 후 카카오톡 <strong>(ID: findsome.dggb)</strong>으로<br>
-        <strong>'본인 년생_이름_프로필 닉네임'</strong>을 보내주셔야 정상 등록됩니다.</p>
     </div>
 
     <form id="applyForm">
@@ -133,7 +128,7 @@
             <div class="section-title">프로필 사진</div>
             <div class="field">
                 <label class="field-label">가장 잘 나온 사진 1장 <span class="req">*</span></label>
-                <div class="field-desc">얼굴이 잘 보이는 사진으로 올려주세요. (보안 서버에 안전하게 저장됩니다)</div>
+                <div class="field-desc">최대 5MB. 얼굴이 잘 보이는 사진으로 올려주세요.</div>
                 <div class="file-upload-area" id="photo1UploadArea">
                     <input type="file" id="photo1Input" accept="image/*" required>
                     <div style="font-size: 2rem;">📸</div>
@@ -174,51 +169,45 @@
         </div>
 
         <div class="section private-box">
-            <div class="private-box-header">🔒 운영진 매칭 참고자료 · 이성에게 비공개</div>
-            
+            <div class="private-box-header">🔒 운영진 매칭 참고자료 · 이성에게 철저히 비공개됩니다</div>
             <div class="field" style="background:#fff; padding:15px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
                 <label class="field-label">현재 재직중인 직장/사업체명 <span class="req">*</span></label>
                 <div class="field-desc">사내 매칭 방지용. <span class="pink">절대 공개되지 않습니다.</span></div>
                 <input type="text" name="jobOrganizationName" required placeholder="정확한 회사/기관명을 기재해주세요">
-                
                 <div style="margin-top:15px;">
                     <label class="field-label">재직증명서 / 사업자등록증 첨부 <span class="req">*</span></label>
                     <div class="file-upload-area" id="proofUploadArea" style="padding:15px;">
                         <input type="file" id="certInput" accept="image/*" required>
                         <div style="font-size: 1.5rem;">📄</div>
-                        <p>클릭하여 인증 서류 첨부</p>
+                        <p>클릭하여 비공개 인증 서류 첨부</p>
                     </div>
                     <div class="file-preview-list" id="certPreviewList"></div>
                 </div>
             </div>
-
             <div class="field">
                 <label class="field-label">가장 중요한 이성 조건 <span class="req">*</span></label>
                 <select name="importantCriteria" required>
                     <option value="">선택</option><option value="외모/체형">외모/체형</option><option value="직업/능력">직업/능력</option><option value="성격/가치관">성격/가치관</option>
                 </select>
             </div>
-            
             <div class="field">
                 <label class="field-label">이상형 상세 <span class="req">*</span></label>
                 <textarea name="idealType" required placeholder="원하는 외모, 성격 등을 자세히 적어주세요."></textarea>
             </div>
-
             <div class="field" style="display:flex; gap:10px;">
                 <div style="flex:1;">
                     <label class="field-label">선호 최소 나이</label>
-                    <select id="ageMinSel" required><option value="">선택</option></select>
+                    <select id="ageMinSel" required onchange="checkAgeOrder()"><option value="">선택</option></select>
                 </div>
                 <div style="flex:1;">
                     <label class="field-label">선호 최대 나이</label>
-                    <select id="ageMaxSel" required><option value="">선택</option></select>
+                    <select id="ageMaxSel" required onchange="checkAgeOrder()"><option value="">선택</option></select>
                 </div>
             </div>
             <input type="hidden" name="preferredAgeRange" id="preferredAgeRangeHidden">
 
             <div class="field" style="margin-top:20px; border-top:1px dashed #ccc; padding-top:15px;">
                 <label class="field-label">특정 지인 차단 <span style="font-size:12px;color:#888;">(선택)</span></label>
-                <div class="field-desc">매칭을 피하고 싶은 지인이 있다면 추가해주세요.</div>
                 <div id="excludePersonList">
                     <div class="exclude-row" style="display:flex; gap:5px; margin-bottom:5px;">
                         <select class="ex-birth" style="flex:1;"><option value="">년생</option></select>
@@ -255,7 +244,12 @@
         </div>
 
         <div class="section">
-            <div class="agree-item"><label class="agree-label"><input type="checkbox" required> 모든 이용 약관 및 환불 규정에 동의합니다.</label></div>
+            <div class="agree-item">
+                <label class="agree-label">
+                    <input type="checkbox" required> 
+                    <span><a href="#" onclick="alert('개인정보처리방침 및 약관 링크를 연결해주세요.'); return false;" style="color:#d63384; text-decoration:underline;">개인정보 처리방침</a> 및 서비스 이용 약관에 동의합니다.</span>
+                </label>
+            </div>
         </div>
 
         <button type="submit" class="submit-btn" id="submitBtn">소개팅 지원서 제출하기</button>
@@ -266,33 +260,34 @@
     <div class="modal">
         <div style="font-size: 3rem; margin-bottom:10px;">🎉</div>
         <h2 style="margin-bottom:10px;">지원서 제출 완료!</h2>
-        <p>지원서가 데이터베이스에 안전하게 저장되었습니다.</p>
-        <div class="kakao-next">
-            카카오톡 <strong>findsome.dggb</strong> 추가 후<br>
-            <strong>'본인 년생_이름_닉네임'</strong>을 꼭 보내주세요!
+        <p style="color:#666; font-size:0.9rem; line-height:1.5;">지원서가 데이터베이스에 안전하게 암호화되어 저장되었습니다.<br>아래 버튼을 눌러 카카오톡 채널로 <strong>'본인 년생_이름_닉네임'</strong>을 꼭 보내주세요!</p>
+        
+        <a href="http://pf.kakao.com/_xxxxxx/chat" target="_blank" class="kakao-next">파인드썸 카카오톡 바로가기 💬</a>
+        
+        <div style="margin-top: 25px;">
+            <button onclick="location.reload()" style="padding: 10px 25px; background: #e2e8f0; color: #475569; border: none; border-radius: 30px; font-weight: 700; cursor:pointer;">창 닫기</button>
         </div>
-        <button onclick="location.reload()" style="margin-top: 20px; padding: 12px 30px; background: #d63384; color: white; border: none; border-radius: 30px; font-weight: 700;">확인</button>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+    // 🚨 대표님의 수파베이스 URL과 KEY를 꼭 다시 넣어주세요!
     const SUPABASE_URL = 'https://teeutkxfzxdsaqdvwrwt.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 라디오 선택 효과
     function selectRadio(labelEl) {
         labelEl.parentNode.querySelectorAll('label').forEach(l => l.classList.remove('selected'));
         labelEl.classList.add('selected');
         labelEl.querySelector('input').checked = true;
     }
 
-    // 이모티콘 차단 & 글자수 카운터
     const emojiRegex = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu;
     document.querySelectorAll('[data-no-emoji]').forEach(el => {
         el.addEventListener('input', function() { if (emojiRegex.test(this.value)) { this.value = this.value.replace(emojiRegex, ''); alert('이모티콘은 입력 불가합니다.'); }});
     });
+    
     document.querySelectorAll('[data-counter]').forEach(el => {
         const max = el.getAttribute('data-counter');
         const counter = document.createElement('div'); counter.className = 'char-counter'; counter.textContent = `0 / ${max}자`;
@@ -300,7 +295,6 @@
         el.addEventListener('input', () => { counter.textContent = `${el.value.length} / ${max}자`; });
     });
 
-    // 나이 셀렉트 박스 자동 생성
     (function buildAgeSelects() {
         let opts = '<option value="">선택</option>';
         for(let i=86; i<=103; i++){ let v=i>99?String(i-100).padStart(2,'0'):i; opts += `<option value="${v}">${v}년생</option>`; }
@@ -308,7 +302,20 @@
         document.querySelectorAll('.ex-birth').forEach(el => el.innerHTML = opts);
     })();
 
-    // 지인 차단 행 추가
+    // 🔥 나이 선택 역전 방지 로직 (86년생이 95년생보다 숫자가 작음 유의)
+    function checkAgeOrder() {
+        const minVal = document.getElementById('ageMinSel').value;
+        const maxVal = document.getElementById('ageMaxSel').value;
+        if(minVal && maxVal) {
+            let minNum = parseInt(minVal); let maxNum = parseInt(maxVal);
+            if(minNum < 50) minNum += 100; if(maxNum < 50) maxNum += 100;
+            if(minNum > maxNum) {
+                alert("선호 최대 나이가 선호 최소 나이보다 어릴 수 없습니다.");
+                document.getElementById('ageMaxSel').value = '';
+            }
+        }
+    }
+
     function addExcludeRow() {
         const list = document.getElementById('excludePersonList');
         const row = document.createElement('div'); row.className = 'exclude-row'; row.style.cssText = 'display:flex; gap:5px; margin-bottom:5px;';
@@ -318,12 +325,17 @@
         list.appendChild(row);
     }
 
-    // 파일 미리보기 공통 함수
     function setupPreview(inputId, listId) {
         document.getElementById(inputId).addEventListener('change', function() {
-            const list = document.getElementById(listId); list.innerHTML = '';
-            if(this.files[0]) {
-                const img = document.createElement('img'); img.src = URL.createObjectURL(this.files[0]);
+            const file = this.files[0];
+            if(file) {
+                // 🔥 5MB 용량 제한
+                if(file.size > 5 * 1024 * 1024) {
+                    alert('첨부하신 사진의 용량이 너무 큽니다. (최대 5MB)\n용량을 줄이거나 다른 사진을 선택해주세요.');
+                    this.value = ''; return;
+                }
+                const list = document.getElementById(listId); list.innerHTML = '';
+                const img = document.createElement('img'); img.src = URL.createObjectURL(file);
                 const item = document.createElement('div'); item.className = 'file-preview-item'; item.appendChild(img);
                 list.appendChild(item);
             }
@@ -332,18 +344,15 @@
     setupPreview('photo1Input', 'photo1PreviewList');
     setupPreview('certInput', 'certPreviewList');
 
-    // 폼 전송 (수파베이스 DB/Storage 연동)
     document.getElementById('applyForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const submitBtn = document.getElementById('submitBtn'); submitBtn.disabled = true; submitBtn.textContent = '안전하게 데이터 전송 중... ⏳';
+        const submitBtn = document.getElementById('submitBtn'); submitBtn.disabled = true; submitBtn.textContent = '안전하게 데이터 암호화 전송 중... ⏳';
 
         try {
-            // 태그 및 나이 데이터 병합
             const avoidTags = [...document.querySelectorAll('#avoidReligionTags .ar-tag.selected')].map(t => t.innerText).join(', ');
             document.getElementById('avoidReligionHidden').value = avoidTags;
             document.getElementById('preferredAgeRangeHidden').value = document.getElementById('ageMinSel').value + '년생 ~ ' + document.getElementById('ageMaxSel').value + '년생';
             
-            // 지인 차단 리스트 병합
             let avoidPersons = [];
             document.querySelectorAll('.exclude-row').forEach(row => {
                 const b = row.querySelector('.ex-birth').value; const n = row.querySelector('.ex-name').value;
@@ -351,24 +360,33 @@
             });
             document.getElementById('avoidTypeHidden').value = avoidPersons.length > 0 ? '차단: ' + avoidPersons.join(', ') : '';
 
-            // 파일 업로드 함수
-            async function uploadSingleFile(fileElementId, prefix) {
+            // 🔥 파일 업로드 통합 함수 (난수화 및 비공개 처리 포함)
+            async function uploadOptimizedFile(fileElementId, prefix, bucketName, isPrivate) {
                 const file = document.getElementById(fileElementId).files[0];
                 if (!file) return '';
-                const fileName = `${prefix}_${Date.now()}_${file.name}`;
-                await _supabase.storage.from('profile_photos').upload(fileName, file);
-                return _supabase.storage.from('profile_photos').getPublicUrl(fileName).data.publicUrl;
+                
+                // 파일명 난수화 (인코딩 에러 및 이름 유출 방지)
+                const randomStr = Math.random().toString(36).substring(2, 10);
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${prefix}_${Date.now()}_${randomStr}.${fileExt}`;
+
+                await _supabase.storage.from(bucketName).upload(fileName, file);
+
+                if(isPrivate) {
+                    return fileName; // 비공개는 이름(경로)만 저장
+                } else {
+                    return _supabase.storage.from(bucketName).getPublicUrl(fileName).data.publicUrl; // 공개는 주소 통째로 저장
+                }
             }
 
-            // 스토리지에 파일 병렬 업로드 (사진 1장, 증명서 1장)
-            const photo1 = await uploadSingleFile('photo1Input', 'p1');
-            const certUrl = await uploadSingleFile('certInput', 'cert');
+            // 사진은 공개 버킷(profile_photos)에, 서류는 비공개 버킷(cert_documents)에 저장
+            const photo1 = await uploadOptimizedFile('photo1Input', 'p1', 'profile_photos', false);
+            const certPath = await uploadOptimizedFile('certInput', 'cert', 'cert_documents', true);
             
-            // DB 전송 데이터 가공
             const formData = new FormData(document.getElementById('applyForm'));
             const finalData = Object.fromEntries(formData.entries());
             finalData.photo_url = photo1; 
-            finalData.cert_url = certUrl;
+            finalData.cert_url = certPath; // 서류는 경로만 저장됨!
             finalData.status = "대기";
 
             const { error: dbError } = await _supabase.from('members').insert([finalData]);
