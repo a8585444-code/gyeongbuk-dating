@@ -163,7 +163,7 @@
                 <div style="flex:1;">
                     <label class="field-label">잘 나온 사진 <span class="req">*</span></label>
                     <div class="file-upload-area" id="photo1UploadArea">
-                        <input type="file" id="photo1Input" accept="image/*" required>
+                        <input type="file" id="photo1Input" accept=".jpg, .jpeg, .png, .webp" required>
                         <div style="font-size: 1.8rem; margin-bottom:5px;">📸</div>
                         <p style="font-size:0.75rem; color:#888;">클릭하여 첨부</p>
                     </div>
@@ -172,7 +172,7 @@
                 <div style="flex:1;">
                     <label class="field-label">전신 사진 <span class="req">*</span></label>
                     <div class="file-upload-area" id="photoFullUploadArea">
-                        <input type="file" id="photoFullInput" accept="image/*" required>
+                        <input type="file" id="photoFullInput" accept=".jpg, .jpeg, .png, .webp" required>
                         <div style="font-size: 1.8rem; margin-bottom:5px;">🧍</div>
                         <p style="font-size:0.75rem; color:#888;">클릭하여 첨부</p>
                     </div>
@@ -242,7 +242,7 @@
                 <div style="margin-top:15px;">
                     <label class="field-label">재직증명서 / 사업자등록증 첨부 <span class="req">*</span></label>
                     <div class="file-upload-area" id="proofUploadArea" style="min-height: 100px; padding:15px;">
-                        <input type="file" id="certInput" accept="image/*" required>
+                        <input type="file" id="certInput" accept=".jpg, .jpeg, .png, .webp" required>
                         <div style="font-size: 1.5rem;">📄</div>
                         <p style="font-size:0.75rem; margin-top:5px; color:#888;">클릭하여 비공개 인증 서류 첨부</p>
                     </div>
@@ -428,10 +428,10 @@
         document.getElementById(inputId).addEventListener('change', function() {
             const file = this.files[0];
             if(file) {
-                // ✨ HEIC/아이폰 이미지 차단
+                // ✨ WebP 추가 허용 및 HEIC(아이폰) 차단 로직
                 const fileExt = file.name.split('.').pop().toLowerCase();
-                if(!['jpg', 'jpeg', 'png'].includes(fileExt)) {
-                    alert('사진은 JPG, PNG 형식만 업로드 가능합니다.\n(아이폰의 경우 카카오톡으로 나에게 보낸 후 다시 저장한 사진을 올려주세요.)');
+                if(!['jpg', 'jpeg', 'png', 'webp'].includes(fileExt)) {
+                    alert('사진은 JPG, PNG, WEBP 형식만 업로드 가능합니다.\n(아이폰의 경우 카카오톡으로 나에게 보낸 후 다시 저장한 사진을 올려주세요.)');
                     this.value = ''; return;
                 }
 
@@ -458,15 +458,7 @@
         let uploadedFiles = []; 
 
         try {
-            // ✨ 전화번호 중복 가입 원천 차단 (파일 업로드 전 검사)
-            const phoneVal = document.querySelector('input[name="phoneNumber"]').value;
-            const { data: existUser } = await _supabase.from('members').select('id').eq('phoneNumber', phoneVal).limit(1);
-
-            if (existUser && existUser.length > 0) {
-                alert('이미 해당 휴대폰 번호로 접수된 지원서가 존재합니다.\n(내용 수정이 필요하신 경우 카카오톡 채널로 문의해주세요.)');
-                submitBtn.disabled = false; submitBtn.textContent = '소개팅 지원서 제출하기';
-                return; 
-            }
+            // ✨ [보안 RLS 충돌 방지] 기존의 SELECT 방식 중복 체크 삭제 완료
 
             const avoidTags = [...document.querySelectorAll('#avoidReligionTags .ar-tag.selected')].map(t => t.innerText).join(', ');
             document.getElementById('avoidReligionHidden').value = avoidTags;
@@ -517,15 +509,26 @@
             finalData.max_preferred_year = maxYear;
 
             const { error: dbError } = await _supabase.from('members').insert([finalData]);
-            if (dbError) throw dbError;
+            
+            // ✨ UNIQUE 에러 핸들링 (Postgres 에러 코드 23505)
+            if (dbError) {
+                if (dbError.code === '23505') throw new Error("DUPLICATE_PHONE");
+                throw dbError;
+            }
 
             document.getElementById('successModal').classList.add('show');
         } catch (error) {
+            // ✨ 에러 발생 시 업로드된 파일 롤백
             for (let f of uploadedFiles) {
                 await _supabase.storage.from(f.bucket).remove([f.path]);
             }
-            alert('오류 발생: ' + error.message); 
-            console.error(error);
+            
+            if (error.message === "DUPLICATE_PHONE") {
+                alert('이미 해당 휴대폰 번호로 접수된 지원서가 존재합니다.\n(내용 수정이 필요하신 경우 카카오톡 채널로 문의해주세요.)');
+            } else {
+                alert('오류 발생: ' + error.message); 
+                console.error(error);
+            }
         } finally {
             submitBtn.disabled = false; submitBtn.textContent = '소개팅 지원서 제출하기';
         }
