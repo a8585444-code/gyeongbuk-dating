@@ -3,136 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>신규회원 관리 - 파인드썸</title>
+    <title>신규 신청 회원 관리 - 파인드썸</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #f0f2f5; padding: 20px; }
-        .header { max-width: 1200px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
-        .back-btn { text-decoration: none; color: #7c3aed; font-weight: 600; font-size: 14px; }
-        
-        .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; max-width: 1200px; margin: 0 auto; overflow-x: auto; }
+        body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+        .header { max-width: 1400px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { text-decoration: none; color: #7c3aed; font-weight: 700; font-size: 14px; background: #fff; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; max-width: 1400px; margin: 0 auto; overflow-x: auto; }
         h1 { font-size: 20px; color: #1a1a2e; margin-bottom: 20px; }
-
-        table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
-        th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: left; }
-        th { background: #f8fafc; color: #64748b; font-weight: 600; position: sticky; top: 0; }
-        
-        .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; background: #fee2e2; color: #dc2626; }
-        
-        .action-btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s; margin-right: 5px; }
-        .approve-btn { background: #7c3aed; color: white; }
-        .approve-btn:hover { background: #6d28d9; }
-        .reject-btn { background: #f1f5f9; color: #64748b; }
-        .reject-btn:hover { background: #e2e8f0; }
-
-        .loading { text-align: center; padding: 50px; color: #7c3aed; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; white-space: nowrap; }
+        th, td { padding: 14px 10px; border-bottom: 1px solid #eee; }
+        th { background: #f8fafc; color: #64748b; font-weight: 700; }
+        .btn { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; margin: 2px; }
+        .btn-detail { background: #ede9fe; color: #7c3aed; }
+        .btn-approve { background: #10b981; color: white; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: white; border-radius: 20px; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; padding: 30px; position: relative; }
+        .close-modal { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px; color: #94a3b8; }
+        .photo-container { display: flex; gap: 20px; overflow-x: auto; padding: 5px 0 20px; justify-content: center; }
+        .profile-photo { width: 180px; height: 240px; object-fit: cover; border-radius: 12px; border: 1px solid #eee; cursor: pointer; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .info-item { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #f1f5f9; }
+        .info-label { font-size: 11px; color: #7c3aed; font-weight: 800; margin-bottom: 6px; }
+        .info-value { font-size: 14px; font-weight: 600; color: #1e293b; }
+        .full-width { grid-column: span 2; }
     </style>
 </head>
 <body>
-
     <div class="header">
         <a href="/admin.html" class="back-btn">← 관리자 홈으로</a>
-        <div id="stats" style="font-size: 13px; color: #64748b;">신규 대기 회원: 0명</div>
+        <div style="font-size: 13px; color: #64748b; font-weight: 600;">신규 대기 회원: <span id="pendingCount">0</span>명</div>
     </div>
-
-    <div class="card">
-        <h1>신규 신청 회원 관리 (미승인 명단)</h1>
-        <div id="loading" class="loading">데이터를 불러오는 중입니다... ⏳</div>
-        
+    <div class="card" id="mainContainer" style="display:none;">
+        <h1>🚨 신규 신청 회원 관리 (미승인 명단)</h1>
+        <div id="loading" style="text-align:center; padding:50px; color:#7c3aed; font-weight:700;">불러오는 중...</div>
         <table>
             <thead>
                 <tr>
-                    <th>관리</th>
-                    <th>상태</th>
-                    <th>접수일시</th>
-                    <th>이름</th>
-                    <th>성별</th>
-                    <th>닉네임</th>
-                    <th>연락처</th>
-                    <th>거주지</th>
-                    <th>직업</th>
-                    <th>키</th>
+                    <th>관리</th><th>상태</th><th>접수일시</th><th>이름</th><th>성별</th><th>연락처</th><th>지역</th><th>직업</th>
                 </tr>
             </thead>
-            <tbody id="memberList">
-                </tbody>
+            <tbody id="memberList"></tbody>
         </table>
     </div>
 
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">×</span>
+            <h2 id="modalTitle" style="margin-bottom:25px;">프로필 심사</h2>
+            <div id="modalBody"></div>
+            <div style="margin-top:20px; text-align:center;">
+                <button class="btn btn-approve" style="padding:12px 30px; font-size:14px;" onclick="approveMember()">✅ 이 회원을 '정회원'으로 승인하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://teeutkxfzxdsaqdvwrwt.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let pendingMembers = [];
+        let currentViewId = null;
 
-        // 1. 신규 대기 회원만 불러오기
-        async function fetchNewMembers() {
-            try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/members?status=eq.대기&order=created_at.desc`, {
-                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-                });
-                const data = await response.json();
-                renderMembers(data);
-            } catch (error) {
-                alert('데이터 로드 실패');
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
+        function esc(str) { return str ? str.toString().replace(/[&<>'"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[m]) : '-'; }
+
+        async function checkAuth() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) { alert('보안 구역입니다.'); window.location.href = '/login.html'; return; }
+            document.getElementById('mainContainer').style.display = 'block';
+            loadData();
         }
 
-        // 2. 명단 화면에 그리기
-        function renderMembers(members) {
-            const listBody = document.getElementById('memberList');
-            document.getElementById('stats').textContent = `신규 대기 회원: ${members.length}명`;
+        async function loadData() {
+            try {
+                const { data, error } = await _supabase.from('members').select('*').in('status', ['대기', 'PENDING']).order('id', { ascending: false });
+                if (error) throw error;
+                pendingMembers = data;
+                document.getElementById('pendingCount').innerText = pendingMembers.length;
+                renderList();
+            } catch (e) { alert('데이터 로드 실패'); }
+            finally { document.getElementById('loading').style.display = 'none'; }
+        }
 
-            if (members.length === 0) {
-                listBody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:50px;">현재 승인 대기 중인 신규 회원이 없습니다.</td></tr>';
+        function renderList() {
+            const listBody = document.getElementById('memberList');
+            if(pendingMembers.length === 0) {
+                listBody.innerHTML = '<tr><td colspan="8" style="padding:40px; color:#94a3b8;">현재 승인 대기 중인 신규 회원이 없습니다.</td></tr>';
                 return;
             }
-
-            listBody.innerHTML = members.map(m => `
+            listBody.innerHTML = pendingMembers.map(m => `
                 <tr>
-                    <td>
-                        <button class="action-btn approve-btn" onclick="updateStatus(${m.id}, '정회원')">승인</button>
-                        <button class="action-btn reject-btn" onclick="updateStatus(${m.id}, '거절')">거절</button>
-                    </td>
-                    <td><span class="status-badge">${m.status}</span></td>
-                    <td>${new Date(m.created_at).toLocaleString('ko-KR')}</td>
-                    <td><strong>${m.name || '-'}</strong></td>
-                    <td>${m.gender || '-'}</td>
-                    <td>${m.nickname || '-'}</td>
-                    <td>${m.phoneNumber || '-'}</td>
-                    <td>${m.region || '-'}</td>
-                    <td>${m.job || '-'}</td>
-                    <td>${m.height || '-'}cm</td>
+                    <td><button class="btn btn-detail" onclick="showDetail(${m.id})">상세 심사</button></td>
+                    <td><span style="color:#ef4444; font-weight:800;">${m.status}</span></td>
+                    <td>${new Date(m.created_at).toLocaleDateString()}</td>
+                    <td><strong>${esc(m.name)}</strong><br><span style="font-size:11px; color:#94a3b8;">(${esc(m.nickname)})</span></td>
+                    <td>${esc(m.gender)}</td>
+                    <td>${esc(m.phoneNumber)}</td>
+                    <td>${esc(m.region)}</td>
+                    <td>${esc(m.job)}</td>
                 </tr>
             `).join('');
         }
 
-        // 3. 상태 변경 기능 (승인/거절)
-        async function updateStatus(id, newStatus) {
-            if(!confirm(`해당 회원을 [${newStatus}] 상태로 변경하시겠습니까?`)) return;
-
-            try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/members?id=eq.${id}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify({ status: newStatus })
-                });
-
-                if (response.ok) {
-                    alert(`${newStatus} 처리되었습니다.`);
-                    location.reload(); // 새로고침해서 명단 갱신
-                }
-            } catch (error) {
-                alert('처리 중 오류가 발생했습니다.');
+        async function showDetail(id) {
+            currentViewId = id;
+            const m = pendingMembers.find(x => x.id === id);
+            document.getElementById('modalTitle').innerText = `📋 ${esc(m.name)} 님 프로필 심사`;
+            
+            let imagesHtml = '<div class="photo-container">';
+            if (m.photo_url) imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800;">프로필 사진</div><img src="${m.photo_url}" class="profile-photo" onclick="window.open('${m.photo_url}')"></div>`;
+            
+            if (m.cert_url) {
+                try {
+                    if(m.cert_url.startsWith('http')) {
+                        imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; color:#d63384;">인증 서류</div><img src="${m.cert_url}" class="profile-photo" style="border:3px solid #fce4ec;" onclick="window.open('${m.cert_url}')"></div>`;
+                    } else {
+                        const { data, error } = await _supabase.storage.from('cert_documents').createSignedUrl(m.cert_url, 60);
+                        if (error) throw error;
+                        imagesHtml += `<div style="text-align:center;"><div style="font-size:11px; font-weight:800; color:#d63384;">보안 서류 (60초 유효)</div><img src="${data.signedUrl}" class="profile-photo" style="border:3px solid #fce4ec;" onclick="window.open('${data.signedUrl}')"></div>`;
+                    }
+                } catch(err) { imagesHtml += `<div style="text-align:center; color:#ef4444;">서류 오류</div>`; }
             }
+            imagesHtml += '</div>';
+
+            document.getElementById('modalBody').innerHTML = `
+                ${imagesHtml}
+                <div class="info-grid">
+                    <div class="info-item full-width" style="background:#fff0f6; border-color:#f8e5f0;">
+                        <div class="info-label" style="color:#d63384;">🔒 실제 직장/사업체</div>
+                        <div class="info-value" style="font-size:16px;">${esc(m.jobOrganizationName)}</div>
+                    </div>
+                    <div class="info-item"><div class="info-label">공개 직업</div><div class="info-value">${esc(m.job)}</div></div>
+                    <div class="info-item"><div class="info-label">키 / 체형</div><div class="info-value">${esc(m.height)}cm / ${esc(m.bodyType)}</div></div>
+                    <div class="info-item"><div class="info-label">MBTI / 종교</div><div class="info-value">${esc(m.mbti)} / ${esc(m.religion)}</div></div>
+                    <div class="info-item full-width"><div class="info-label">한 줄 소개</div><div class="info-value">${esc(m.selfIntroduction)}</div></div>
+                </div>
+            `;
+            document.getElementById('detailModal').style.display = 'flex';
         }
 
-        window.onload = fetchNewMembers;
+        async function approveMember() {
+            if(!currentViewId) return;
+            if(!confirm("이 회원을 정회원으로 승인하시겠습니까?")) return;
+            try {
+                const { error } = await _supabase.from('members').update({ status: '정회원' }).eq('id', currentViewId);
+                if (error) throw error;
+                alert("정회원으로 승인되었습니다!");
+                closeModal();
+                loadData();
+            } catch(e) { alert("승인 실패"); }
+        }
+
+        function closeModal() { document.getElementById('detailModal').style.display = 'none'; currentViewId = null; }
+        checkAuth();
     </script>
 </body>
 </html>
