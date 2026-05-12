@@ -6,21 +6,21 @@
     <title>매칭 진행중 관리 - 파인드썸</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #f0f2f5; padding: 20px; }
+        body { font-family: 'Apple SD Gothic Neo', -apple-system, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
         .header { max-width: 1200px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
-        .back-btn { text-decoration: none; color: #7c3aed; font-weight: 600; font-size: 14px; }
+        .back-btn { text-decoration: none; color: #7c3aed; font-weight: 700; font-size: 14px; background: #fff; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         
         .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 24px; max-width: 1200px; margin: 0 auto; overflow-x: auto; }
         h1 { font-size: 20px; color: #1a1a2e; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
         .subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
-        th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; }
-        th { background: #f8fafc; color: #64748b; font-weight: 600; position: sticky; top: 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; text-align: center; }
+        th, td { padding: 15px; border-bottom: 1px solid #eee; }
+        th { background: #f8fafc; color: #64748b; font-weight: 700; position: sticky; top: 0; }
         
         .status-badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; background: #fef3c7; color: #b45309; }
         
-        .action-btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s; margin: 0 2px; }
+        .btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; transition: 0.2s; margin: 0 2px; }
         .btn-success { background: #10b981; color: white; }
         .btn-success:hover { background: #059669; }
         .btn-fail { background: #f1f5f9; color: #64748b; }
@@ -33,43 +33,61 @@
 
     <div class="header">
         <a href="/admin.html" class="back-btn">← 관리자 홈으로</a>
-        <div id="stats" style="font-size: 13px; color: #64748b;">매칭 진행 중: 0명</div>
+        <div id="stats" style="font-size: 13px; color: #64748b; font-weight: 700;">조회된 회원: 0명</div>
     </div>
 
-    <div class="card">
+    <div class="card" id="mainContainer" style="display:none;">
         <h1>💞 매칭 진행중인 회원 관리</h1>
         <p class="subtitle">현재 소개팅이 조율 중이거나 연락처 교환 대기 중인 회원들입니다.</p>
+
+        <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <select id="regionFilter" style="padding: 10px; border-radius: 8px; border: 1px solid #db2777; color: #db2777; font-weight: 800; outline: none; background: #fff5f9; cursor: pointer;" onchange="filterMembers()">
+                <option value="ALL">📍 전국 (전체 권역)</option>
+                <option value="[서울,인천]">[서울,인천]</option>
+                <option value="[충북,충남]">[충북,충남]</option>
+                <option value="[대전,세종]">[대전,세종]</option>
+                <option value="[대구,경북]">[대구,경북]</option>
+                <option value="[부산,경남]">[부산,경남]</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="이름 검색" style="padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; width: 250px; outline: none;" onkeyup="if(event.key==='Enter') filterMembers()">
+            <button class="btn" style="background:#1e293b; color:white;" onclick="filterMembers()">검색</button>
+            <button class="btn" style="background:#f1f5f9; color:#475569;" onclick="resetFilters()">초기화</button>
+        </div>
         
         <div id="loading" class="loading">데이터를 불러오는 중입니다... ⏳</div>
         
         <table>
             <thead>
                 <tr>
-                    <th>회원번호</th>
-                    <th>상태</th>
-                    <th>이름</th>
-                    <th>성별</th>
-                    <th>연락처</th>
-                    <th>직업</th>
-                    <th>결과 처리 (상태 변경)</th>
+                    <th>회원번호</th><th>상태</th><th>지역</th><th>이름</th><th>성별</th><th>연락처</th><th>직업</th><th>결과 처리 (상태 변경)</th>
                 </tr>
             </thead>
             <tbody id="memberList"></tbody>
         </table>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://teeutkxfzxdsaqdvwrwt.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let allMembers = [];
+        let displayMembers = [];
+
+        async function checkAuth() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) { alert('보안 구역입니다.'); window.location.href = '/login.html'; return; }
+            document.getElementById('mainContainer').style.display = 'block';
+            fetchMatchingMembers();
+        }
 
         async function fetchMatchingMembers() {
             try {
-                // 상태가 '매칭중'인 회원만 불러오기
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/members?status=eq.매칭중&order=id.desc`, {
-                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-                });
-                const members = await response.json();
-                renderMembers(members);
+                const { data, error } = await _supabase.from('members').select('*').eq('status', '매칭중').order('id', { ascending: false });
+                if (error) throw error;
+                allMembers = data;
+                filterMembers();
             } catch (error) {
                 alert('데이터 로드 실패');
             } finally {
@@ -77,26 +95,45 @@
             }
         }
 
+        function filterMembers() {
+            const region = document.getElementById('regionFilter').value;
+            const keyword = document.getElementById('searchInput').value.trim();
+
+            displayMembers = allMembers;
+
+            if (region !== 'ALL') displayMembers = displayMembers.filter(m => m.region && m.region.includes(region));
+            if (keyword) displayMembers = displayMembers.filter(m => (m.name && m.name.includes(keyword)) || (m.nickname && m.nickname.includes(keyword)));
+
+            renderMembers(displayMembers);
+        }
+
+        function resetFilters() {
+            document.getElementById('regionFilter').value = 'ALL';
+            document.getElementById('searchInput').value = '';
+            filterMembers();
+        }
+
         function renderMembers(members) {
             const listBody = document.getElementById('memberList');
-            document.getElementById('stats').textContent = `매칭 진행 중: ${members.length}명`;
+            document.getElementById('stats').textContent = `조회된 회원: ${members.length}명`;
 
             if (members.length === 0) {
-                listBody.innerHTML = '<tr><td colspan="7" style="padding:50px;">현재 매칭이 진행 중인 회원이 없습니다.</td></tr>';
+                listBody.innerHTML = '<tr><td colspan="8" style="padding:50px; color:#94a3b8;">현재 조건에 맞는 매칭 진행 중인 회원이 없습니다.</td></tr>';
                 return;
             }
 
             listBody.innerHTML = members.map(m => `
                 <tr>
-                    <td>${m.id}</td>
+                    <td style="color:#94a3b8; font-weight:700;">${m.id}</td>
                     <td><span class="status-badge">${m.status}</span></td>
+                    <td><span style="color:#db2777; font-weight:700;">${m.region || '-'}</span></td>
                     <td><strong>${m.name || '-'}</strong></td>
                     <td>${m.gender || '-'}</td>
                     <td>${m.phoneNumber || '-'}</td>
                     <td>${m.job || '-'}</td>
                     <td>
-                        <button class="action-btn btn-success" onclick="updateStatus(${m.id}, '매칭완료', '${m.name}')">입금/매칭 확정</button>
-                        <button class="action-btn btn-fail" onclick="updateStatus(${m.id}, '정회원', '${m.name}')">매칭 무산 (다시 대기)</button>
+                        <button class="btn btn-success" onclick="updateStatus(${m.id}, '매칭완료', '${m.name}')">입금/매칭 확정</button>
+                        <button class="btn btn-fail" onclick="updateStatus(${m.id}, '정회원', '${m.name}')">매칭 무산 (다시 대기)</button>
                     </td>
                 </tr>
             `).join('');
@@ -105,32 +142,21 @@
         async function updateStatus(id, newStatus, name) {
             let msg = newStatus === '매칭완료' 
                 ? `[${name}] 님의 매칭을 최종 확정(입금 완료) 처리하시겠습니까?` 
-                : `[${name}] 님의 매칭이 무산되었습니까? (정회원 상태로 복귀합니다)`;
+                : `[${name}] 님의 매칭이 무산되었습니까?\n(정회원 상태로 복귀합니다)`;
                 
             if(!confirm(msg)) return;
 
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/members?id=eq.${id}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify({ status: newStatus })
-                });
-
-                if (response.ok) {
-                    alert('처리가 완료되었습니다.');
-                    location.reload(); 
-                }
+                const { error } = await _supabase.from('members').update({ status: newStatus }).eq('id', id);
+                if (error) throw error;
+                alert('처리가 완료되었습니다.');
+                fetchMatchingMembers(); // 새로고침 없이 리스트만 갱신
             } catch (error) {
                 alert('처리 중 오류가 발생했습니다.');
             }
         }
 
-        window.onload = fetchMatchingMembers;
+        checkAuth();
     </script>
 </body>
 </html>
