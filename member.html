@@ -74,10 +74,19 @@
     <div class="card" id="mainContainer" style="display:none;">
         <h1 id="pageTitle">회원 매칭 관리</h1>
         
-        <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+        <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <select id="regionFilter" style="padding: 10px; border-radius: 8px; border: 1px solid #db2777; color: #db2777; font-weight: 800; outline: none; background: #fff5f9; cursor: pointer;" onchange="filterMembers()">
+                <option value="ALL">📍 전국 (전체 권역)</option>
+                <option value="[서울,인천]">[서울,인천]</option>
+                <option value="[충북,충남]">[충북,충남]</option>
+                <option value="[대전,세종]">[대전,세종]</option>
+                <option value="[대구,경북]">[대구,경북]</option>
+                <option value="[부산,경남]">[부산,경남]</option>
+            </select>
+
             <input type="text" id="searchInput" placeholder="이름 또는 닉네임 검색" style="padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; width: 250px; outline: none;" onkeypress="if(event.key === 'Enter') searchMembers();">
             <button class="btn btn-match" style="padding: 10px 20px;" onclick="searchMembers()">검색</button>
-            <button class="btn btn-copy" style="padding: 10px 20px;" onclick="loadData()">초기화</button>
+            <button class="btn btn-copy" style="padding: 10px 20px;" onclick="resetFilters()">초기화</button>
         </div>
 
         <div class="tab-container">
@@ -135,7 +144,6 @@
         }
 
         async function loadData() {
-            document.getElementById('searchInput').value = '';
             try {
                 const genderStr = targetGender === 'woman' ? '여' : '남';
                 const { data, error } = await _supabase.from('members')
@@ -147,7 +155,7 @@
                 baseMembers = data;
 
                 document.getElementById('pageTitle').innerText = (targetGender === 'woman' ? '♀️ 여성' : '♂️ 남성') + ' 매칭 관리';
-                filterByGrade('ALL');
+                filterMembers(); // ✨ 로드 후 복합 필터 실행
             } catch (e) { alert('데이터 로드 실패'); }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
@@ -168,7 +176,7 @@
             const { data, error } = await query;
             if(!error) {
                 baseMembers = data;
-                filterByGrade('ALL');
+                filterMembers(); // ✨ 검색 후 복합 필터 실행
             }
             document.getElementById('loading').style.display = 'none';
         }
@@ -177,13 +185,36 @@
             currentGradeTab = grade;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('tab-' + grade).classList.add('active');
+            filterMembers(); // ✨ 탭 변경 후 복합 필터 실행
+        }
 
-            let filteredList = [];
-            if (grade === 'ALL') filteredList = baseMembers;
-            else if (grade === 'NONE') filteredList = baseMembers.filter(m => !m.grade || m.grade === '');
-            else filteredList = baseMembers.filter(m => m.grade === grade);
+        // ✨ [핵심] 지역 필터와 등급 필터를 동시에 계산하는 복합 필터 함수
+        function filterMembers() {
+            const region = document.getElementById('regionFilter').value;
+            let filteredList = baseMembers;
+
+            // 1. 지역(권역) 필터링
+            if (region !== 'ALL') {
+                filteredList = filteredList.filter(m => m.region && m.region.includes(region));
+            }
+
+            // 2. 등급 탭 필터링
+            if (currentGradeTab === 'NONE') {
+                filteredList = filteredList.filter(m => !m.grade || m.grade === '');
+            } else if (currentGradeTab !== 'ALL') {
+                filteredList = filteredList.filter(m => m.grade === currentGradeTab);
+            }
 
             renderList(filteredList);
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('regionFilter').value = 'ALL';
+            currentGradeTab = 'ALL';
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tab-ALL').classList.add('active');
+            loadData();
         }
 
         function renderList(members) {
@@ -209,7 +240,7 @@
                         </div>
                     </td>
                     <td><strong>${esc(m.name)}</strong><br><span style="font-size:11px; color:#94a3b8;">(${esc(m.nickname)})</span></td>
-                    <td>${esc(m.birthYear)}년생<br>${esc(m.region)}</td>
+                    <td>${esc(m.birthYear)}년생<br><span style="color:#db2777; font-weight:800;">${esc(m.region)}</span></td>
                     <td>${esc(m.job)}<br>${esc(m.height)}cm</td>
                     <td><span style="font-weight:700;">${esc(m.mbti)}</span><br>${esc(m.religion)}</td>
                     <td><button class="btn btn-copy" onclick="copyText('${esc(m.phoneNumber)}')">📞 번호복사</button></td>
@@ -227,11 +258,12 @@
                 if(error) throw error;
                 const baseIdx = baseMembers.findIndex(x => x.id === id);
                 if(baseIdx > -1) baseMembers[baseIdx][fieldName] = value;
-                if(fieldName === 'grade') filterByGrade(currentGradeTab);
+                
+                // 등급 변경 시 필터 다시 적용
+                if(fieldName === 'grade') filterMembers();
             } catch (e) { alert('업데이트 실패'); }
         }
 
-        // ✨ [버그 픽스 완료] 이성 추천 후보 프로필 조회 시 메모리에 없으면 DB에서 직접 가져오는 로직 추가
         async function showDetail(id) {
             let m = baseMembers.find(x => x.id === id);
             
