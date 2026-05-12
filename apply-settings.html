@@ -76,6 +76,16 @@
             <label>카카오톡 채널 URL (연결 링크)</label>
             <input type="text" id="kakaoUrl" placeholder="예: http://pf.kakao.com/_xxxxxx/chat">
         </div>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <div style="flex: 1;">
+                <label>가입 최소 년생 (예: 1986)</label>
+                <input type="number" id="minBirthYear" placeholder="1986">
+            </div>
+            <div style="flex: 1;">
+                <label>가입 최대 년생 (예: 2005)</label>
+                <input type="number" id="maxBirthYear" placeholder="2005">
+            </div>
+        </div>
 
         <button class="btn-save" onclick="saveSettings()">⚙️ 시스템 설정 저장하기</button>
     </div>
@@ -128,6 +138,8 @@
                 document.getElementById('priceFemale').value = data.price_female;
                 document.getElementById('noticeText').value = data.notice_text;
                 document.getElementById('kakaoUrl').value = data.kakao_url || '';
+                document.getElementById('minBirthYear').value = data.min_birth_year || 1986;
+                document.getElementById('maxBirthYear').value = data.max_birth_year || 2005;
                 updateStatusText(data.is_open);
             }
         }
@@ -156,7 +168,9 @@
                 price_male: document.getElementById('priceMale').value,
                 price_female: document.getElementById('priceFemale').value,
                 notice_text: document.getElementById('noticeText').value,
-                kakao_url: document.getElementById('kakaoUrl').value
+                kakao_url: document.getElementById('kakaoUrl').value,
+                min_birth_year: parseInt(document.getElementById('minBirthYear').value),
+                max_birth_year: parseInt(document.getElementById('maxBirthYear').value)
                
                 
             };
