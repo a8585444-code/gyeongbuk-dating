@@ -115,7 +115,6 @@
         async function showDetail(id) {
             currentViewId = id;
             const m = pendingMembers.find(x => x.id === id);
-            // ✨ innerHTML 로 교체하여 렌더링 버그 차단
             document.getElementById('modalTitle').innerHTML = `📋 ${esc(m.name)} (${esc(m.nickname)}) 님 프로필 심사`;
             
             let imagesHtml = '<div class="photo-container">';
@@ -180,13 +179,11 @@
             try {
                 const member = pendingMembers.find(x => x.id === currentViewId);
 
-                // 1. 스토리지에서 인증 서류 파기 (URL 디코딩 적용)
                 if (member.cert_url && !member.cert_url.startsWith('http')) {
                     let certFileName = member.cert_url.split('?')[0].split('/').pop();
                     await _supabase.storage.from('cert_documents').remove([decodeURIComponent(certFileName)]);
                 }
 
-                // 2. DB 업데이트 시 cert_url 초기화
                 const { error } = await _supabase.from('members')
                     .update({ status: '정회원', cert_url: null })
                     .eq('id', currentViewId);
@@ -203,7 +200,6 @@
             
             const member = pendingMembers.find(x => x.id === currentViewId);
             
-            // 1. 스토리지 삭제 (디코딩 로직 적용)
             try {
                 const photosToDelete = [];
                 if (member.photo_url) {
@@ -224,7 +220,6 @@
                 console.warn("스토리지 삭제 실패 (무시하고 DB 삭제 진행)");
             }
 
-            // 2. DB 삭제
             try {
                 await _supabase.from('members').delete().eq('id', currentViewId);
                 alert("가입 반려 및 모든 데이터 영구 파기가 완료되었습니다.");
