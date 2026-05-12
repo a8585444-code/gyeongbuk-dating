@@ -174,7 +174,6 @@
             const btn = document.getElementById('downloadBtn');
             btn.innerText = '저장 중...'; btn.disabled = true;
             
-            // ✨ 브라우저 렌더링 딜레이를 주어 캡처 시 하단 이미지 잘림 현상 방지 완벽 적용!
             setTimeout(() => {
                 const card = document.getElementById('captureWrapper');
                 html2canvas(card, { scale: 2, backgroundColor: '#000000' }).then(canvas => {
