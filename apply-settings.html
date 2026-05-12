@@ -127,6 +127,7 @@
                 document.getElementById('priceMale').value = data.price_male;
                 document.getElementById('priceFemale').value = data.price_female;
                 document.getElementById('noticeText').value = data.notice_text;
+                document.getElementById('kakaoUrl').value = data.kakao_url || '';
                 updateStatusText(data.is_open);
             }
         }
@@ -154,7 +155,8 @@
                 is_open: document.getElementById('isOpenToggle').checked,
                 price_male: document.getElementById('priceMale').value,
                 price_female: document.getElementById('priceFemale').value,
-                notice_text: document.getElementById('noticeText').value
+                notice_text: document.getElementById('noticeText').value,
+                kakao_url: document.getElementById('kakaoUrl').value
                
                 
             };
