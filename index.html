@@ -291,12 +291,12 @@
 
             <div class="field" style="margin-top:15px;">
                 <label class="field-label">피하고 싶은 종교</label>
-              <div id="avoidReligionTags">
-    <span class="ar-tag" onclick="this.classList.toggle('selected')">기독교 제외</span>
-    <span class="ar-tag" onclick="this.classList.toggle('selected')">불교 제외</span>
-    <span class="ar-tag" onclick="this.classList.toggle('selected')">천주교 제외</span>
-    <span class="ar-tag" onclick="this.classList.toggle('selected')">무교만 선호</span>
-</div>
+                <div id="avoidReligionTags">
+                    <span class="ar-tag" onclick="this.classList.toggle('selected')">기독교 제외</span>
+                    <span class="ar-tag" onclick="this.classList.toggle('selected')">불교 제외</span>
+                    <span class="ar-tag" onclick="this.classList.toggle('selected')">천주교 제외</span>
+                    <span class="ar-tag" onclick="this.classList.toggle('selected')">무교만 선호</span>
+                </div>
                 <input type="hidden" name="avoidReligion" id="avoidReligionHidden">
             </div>
         </div>
@@ -473,15 +473,7 @@
         let uploadedFiles = []; 
 
         try {
-            const phoneVal = document.querySelector('input[name="phoneNumber"]').value;
-            const { data: existUser } = await _supabase.from('members').select('id').eq('phoneNumber', phoneVal).limit(1);
-
-            if (existUser && existUser.length > 0) {
-                alert('이미 해당 휴대폰 번호로 접수된 지원서가 존재합니다.\n(내용 수정이 필요하신 경우 카카오톡 채널로 문의해주세요.)');
-                submitBtn.disabled = false; submitBtn.textContent = '소개팅 지원서 제출하기';
-                return; 
-            }
-
+            // ✨ [최적화] RLS 락 충돌을 일으키던 SELECT 쿼리 완전 삭제 완료! (가장 빠른 제출 속도 보장)
             const avoidTags = [...document.querySelectorAll('#avoidReligionTags .ar-tag.selected')].map(t => t.innerText).join(', ');
             document.getElementById('avoidReligionHidden').value = avoidTags;
             
