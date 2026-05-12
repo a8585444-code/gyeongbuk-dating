@@ -47,7 +47,7 @@
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .info-item { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #f1f5f9; }
         .info-label { font-size: 11px; color: #db2777; font-weight: 800; margin-bottom: 6px; text-transform: uppercase; }
-        .info-value { font-size: 14px; font-weight: 600; color: #1e293b; line-height: 1.5; }
+        .info-value { font-size: 14px; font-weight: 600; color: #1e293b; line-height: 1.6; white-space: pre-wrap; word-break: keep-all; }
         .full-width { grid-column: span 2; }
 
         .grade-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 800; margin-left: 5px; }
@@ -233,19 +233,7 @@
         }
 
         async function showDetail(id) {
-            let m = baseMembers.find(x => x.id === id);
-            
-            // ✨ [버그 픽스] 추천 후보(이성)를 클릭해서 현재 메모리에 없을 경우 DB에서 직접 조회
-            if (!m) {
-                const { data, error } = await _supabase.from('members').select('*').eq('id', id).single();
-                if (error || !data) {
-                    alert('회원 상세 정보를 불러오는 데 실패했습니다.');
-                    return;
-                }
-                m = data;
-            }
-
-            // ✨ innerHTML 방어 로직 적용
+            const m = baseMembers.find(x => x.id === id);
             document.getElementById('modalTitle').innerHTML = `📋 ${esc(m.name)} (${esc(m.nickname)}) 프로필 확인`;
             
             let imagesHtml = '<div class="photo-container">';
