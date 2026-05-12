@@ -414,7 +414,7 @@
         const minVal = document.getElementById('ageMinSel').value;
         const maxVal = document.getElementById('ageMaxSel').value;
         if(minVal && maxVal) {
-            let minNum = parseInt(minVal); let maxNum = parseInt(maxVal);
+            let minNum = parseInt(minVal, 10); let maxNum = parseInt(maxVal, 10);
             if(minNum < 50) minNum += 100; if(maxNum < 50) maxNum += 100;
             if(minNum < maxNum) {
                 alert("선호 최대 나이가 선호 최소 나이보다 어릴 수 없습니다.");
@@ -460,7 +460,6 @@
     document.getElementById('applyForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // ✨ [보안 1] 봇(Bot) 스팸 방어: 허니팟 로직 실행
         const honeypot = document.getElementById('website_url').value;
         if (honeypot) {
             console.warn("Bot Detected");
@@ -473,7 +472,14 @@
         let uploadedFiles = []; 
 
         try {
-            // ✨ 🚨 여기에 있던 구형 SELECT 조회 로직 완전 삭제 완료 🚨
+            const phoneVal = document.querySelector('input[name="phoneNumber"]').value;
+            const { data: existUser } = await _supabase.from('members').select('id').eq('phoneNumber', phoneVal).limit(1);
+
+            if (existUser && existUser.length > 0) {
+                alert('이미 해당 휴대폰 번호로 접수된 지원서가 존재합니다.\n(내용 수정이 필요하신 경우 카카오톡 채널로 문의해주세요.)');
+                submitBtn.disabled = false; submitBtn.textContent = '소개팅 지원서 제출하기';
+                return; 
+            }
 
             const avoidTags = [...document.querySelectorAll('#avoidReligionTags .ar-tag.selected')].map(t => t.innerText).join(', ');
             document.getElementById('avoidReligionHidden').value = avoidTags;
@@ -483,8 +489,8 @@
             document.getElementById('preferredAgeRangeHidden').value = minVal + '년생 ~ ' + maxVal + '년생';
             
             let minYear = null; let maxYear = null;
-            if(minVal) { let minNum = parseInt(minVal); minYear = minNum < 50 ? 2000 + minNum : 1900 + minNum; }
-            if(maxVal) { let maxNum = parseInt(maxVal); maxYear = maxNum < 50 ? 2000 + maxNum : 1900 + maxNum; }
+            if(minVal) { let minNum = parseInt(minVal, 10); minYear = minNum < 50 ? 2000 + minNum : 1900 + minNum; }
+            if(maxVal) { let maxNum = parseInt(maxVal, 10); maxYear = maxNum < 50 ? 2000 + maxNum : 1900 + maxNum; }
 
             let avoidPersons = [];
             document.querySelectorAll('.exclude-row').forEach(row => {
@@ -517,10 +523,7 @@
             const formData = new FormData(document.getElementById('applyForm'));
             const finalData = Object.fromEntries(formData.entries());
             
-            // ✨ [보안 3] 허니팟 필드는 DB 전송 시 삭제
             delete finalData.website_url; 
-
-            // ✨ [보안 3] 법적 증거 타임스탬프 기록
             finalData.agreed_terms_at = new Date().toISOString(); 
 
             finalData.photo_url = photo1; 
@@ -533,15 +536,14 @@
             const { error: dbError } = await _supabase.from('members').insert([finalData]);
             
             if (dbError) {
-                // ✨ DB UNIQUE 설정에 의한 완벽한 중복 튕겨내기
                 if (dbError.code === '23505') throw new Error("DUPLICATE_PHONE");
                 throw dbError;
             }
 
             document.getElementById('successModal').classList.add('show');
         } catch (error) {
-            for (let f of uploadedFiles) {
-                await _supabase.storage.from(f.bucket).remove([f.path]);
+            if (uploadedFiles.length > 0) {
+                await Promise.all(uploadedFiles.map(f => _supabase.storage.from(f.bucket).remove([f.path])));
             }
             
             if (error.message === "DUPLICATE_PHONE") {
