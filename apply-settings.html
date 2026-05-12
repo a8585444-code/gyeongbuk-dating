@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시스템 설정 - 당신의 계절</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+        .header { max-width: 800px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { text-decoration: none; color: #db2777; font-weight: 700; font-size: 14px; background: #fff; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 30px; max-width: 800px; margin: 0 auto 20px; }
+        h1 { font-size: 20px; color: #1a1a2e; margin-bottom: 20px; border-bottom: 2px solid #fce4ec; padding-bottom: 10px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 14px; font-weight: 700; color: #475569; margin-bottom: 8px; }
+        .form-control { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: 0.2s; outline: none; font-family: inherit; }
+        .form-control:focus { border-color: #db2777; box-shadow: 0 0 0 3px rgba(219,39,119,0.1); }
+        
+        /* 토글 스위치 디자인 */
+        .toggle-label { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 800; cursor: pointer; }
+        .toggle-label input { width: 22px; height: 22px; accent-color: #db2777; cursor: pointer; }
+        .status-text { font-weight: 800; font-size: 16px; margin-left: 10px; }
+
+        .btn-save { background: #1e293b; color: white; padding: 14px 20px; border: none; border-radius: 8px; font-size: 15px; font-weight: 800; cursor: pointer; width: 100%; transition: 0.2s; box-shadow: 0 4px 12px rgba(30,41,59,0.2); }
+        .btn-save:hover { background: #db2777; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(219,39,119,0.3); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="/admin.html" class="back-btn">← 관리자 홈으로</a>
+    </div>
+
+    <div class="card" id="mainContainer" style="display:none;">
+        <h1>⚙️ 지원서 폼 환경 설정</h1>
+        
+        <div class="form-group" style="background: #fff0f6; padding: 20px; border-radius: 12px; border: 1px solid #fce4ec; margin-bottom: 25px;">
+            <label class="toggle-label">
+                <input type="checkbox" id="isOpenSwitch">
+                <span class="status-text" id="statusText">로딩중...</span>
+            </label>
+            <p style="font-size: 12px; color: #64748b; margin-top: 10px; margin-left: 32px;">스위치를 끄면 일반 고객들이 지원서에 접속할 수 없게 즉시 차단됩니다.</p>
+        </div>
+
+        <div style="display: flex; gap: 15px;">
+            <div class="form-group" style="flex: 1;">
+                <label>남성 진행 비용 텍스트</label>
+                <input type="text" id="priceMale" class="form-control" placeholder="예: 30,000원">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>여성 진행 비용 텍스트</label>
+                <input type="text" id="priceFemale" class="form-control" placeholder="예: 15,000원">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>지원 자격 안내 문구 (지원서 상단에 강조 표시됩니다)</label>
+            <textarea id="noticeText" class="form-control" style="height: 80px; resize:vertical;"></textarea>
+        </div>
+
+        <button class="btn-save" onclick="saveSettings()">⚙️ 위 설정으로 시스템 업데이트</button>
+    </div>
+
+    <div class="card" id="pwContainer" style="display:none;">
+        <h1>🔑 관리자 비밀번호 변경</h1>
+        <div class="form-group">
+            <label>새로운 비밀번호 (최소 6자리 이상)</label>
+            <input type="password" id="newPassword" class="form-control" placeholder="변경할 비밀번호 입력">
+        </div>
+        <button class="btn-save" onclick="updatePassword()" style="background:#475569; box-shadow:none;">비밀번호 변경하기</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://teeutkxfzxdsaqdvwrwt.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function checkAuth() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) { alert('보안 구역입니다.'); window.location.href = '/login.html'; return; }
+            document.getElementById('mainContainer').style.display = 'block';
+            document.getElementById('pwContainer').style.display = 'block';
+            loadSettings();
+        }
+
+        // 스위치 텍스트 색상 동적 변경 이벤트
+        document.getElementById('isOpenSwitch').addEventListener('change', function() {
+            const textEl = document.getElementById('statusText');
+            if(this.checked) { textEl.innerText = "🟢 현재 모집중 (지원서 폼 열림)"; textEl.style.color = "#059669"; } 
+            else { textEl.innerText = "🔴 모집 마감 (지원서 폼 닫힘)"; textEl.style.color = "#ef4444"; }
+        });
+
+        // 1. 기존 설정 불러오기
+        async function loadSettings() {
+            const { data, error } = await _supabase.from('site_settings').select('*').eq('id', 1).single();
+            if (error || !data) { alert('설정을 불러올 수 없습니다. DB 세팅을 확인하세요.'); return; }
+
+            document.getElementById('isOpenSwitch').checked = data.is_open;
+            document.getElementById('isOpenSwitch').dispatchEvent(new Event('change')); // 텍스트 갱신
+            document.getElementById('priceMale').value = data.price_male;
+            document.getElementById('priceFemale').value = data.price_female;
+            document.getElementById('noticeText').value = data.notice_text;
+        }
+
+        // 2. 설정 저장하기
+        async function saveSettings() {
+            const is_open = document.getElementById('isOpenSwitch').checked;
+            const price_male = document.getElementById('priceMale').value;
+            const price_female = document.getElementById('priceFemale').value;
+            const notice_text = document.getElementById('noticeText').value;
+
+            const { error } = await _supabase.from('site_settings')
+                .update({ is_open, price_male, price_female, notice_text })
+                .eq('id', 1);
+
+            if(error) alert('저장 실패: ' + error.message);
+            else alert('✅ 시스템 설정이 성공적으로 반영되었습니다!');
+        }
+
+        // 3. 비밀번호 변경하기 (Supabase Auth 기본 제공 기능 활용!)
+        async function updatePassword() {
+            const newPw = document.getElementById('newPassword').value;
+            if(newPw.length < 6) { alert('비밀번호는 최소 6자리 이상이어야 합니다.'); return; }
+            if(!confirm('정말 비밀번호를 변경하시겠습니까?\n변경 즉시 다른 기기들은 로그아웃 될 수 있습니다.')) return;
+
+            const { error } = await _supabase.auth.updateUser({ password: newPw });
+            if (error) { alert('비밀번호 변경 실패: ' + error.message); }
+            else { alert('✅ 비밀번호가 성공적으로 변경되었습니다!'); document.getElementById('newPassword').value = ''; }
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>
