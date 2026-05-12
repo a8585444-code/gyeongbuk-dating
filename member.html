@@ -142,8 +142,7 @@
                     .select('*')
                     .ilike('gender', `%${genderStr}%`)
                     .order('id', { ascending: false })
-                    .limit(200); 
-
+                    .limit(200);
                 if (error) throw error;
                 baseMembers = data;
 
@@ -232,8 +231,19 @@
             } catch (e) { alert('업데이트 실패'); }
         }
 
+        // ✨ [버그 픽스 완료] 이성 추천 후보 프로필 조회 시 메모리에 없으면 DB에서 직접 가져오는 로직 추가
         async function showDetail(id) {
-            const m = baseMembers.find(x => x.id === id);
+            let m = baseMembers.find(x => x.id === id);
+            
+            if (!m) {
+                const { data, error } = await _supabase.from('members').select('*').eq('id', id).single();
+                if (error || !data) {
+                    alert('회원 상세 정보를 불러오는 데 실패했습니다.');
+                    return;
+                }
+                m = data;
+            }
+
             document.getElementById('modalTitle').innerHTML = `📋 ${esc(m.name)} (${esc(m.nickname)}) 프로필 확인`;
             
             let imagesHtml = '<div class="photo-container">';
