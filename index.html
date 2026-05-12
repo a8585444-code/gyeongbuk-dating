@@ -80,263 +80,14 @@
 </div>
 
 <div class="container">
-    <div class="intro-box">
-        <p style="margin-bottom: 15px;">당신의 계절에서 소중한 인연을 만나기 위해 작성해 주세요!<br>
-        소개팅 어플은 신원이 보장되지 않아 신뢰가 가지 않을 수 있으실 텐데요!<br>
-        저희 <strong>당신의 계절</strong>은 철저히 신원 확인하여 진행하고 있어서 걱정 안 하셔도 됩니다😉</p>
-        
-        <h3 style="color:#d63384;">[신청 자격]</h3>
-        <p style="margin-bottom: 10px; font-weight: 600;">외적인 부분을 포함해 [체형 관리 등 기본적인 자기관리가 되어 있는 분] 신청해주세요!</p>
-        
-        <p class="pink" style="margin-bottom: 5px;">✅ 남성 회원</p>
-        <ul>
-            <li>키 173cm 이상 (-172cm 미만이신 분들은 가입 불가)</li>
-            <li>단정한 외모와 자기관리를 하시는 분</li>
-            <li>1986년생 ~ 2005년생 직장인 · 자영업 · 사업가</li>
-        </ul>
-        
-        <p class="pink" style="margin-bottom: 5px; margin-top: 10px;">✅ 여성 회원</p>
-        <ul>
-            <li>키 153cm 이상</li>
-            <li>단정한 외모와 자기관리를 하시는 분</li>
-            <li>1986년생 ~ 2005년생 직장인 · 자영업 · 사업가</li>
-        </ul>
-
-        <h3 style="color:#d63384; margin-top: 15px;">[진행 비용]</h3>
-        <ul>
-            <li>남성회원 -> 30,000원 / 여성회원 -> 15,000원</li>
-            <li>상호 매칭되었을 때 결제하시면 됩니다🫶</li>
-        </ul>
-
-        <div class="warning-text">
-            🚨 <strong>주의사항</strong><br>
-            - 📷 사진은 악용 우려로 인해 절대 공개되지 않으며, 매칭 후에도 제공되지 않습니다!<br>
-            - 프로필은 매칭 기준의 중요한 자료이며 작성 완료 후 수정이 어렵습니다.<br>
-            - 비매너적인 언행 및 행동 시 영구 참여 제한됩니다.<br>
-            - 모든 정보가 사실과 다를 경우 형법상 사기죄 등 관련 법령에 따라 민·형사상 책임이 발생할 수 있습니다.
-        </div>
-    </div>
-
-    <form id="applyForm">
-        
-        <div style="opacity: 0; position: absolute; top: -9999px; left: -9999px; z-index: -1;" aria-hidden="true">
-            <label for="website_url">자동 가입 방지 (입력하지 마세요)</label>
-            <input type="text" name="website_url" id="website_url" autocomplete="off" tabindex="-1">
-        </div>
-
-        <div class="section">
-            <div class="section-title">👤 기본 정보</div>
-            <div class="field">
-                <label class="field-label">이름 <span class="req">*</span></label>
-                <div class="field-desc">프로필 카드에는 기재되지 않습니다.</div>
-                <input type="text" name="name" required placeholder="실명을 입력해주세요" data-no-emoji>
-            </div>
-            <div class="field">
-                <label class="field-label">성별 <span class="req">*</span></label>
-                <div class="radio-row">
-                    <label onclick="selectRadio(this)"><input type="radio" name="gender" value="남" required> 남</label>
-                    <label onclick="selectRadio(this)"><input type="radio" name="gender" value="여"> 여</label>
-                </div>
-            </div>
-            <div class="field">
-                <label class="field-label">닉네임 <span class="req">*</span></label>
-                <input type="text" name="nickname" required maxlength="7" placeholder="활동 닉네임 (최대 7자)" data-no-emoji>
-            </div>
-            <div class="field" style="display: flex; gap: 10px;">
-                <div style="flex: 1;">
-                    <label class="field-label">출생년도 <span class="req">*</span></label>
-                    <select name="birthYear" required>
-                        <option value="">선택</option>
-                        <script>for(let i=86; i<=105; i++){ let v=i>99?String(i-100).padStart(2,'0'):i; document.write(`<option value="${v}">${v}년생</option>`); }</script>
-                    </select>
-                </div>
-                <div style="flex: 2;">
-                    <label class="field-label">거주지 (대구/경북) <span class="req">*</span></label>
-                    <input type="text" name="region" required placeholder="예: 대구 수성구" data-no-emoji>
-                </div>
-            </div>
-            <div class="field">
-                <label class="field-label">휴대폰 번호 <span class="req">*</span></label>
-                <input type="text" name="phoneNumber" required placeholder="숫자만 입력" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">📷 프로필 사진 첨부</div>
-            <div class="field-desc" style="margin-bottom: 15px;">⚠️ 사진은 상대방에게 절대 공개되지 않으며 운영진 확인용입니다.</div>
-            
-            <div class="field" style="display:flex; gap:15px;">
-                <div style="flex:1;">
-                    <label class="field-label">잘 나온 사진 <span class="req">*</span></label>
-                    <div class="file-upload-area" id="photo1UploadArea">
-                        <input type="file" id="photo1Input" accept=".jpg, .jpeg, .png, .webp" required>
-                        <div style="font-size: 1.8rem; margin-bottom:5px;">📸</div>
-                        <p style="font-size:0.75rem; color:#888;">클릭하여 첨부</p>
-                    </div>
-                    <div class="file-preview-list" id="photo1PreviewList"></div>
-                </div>
-                <div style="flex:1;">
-                    <label class="field-label">전신 사진 <span class="req">*</span></label>
-                    <div class="file-upload-area" id="photoFullUploadArea">
-                        <input type="file" id="photoFullInput" accept=".jpg, .jpeg, .png, .webp" required>
-                        <div style="font-size: 1.8rem; margin-bottom:5px;">🧍</div>
-                        <p style="font-size:0.75rem; color:#888;">클릭하여 첨부</p>
-                    </div>
-                    <div class="file-preview-list" id="photoFullPreviewList"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">📝 나의 프로필 (공개용)</div>
-            <div class="field-desc" style="margin-bottom: 20px;"><span class="badge-public">💬 아래 작성되는 모든 내용은 이성에게 전달되는 프로필 카드에 그대로 들어갑니다.</span></div>
-            
-            <div class="field">
-                <label class="field-label">직업 <span class="req">*</span></label>
-                <input type="text" name="job" required placeholder="예: 7급 공무원, 대학병원 간호사, UX/UI 디자이너">
-            </div>
-            <div class="field">
-                <label class="field-label">최종학력 <span class="req">*</span></label>
-                <input type="text" name="finalEducation" required placeholder="예: 4년제 대졸, 대학원 석사">
-            </div>
-            <div class="field" style="display:flex; gap:10px;">
-                <div style="flex:1;"><label class="field-label">키 <span class="req">*</span></label><input type="text" name="height" required placeholder="cm" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
-                <div style="flex:1.5;"><label class="field-label">MBTI <span class="req">*</span></label><input type="text" name="mbti" required placeholder="예: ENFP" style="text-transform:uppercase"></div>
-            </div>
-            <div class="field" style="display:flex; gap:10px;">
-                <div style="flex:1;"><label class="field-label">음주 <span class="req">*</span></label><input type="text" name="drinking" required placeholder="예: 소주 1병, 술X"></div>
-                <div style="flex:1;"><label class="field-label">흡연 <span class="req">*</span></label>
-                    <select name="smoking" required><option value="비흡연">비흡연</option><option value="전자담배">전자담배</option><option value="흡연">흡연</option></select>
-                </div>
-                <div style="flex:1;"><label class="field-label">종교 <span class="req">*</span></label>
-                    <select name="religion" required><option value="무교">무교</option><option value="기독교">기독교</option><option value="불교">불교</option><option value="천주교">천주교</option></select>
-                </div>
-            </div>
-            
-            <div class="field">
-                <label class="field-label">특징 (체형 및 외모) <span class="req">*</span></label>
-                <input type="text" name="bodyType" required placeholder="예: 무쌍, 슬림탄탄, 키큼, 어깨넓음 등">
-            </div>
-            <div class="field">
-                <label class="field-label">취미 <span class="req">*</span></label>
-                <input type="text" name="hobbies" required placeholder="예: 헬스, 러닝, 커피맛집투어, 전시관람">
-            </div>
-            <div class="field">
-                <label class="field-label">성격 키워드 <span class="req">*</span></label>
-                <input type="text" name="personalityKeywords" required placeholder="예: 다정함, 밝고 긍정적인, 침착한">
-            </div>
-            <div class="field">
-                <label class="field-label">주변에서 저를 <span class="req">*</span></label>
-                <input type="text" name="reputation" required placeholder="예: 여우상, 고양이상, 리액션 봇">
-            </div>
-            <div class="field">
-                <label class="field-label">저는요 (상세 자기소개) <span class="req">*</span></label>
-                <textarea name="selfIntroduction" required placeholder="본인의 평소 성격, 연애 스타일, 취향 등을 자세하고 정성스럽게 적어주세요!" data-counter="150"></textarea>
-            </div>
-            <div class="field">
-                <label class="field-label">나만의 매력어필 한 줄 <span class="req">*</span></label>
-                <input type="text" name="appeal" required placeholder="예: 리액션을 잘 해주고 웃음이 많습니다!">
-            </div>
-        </div>
-
-        <div class="section private-box">
-            <div class="private-box-header">🔒 운영진 매칭 참고자료 · 이성에게 철저히 비공개됩니다</div>
-            <div class="field" style="background:#fff; padding:20px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:20px;">
-                <label class="field-label">현재 재직중인 직장/사업체명 <span class="req">*</span></label>
-                <div class="field-desc">사내 매칭 방지용. <span class="pink">절대 공개되지 않습니다.</span></div>
-                <input type="text" name="jobOrganizationName" required placeholder="정확한 회사/기관명을 기재해주세요">
-                <div style="margin-top:15px;">
-                    <label class="field-label">재직증명서 / 사업자등록증 첨부 <span class="req">*</span></label>
-                    <div class="file-upload-area" id="proofUploadArea" style="min-height: 100px; padding:15px;">
-                        <input type="file" id="certInput" accept=".jpg, .jpeg, .png, .webp" required>
-                        <div style="font-size: 1.5rem;">📄</div>
-                        <p style="font-size:0.75rem; margin-top:5px; color:#888;">클릭하여 비공개 인증 서류 첨부</p>
-                    </div>
-                    <div class="file-preview-list" id="certPreviewList"></div>
-                </div>
-            </div>
-            <div class="field">
-                <label class="field-label">가장 중요한 이성 조건 <span class="req">*</span></label>
-                <select name="importantCriteria" required>
-                    <option value="">선택</option><option value="외모/체형">외모/체형</option><option value="직업/능력">직업/능력</option><option value="성격/가치관">성격/가치관</option>
-                </select>
-            </div>
-            <div class="field">
-                <label class="field-label">이상형 상세 <span class="req">*</span></label>
-                <textarea name="idealType" required placeholder="원하는 외모, 성격 등을 자세히 적어주세요."></textarea>
-            </div>
-            <div class="field" style="display:flex; gap:10px;">
-                <div style="flex:1;">
-                    <label class="field-label">선호 최소 나이</label>
-                    <select id="ageMinSel" required onchange="checkAgeOrder()"><option value="">선택</option></select>
-                </div>
-                <div style="flex:1;">
-                    <label class="field-label">선호 최대 나이</label>
-                    <select id="ageMaxSel" required onchange="checkAgeOrder()"><option value="">선택</option></select>
-                </div>
-            </div>
-            <input type="hidden" name="preferredAgeRange" id="preferredAgeRangeHidden">
-
-            <div class="field" style="margin-top:20px; border-top:1px dashed #cbd5e1; padding-top:20px;">
-                <label class="field-label">특정 지인 차단 <span style="font-size:12px;color:#888;">(선택)</span></label>
-                <div id="excludePersonList">
-                    <div class="exclude-row" style="display:flex; gap:5px; margin-bottom:8px;">
-                        <select class="ex-birth" style="flex:1;"><option value="">년생</option></select>
-                        <input type="text" class="ex-name" placeholder="이름" style="flex:1;">
-                        <button type="button" onclick="addExcludeRow()" style="padding:0 12px; background:#db2777; color:#fff; border:none; border-radius:8px; font-weight:800;">+</button>
-                    </div>
-                </div>
-                <input type="hidden" name="avoidType" id="avoidTypeHidden">
-            </div>
-
-            <div class="field" style="margin-top:15px;">
-                <label class="field-label">피하고 싶은 종교</label>
-                <div id="avoidReligionTags">
-                    <span class="ar-tag" onclick="this.classList.toggle('selected')">기독교 제외</span>
-                    <span class="ar-tag" onclick="this.classList.toggle('selected')">불교 제외</span>
-                    <span class="ar-tag" onclick="this.classList.toggle('selected')">천주교 제외</span>
-                    <span class="ar-tag" onclick="this.classList.toggle('selected')">무교만 선호</span>
-                </div>
-                <input type="hidden" name="avoidReligion" id="avoidReligionHidden">
-            </div>
-        </div>
-        
-        <div class="section">
-            <div class="section-title">⚙️ 매칭 진행 옵션</div>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-                <label style="padding:15px; border:2px solid #f472b6; border-radius:12px; background:#fff5f9; cursor:pointer;">
-                    <input type="radio" name="continueMatchingYn" value="Y" checked style="accent-color:#db2777;"> 
-                    <strong style="color:#db2777;">계속 매칭 받기 (추천)</strong>
-                </label>
-                <label style="padding:15px; border:2px solid #e2e8f0; border-radius:12px; cursor:pointer;">
-                    <input type="radio" name="continueMatchingYn" value="N" style="accent-color:#db2777;"> 
-                    <strong style="color:#64748b;">매칭 성사 시 자동 중지</strong>
-                </label>
-            </div>
-        </div>
-
-        <div class="section" style="border: 2px solid #db2777; background: #fff0f6;">
-            <div style="display: flex; align-items: center; gap: 10px; padding: 5px;">
-                <input type="checkbox" id="termsCheck" required style="width: 22px; height: 22px; accent-color: #db2777;" onclick="openTerms(); return false;">
-                <label for="termsCheck" style="font-size: 0.95rem; font-weight: 800; color: #1a1a2e; cursor: pointer;" onclick="openTerms(); return false;">
-                    <span style="color: #db2777; text-decoration: underline;">필수 이용 약관 및 개인정보 처리방침</span>을 확인해주세요. <span class="req">*</span>
-                </label>
-            </div>
-            <div style="font-size: 0.75rem; color: #e8820c; margin-left: 32px; margin-top: 5px; font-weight: 700;">👆 글씨를 클릭하여 약관을 직접 읽으셔야 동의가 가능합니다.</div>
-        </div>
-
-        <button type="submit" class="submit-btn" id="submitBtn">소개팅 지원서 제출하기</button>
-    </form>
-</div>
-
-<div class="container">
     <div id="closedMessage" style="display:none; text-align:center; padding: 50px 20px; background: white; border-radius: 18px; box-shadow: 0 4px 15px rgba(219,39,119,0.08);">
         <div style="font-size: 3rem; margin-bottom: 10px;">🔒</div>
         <h2 style="color: #1a1a2e; margin-bottom: 10px; font-weight: 800;">현재 모집이 마감되었습니다.</h2>
         <p style="color: #64748b; font-size: 0.95rem; line-height: 1.6;">정원 초과 또는 시스템 점검으로 인해<br>지원서 접수가 일시 중단되었습니다.<br>다음 모집 기간에 신청해 주세요!</p>
     </div>
 
-    <div id="formWrapper" style="display:none;"> <div class="intro-box">
+    <div id="formWrapper" style="display:none;">
+        <div class="intro-box">
             <p style="margin-bottom: 15px;">당신의 계절에서 소중한 인연을 만나기 위해 작성해 주세요!<br>
             소개팅 어플은 신원이 보장되지 않아 신뢰가 가지 않을 수 있으실 텐데요!<br>
             저희 <strong>당신의 계절</strong>은 철저히 신원 확인하여 진행하고 있어서 걱정 안 하셔도 됩니다😉</p>
@@ -360,7 +111,7 @@
 
             <h3 style="color:#d63384; margin-top: 15px;">[진행 비용]</h3>
             <ul>
-                <li>남성회원 -> <strong class="pink" id="displayPriceMale"></strong> / 여성회원 -> <strong class="pink" id="displayPriceFemale"></strong></li>
+                <li>남성회원 -> <strong class="pink" id="displayPriceMale">30,000원</strong> / 여성회원 -> <strong class="pink" id="displayPriceFemale">15,000원</strong></li>
                 <li>상호 매칭되었을 때 결제하시면 됩니다🫶</li>
             </ul>
 
@@ -374,29 +125,281 @@
         </div>
 
         <form id="applyForm">
-            ```
+            
+            <div style="opacity: 0; position: absolute; top: -9999px; left: -9999px; z-index: -1;" aria-hidden="true">
+                <label for="website_url">자동 가입 방지 (입력하지 마세요)</label>
+                <input type="text" name="website_url" id="website_url" autocomplete="off" tabindex="-1">
+            </div>
 
-*(※ 위에서 폼을 감싸기 위해 `<div id="formWrapper">`를 열었으므로, `apply.html` 파일에서 폼 코드가 끝나는 부분 맨 아래쪽(`</form>`) 바로 밑에 **`</div>`** 를 하나 꼭 닫아주셔야 화면이 정상 작동합니다!)*
+            <div class="section">
+                <div class="section-title">👤 기본 정보</div>
+                <div class="field">
+                    <label class="field-label">이름 <span class="req">*</span></label>
+                    <div class="field-desc">프로필 카드에는 기재되지 않습니다.</div>
+                    <input type="text" name="name" required placeholder="실명을 입력해주세요" data-no-emoji>
+                </div>
+                <div class="field">
+                    <label class="field-label">성별 <span class="req">*</span></label>
+                    <div class="radio-row">
+                        <label onclick="selectRadio(this)"><input type="radio" name="gender" value="남" required> 남</label>
+                        <label onclick="selectRadio(this)"><input type="radio" name="gender" value="여"> 여</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="field-label">닉네임 <span class="req">*</span></label>
+                    <input type="text" name="nickname" required maxlength="7" placeholder="활동 닉네임 (최대 7자)" data-no-emoji>
+                </div>
+                <div class="field" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label class="field-label">출생년도 <span class="req">*</span></label>
+                        <select name="birthYear" required>
+                            <option value="">선택</option>
+                            <script>for(let i=86; i<=105; i++){ let v=i>99?String(i-100).padStart(2,'0'):i; document.write(`<option value="${v}">${v}년생</option>`); }</script>
+                        </select>
+                    </div>
+                    <div style="flex: 2;">
+                        <label class="field-label">거주지 (대구/경북) <span class="req">*</span></label>
+                        <input type="text" name="region" required placeholder="예: 대구 수성구" data-no-emoji>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="field-label">휴대폰 번호 <span class="req">*</span></label>
+                    <input type="text" name="phoneNumber" required placeholder="숫자만 입력" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                </div>
+            </div>
 
-#### ② Javascript 연동 로직 추가 (`apply.html` 스크립트 부분)
-`apply.html` 파일의 맨 밑 `<script>` 태그 영역에서, `_supabase` 객체를 생성하는 코드 바로 밑부분에 이 함수를 추가해 주시면 마법이 완성됩니다.
+            <div class="section">
+                <div class="section-title">📷 프로필 사진 첨부</div>
+                <div class="field-desc" style="margin-bottom: 15px;">⚠️ 사진은 상대방에게 절대 공개되지 않으며 운영진 확인용입니다.</div>
+                
+                <div class="field" style="display:flex; gap:15px;">
+                    <div style="flex:1;">
+                        <label class="field-label">잘 나온 사진 <span class="req">*</span></label>
+                        <div class="file-upload-area" id="photo1UploadArea">
+                            <input type="file" id="photo1Input" accept=".jpg, .jpeg, .png, .webp" required>
+                            <div style="font-size: 1.8rem; margin-bottom:5px;">📸</div>
+                            <p style="font-size:0.75rem; color:#888;">클릭하여 첨부</p>
+                        </div>
+                        <div class="file-preview-list" id="photo1PreviewList"></div>
+                    </div>
+                    <div style="flex:1;">
+                        <label class="field-label">전신 사진 <span class="req">*</span></label>
+                        <div class="file-upload-area" id="photoFullUploadArea">
+                            <input type="file" id="photoFullInput" accept=".jpg, .jpeg, .png, .webp" required>
+                            <div style="font-size: 1.8rem; margin-bottom:5px;">🧍</div>
+                            <p style="font-size:0.75rem; color:#888;">클릭하여 첨부</p>
+                        </div>
+                        <div class="file-preview-list" id="photoFullPreviewList"></div>
+                    </div>
+                </div>
+            </div>
 
-```javascript
-    const SUPABASE_URL = 'https://teeutkxfzxdsaqdvwrwt.supabase.co';
+            <div class="section">
+                <div class="section-title">📝 나의 프로필 (공개용)</div>
+                <div class="field-desc" style="margin-bottom: 20px;"><span class="badge-public">💬 아래 작성되는 모든 내용은 이성에게 전달되는 프로필 카드에 그대로 들어갑니다.</span></div>
+                
+                <div class="field">
+                    <label class="field-label">직업 <span class="req">*</span></label>
+                    <input type="text" name="job" required placeholder="예: 7급 공무원, 대학병원 간호사, UX/UI 디자이너">
+                </div>
+                <div class="field">
+                    <label class="field-label">최종학력 <span class="req">*</span></label>
+                    <input type="text" name="finalEducation" required placeholder="예: 4년제 대졸, 대학원 석사">
+                </div>
+                <div class="field" style="display:flex; gap:10px;">
+                    <div style="flex:1;"><label class="field-label">키 <span class="req">*</span></label><input type="text" name="height" required placeholder="cm" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+                    <div style="flex:1.5;"><label class="field-label">MBTI <span class="req">*</span></label><input type="text" name="mbti" required placeholder="예: ENFP" style="text-transform:uppercase"></div>
+                </div>
+                <div class="field" style="display:flex; gap:10px;">
+                    <div style="flex:1;"><label class="field-label">음주 <span class="req">*</span></label><input type="text" name="drinking" required placeholder="예: 소주 1병, 술X"></div>
+                    <div style="flex:1;"><label class="field-label">흡연 <span class="req">*</span></label>
+                        <select name="smoking" required><option value="비흡연">비흡연</option><option value="전자담배">전자담배</option><option value="흡연">흡연</option></select>
+                    </div>
+                    <div style="flex:1;"><label class="field-label">종교 <span class="req">*</span></label>
+                        <select name="religion" required><option value="무교">무교</option><option value="기독교">기독교</option><option value="불교">불교</option><option value="천주교">천주교</option></select>
+                    </div>
+                </div>
+                
+                <div class="field">
+                    <label class="field-label">특징 (체형 및 외모) <span class="req">*</span></label>
+                    <input type="text" name="bodyType" required placeholder="예: 무쌍, 슬림탄탄, 키큼, 어깨넓음 등">
+                </div>
+                <div class="field">
+                    <label class="field-label">취미 <span class="req">*</span></label>
+                    <input type="text" name="hobbies" required placeholder="예: 헬스, 러닝, 커피맛집투어, 전시관람">
+                </div>
+                <div class="field">
+                    <label class="field-label">성격 키워드 <span class="req">*</span></label>
+                    <input type="text" name="personalityKeywords" required placeholder="예: 다정함, 밝고 긍정적인, 침착한">
+                </div>
+                <div class="field">
+                    <label class="field-label">주변에서 저를 <span class="req">*</span></label>
+                    <input type="text" name="reputation" required placeholder="예: 여우상, 고양이상, 리액션 봇">
+                </div>
+                <div class="field">
+                    <label class="field-label">저는요 (상세 자기소개) <span class="req">*</span></label>
+                    <textarea name="selfIntroduction" required placeholder="본인의 평소 성격, 연애 스타일, 취향 등을 자세하고 정성스럽게 적어주세요!" data-counter="150"></textarea>
+                </div>
+                <div class="field">
+                    <label class="field-label">나만의 매력어필 한 줄 <span class="req">*</span></label>
+                    <input type="text" name="appeal" required placeholder="예: 리액션을 잘 해주고 웃음이 많습니다!">
+                </div>
+            </div>
+
+            <div class="section private-box">
+                <div class="private-box-header">🔒 운영진 매칭 참고자료 · 이성에게 철저히 비공개됩니다</div>
+                <div class="field" style="background:#fff; padding:20px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:20px;">
+                    <label class="field-label">현재 재직중인 직장/사업체명 <span class="req">*</span></label>
+                    <div class="field-desc">사내 매칭 방지용. <span class="pink">절대 공개되지 않습니다.</span></div>
+                    <input type="text" name="jobOrganizationName" required placeholder="정확한 회사/기관명을 기재해주세요">
+                    <div style="margin-top:15px;">
+                        <label class="field-label">재직증명서 / 사업자등록증 첨부 <span class="req">*</span></label>
+                        <div class="file-upload-area" id="proofUploadArea" style="min-height: 100px; padding:15px;">
+                            <input type="file" id="certInput" accept=".jpg, .jpeg, .png, .webp" required>
+                            <div style="font-size: 1.5rem;">📄</div>
+                            <p style="font-size:0.75rem; margin-top:5px; color:#888;">클릭하여 비공개 인증 서류 첨부</p>
+                        </div>
+                        <div class="file-preview-list" id="certPreviewList"></div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="field-label">가장 중요한 이성 조건 <span class="req">*</span></label>
+                    <select name="importantCriteria" required>
+                        <option value="">선택</option><option value="외모/체형">외모/체형</option><option value="직업/능력">직업/능력</option><option value="성격/가치관">성격/가치관</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="field-label">이상형 상세 <span class="req">*</span></label>
+                    <textarea name="idealType" required placeholder="원하는 외모, 성격 등을 자세히 적어주세요."></textarea>
+                </div>
+                <div class="field" style="display:flex; gap:10px;">
+                    <div style="flex:1;">
+                        <label class="field-label">선호 최소 나이</label>
+                        <select id="ageMinSel" required onchange="checkAgeOrder()"><option value="">선택</option></select>
+                    </div>
+                    <div style="flex:1;">
+                        <label class="field-label">선호 최대 나이</label>
+                        <select id="ageMaxSel" required onchange="checkAgeOrder()"><option value="">선택</option></select>
+                    </div>
+                </div>
+                <input type="hidden" name="preferredAgeRange" id="preferredAgeRangeHidden">
+
+                <div class="field" style="margin-top:20px; border-top:1px dashed #cbd5e1; padding-top:20px;">
+                    <label class="field-label">특정 지인 차단 <span style="font-size:12px;color:#888;">(선택)</span></label>
+                    <div id="excludePersonList">
+                        <div class="exclude-row" style="display:flex; gap:5px; margin-bottom:8px;">
+                            <select class="ex-birth" style="flex:1;"><option value="">년생</option></select>
+                            <input type="text" class="ex-name" placeholder="이름" style="flex:1;">
+                            <button type="button" onclick="addExcludeRow()" style="padding:0 12px; background:#db2777; color:#fff; border:none; border-radius:8px; font-weight:800;">+</button>
+                        </div>
+                    </div>
+                    <input type="hidden" name="avoidType" id="avoidTypeHidden">
+                </div>
+
+                <div class="field" style="margin-top:15px;">
+                    <label class="field-label">피하고 싶은 종교</label>
+                    <div id="avoidReligionTags">
+                        <span class="ar-tag" onclick="this.classList.toggle('selected')">기독교 제외</span>
+                        <span class="ar-tag" onclick="this.classList.toggle('selected')">불교 제외</span>
+                        <span class="ar-tag" onclick="this.classList.toggle('selected')">천주교 제외</span>
+                        <span class="ar-tag" onclick="this.classList.toggle('selected')">무교만 선호</span>
+                    </div>
+                    <input type="hidden" name="avoidReligion" id="avoidReligionHidden">
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">⚙️ 매칭 진행 옵션</div>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <label style="padding:15px; border:2px solid #f472b6; border-radius:12px; background:#fff5f9; cursor:pointer;">
+                        <input type="radio" name="continueMatchingYn" value="Y" checked style="accent-color:#db2777;"> 
+                        <strong style="color:#db2777;">계속 매칭 받기 (추천)</strong>
+                    </label>
+                    <label style="padding:15px; border:2px solid #e2e8f0; border-radius:12px; cursor:pointer;">
+                        <input type="radio" name="continueMatchingYn" value="N" style="accent-color:#db2777;"> 
+                        <strong style="color:#64748b;">매칭 성사 시 자동 중지</strong>
+                    </label>
+                </div>
+            </div>
+
+            <div class="section" style="border: 2px solid #db2777; background: #fff0f6;">
+                <div style="display: flex; align-items: center; gap: 10px; padding: 5px;">
+                    <input type="checkbox" id="termsCheck" required style="width: 22px; height: 22px; accent-color: #db2777;" onclick="openTerms(); return false;">
+                    <label for="termsCheck" style="font-size: 0.95rem; font-weight: 800; color: #1a1a2e; cursor: pointer;" onclick="openTerms(); return false;">
+                        <span style="color: #db2777; text-decoration: underline;">필수 이용 약관 및 개인정보 처리방침</span>을 확인해주세요. <span class="req">*</span>
+                    </label>
+                </div>
+                <div style="font-size: 0.75rem; color: #e8820c; margin-left: 32px; margin-top: 5px; font-weight: 700;">👆 글씨를 클릭하여 약관을 직접 읽으셔야 동의가 가능합니다.</div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">소개팅 지원서 제출하기</button>
+        </form>
+    </div>
+</div>
+
+<div class="modal-overlay" id="termsModal">
+    <div class="modal-content">
+        <div class="modal-header">당신의 계절 필수 이용 약관</div>
+        <div class="terms-text" style="text-align: left;">
+            <p><strong>[1. 법적 미혼 상태 및 정보 진실성 확인]</strong><br>
+            - 법적으로 미혼인 남녀만 신청 가능하며, 모든 정보는 사실이어야 합니다.<br>
+            - 허위 기재(나이, 직장, 혼인 여부 등) 시 형법상 사기죄 등 민·형사상 법적 책임이 발생하며, 환불 없이 영구 제명됩니다.</p>
+
+            <p><strong>[2. 🚫 사진 절대 비공개 동의]</strong><br>
+            - 무단 사용 방지를 위해 사진은 절대 공개되지 않으며 당일 직접 만나 확인합니다. (이에 동의하지 않을 경우 이용 불가)</p>
+
+            <p><strong>[3. 🚨 작성 후 수정 불가]</strong><br>
+            - 작성하신 내용은 자동 시스템을 통해 프로필 카드에 즉시 반영되므로 오타 확인 필수이며 제출 후 수정이 절대 불가합니다.</p>
+
+            <p><strong>[4. 가입 제한 규정]</strong><br>
+            - 키 제한 및 기본적인 자기관리 상태에 따라 가입이 제한될 수 있음을 확인하였습니다.</p>
+
+            <p><strong>[5. 환불 및 비매너 규정]</strong><br>
+            - 상호 프로필 동의 시점부터 취소 및 환불은 절대 불가합니다.<br>
+            - 무단 불참이나 비매너 언행 시 영구 차단 조치됩니다.</p>
+
+            <p><strong>[6. 면책 조항 및 대기 안내]</strong><br>
+            - 만남 주선 이후의 일들은 개인적인 영역이므로 당사는 개입하거나 책임지지 않습니다.<br>
+            - 매칭은 순차적으로 진행되므로 바로 연락이 가지 않더라도 대기해 주시기 바랍니다.</p>
+
+            <p style="border-top: 1px dashed #ccc; margin-top: 15px; padding-top: 15px;">
+            <strong>[개인정보 수집 및 이용 동의]</strong><br>
+            - 수집 목적: 신원 확인 및 매칭 서비스 제공<br>
+            - 보유 및 파기: 인증 서류는 확인 즉시 폐기하며, 일반 프로필 정보는 매칭 완료 또는 1년 보관 후 자동 파기됩니다. (거부 시 이용 불가)<br>
+            <span style="color:#64748b; font-size:0.82rem; display:block; margin-top:8px;">※ 개인정보 보호책임자: OOO (연락처: 카카오톡 '당신의 계절')</span>
+            </p>
+        </div>
+        <button class="close-terms" onclick="agreeAndCloseTerms()">모든 약관을 확인하였으며, 동의합니다 ✅</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="successModal">
+    <div class="modal-success">
+        <div style="font-size: 3rem; margin-bottom:10px;">🎉</div>
+        <h2 style="margin-bottom:10px; color:#1a1a2e; font-weight:800;">지원서 제출 완료!</h2>
+        <p style="color:#64748b; font-size:0.9rem; line-height:1.6;">데이터가 안전하게 암호화되어 저장되었습니다.<br>아래 버튼을 눌러 카카오톡 채널로 <strong>'본인 년생_이름_닉네임'</strong>을 꼭 보내주세요!</p>
+        <a href="[http://pf.kakao.com/_xxxxxx/chat](http://pf.kakao.com/_xxxxxx/chat)" target="_blank" class="kakao-next">당신의 계절 카카오톡 바로가기 💬</a>
+        <div style="margin-top: 25px;">
+            <button onclick="location.reload()" style="padding: 10px 25px; background: #e2e8f0; color: #475569; border: none; border-radius: 30px; font-weight: 700; cursor:pointer;">창 닫기</button>
+        </div>
+    </div>
+</div>
+
+<script src="[https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2](https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2)"></script>
+<script>
+    const SUPABASE_URL = '[https://teeutkxfzxdsaqdvwrwt.supabase.co](https://teeutkxfzxdsaqdvwrwt.supabase.co)';
     const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ✨ [추가된 프리미엄 로직] 접속하자마자 시스템 설정(마감 여부, 가격)을 가져옵니다.
+    // ✨ [관리자 시스템] 사이트 설정 가져오기 (마감 여부 등)
     async function loadSystemSettings() {
         try {
             const { data, error } = await _supabase.from('site_settings').select('*').eq('id', 1).single();
             if (data) {
                 if (data.is_open === false) {
-                    // 1. 모집 마감 시: 폼을 숨기고 마감 안내창을 띄움
                     document.getElementById('formWrapper').style.display = 'none';
                     document.getElementById('closedMessage').style.display = 'block';
                 } else {
-                    // 2. 모집 중일 시: DB에 적힌 가격과 문구로 화면 글자를 변경
                     document.getElementById('displayPriceMale').innerText = data.price_male;
                     document.getElementById('displayPriceFemale').innerText = data.price_female;
                     document.getElementById('displayNotice').innerText = data.notice_text;
@@ -404,17 +407,17 @@
                     document.getElementById('closedMessage').style.display = 'none';
                     document.getElementById('formWrapper').style.display = 'block';
                 }
+            } else {
+                document.getElementById('formWrapper').style.display = 'block';
             }
         } catch (e) {
             console.error("시스템 설정 로드 실패", e);
-            // DB 오류 시 방어를 위해 기본적으로 폼은 열어둠
             document.getElementById('formWrapper').style.display = 'block';
         }
     }
-    loadSystemSettings(); // 함수 즉시 실행
+    loadSystemSettings(); // 즉시 실행
 
     function openTerms() { document.getElementById('termsModal').classList.add('show'); }
-    // ... 이하 기존 스크립트 코드 (openTerms 등) 그대로 유지 ...
     function closeTerms() { document.getElementById('termsModal').classList.remove('show'); }
     function agreeAndCloseTerms() { document.getElementById('termsCheck').checked = true; closeTerms(); }
 
@@ -492,6 +495,7 @@
     document.getElementById('applyForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        // ✨ [보안 1] 봇(Bot) 스팸 방어: 허니팟 로직 실행
         const honeypot = document.getElementById('website_url').value;
         if (honeypot) {
             console.warn("Bot Detected");
@@ -504,7 +508,6 @@
         let uploadedFiles = []; 
 
         try {
-            // ✨ [최적화] RLS 락 충돌을 일으키던 SELECT 쿼리 완전 삭제 완료! (가장 빠른 제출 속도 보장)
             const avoidTags = [...document.querySelectorAll('#avoidReligionTags .ar-tag.selected')].map(t => t.innerText).join(', ');
             document.getElementById('avoidReligionHidden').value = avoidTags;
             
@@ -530,7 +533,9 @@
                 const fileExt = file.name.split('.').pop();
                 const fileName = `${prefix}_${Date.now()}_${randomStr}.${fileExt}`;
 
-                await _supabase.storage.from(bucketName).upload(fileName, file);
+                const { error } = await _supabase.storage.from(bucketName).upload(fileName, file);
+                if (error) throw error;
+                
                 uploadedFiles.push({ bucket: bucketName, path: fileName }); 
 
                 if(isPrivate) {
@@ -547,7 +552,10 @@
             const formData = new FormData(document.getElementById('applyForm'));
             const finalData = Object.fromEntries(formData.entries());
             
+            // ✨ [보안 3] 허니팟 필드는 DB 전송 시 삭제
             delete finalData.website_url; 
+
+            // ✨ [보안 3] 법적 증거 타임스탬프 기록
             finalData.agreed_terms_at = new Date().toISOString(); 
 
             finalData.photo_url = photo1; 
@@ -560,6 +568,7 @@
             const { error: dbError } = await _supabase.from('members').insert([finalData]);
             
             if (dbError) {
+                // ✨ DB UNIQUE 설정에 의한 완벽한 중복 튕겨내기
                 if (dbError.code === '23505') throw new Error("DUPLICATE_PHONE");
                 throw dbError;
             }
