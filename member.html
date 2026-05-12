@@ -233,7 +233,19 @@
         }
 
         async function showDetail(id) {
-            const m = baseMembers.find(x => x.id === id);
+            let m = baseMembers.find(x => x.id === id);
+            
+            // ✨ [버그 픽스] 추천 후보(이성)를 클릭해서 현재 메모리에 없을 경우 DB에서 직접 조회
+            if (!m) {
+                const { data, error } = await _supabase.from('members').select('*').eq('id', id).single();
+                if (error || !data) {
+                    alert('회원 상세 정보를 불러오는 데 실패했습니다.');
+                    return;
+                }
+                m = data;
+            }
+
+            // ✨ innerHTML 방어 로직 적용
             document.getElementById('modalTitle').innerHTML = `📋 ${esc(m.name)} (${esc(m.nickname)}) 프로필 확인`;
             
             let imagesHtml = '<div class="photo-container">';
