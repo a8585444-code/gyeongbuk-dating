@@ -16,6 +16,7 @@
         th { background: #f8fafc; color: #64748b; font-weight: 700; }
         .btn { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; margin: 2px; }
         .btn-detail { background: #fce7f3; color: #db2777; }
+        .btn-copy { background: #f1f5f9; color: #475569; }
         
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
         .modal-content { background: white; border-radius: 20px; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; padding: 30px; position: relative; }
@@ -28,7 +29,7 @@
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .info-item { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #f1f5f9; }
         .info-label { font-size: 11px; color: #db2777; font-weight: 800; margin-bottom: 6px; text-transform: uppercase; }
-        .info-value { font-size: 14px; font-weight: 600; color: #1e293b; line-height: 1.5; }
+        .info-value { font-size: 14px; font-weight: 600; color: #1e293b; line-height: 1.6; white-space: pre-wrap; word-break: keep-all; }
         .full-width { grid-column: span 2; }
     </style>
 </head>
@@ -105,7 +106,10 @@
                     <td>${new Date(m.created_at).toLocaleDateString()}</td>
                     <td><strong>${esc(m.name)}</strong><br><span style="font-size:11px; color:#94a3b8;">(${esc(m.nickname)})</span></td>
                     <td>${esc(m.gender)}<br>${esc(m.birthYear)}년생</td>
-                    <td>${esc(m.phoneNumber)}</td>
+                    <td>
+                        ${esc(m.phoneNumber)}<br>
+                        <button class="btn btn-copy" style="margin-top:4px;" onclick="copyText('${esc(m.phoneNumber)}')">📞 번호복사</button>
+                    </td>
                     <td>${esc(m.region)}</td>
                     <td>${esc(m.job)}</td>
                 </tr>
@@ -225,6 +229,12 @@
                 alert("가입 반려 및 모든 데이터 영구 파기가 완료되었습니다.");
                 closeModal(); loadData();
             } catch(dbErr) { alert("DB 데이터 삭제 실패"); }
+        }
+
+        function copyText(t) { 
+            const onlyNumbers = t.replace(/[^0-9]/g, '');
+            const formatted = onlyNumbers.replace(/^(\d{2,3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
+            navigator.clipboard.writeText(formatted).then(()=>alert('연락처 복사됨: ' + formatted)); 
         }
 
         function closeModal() { document.getElementById('detailModal').style.display = 'none'; currentViewId = null; }
