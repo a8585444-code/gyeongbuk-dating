@@ -234,7 +234,6 @@
 
         async function showDetail(id) {
             const m = baseMembers.find(x => x.id === id);
-            // ✨ innerHTML 방어 로직 적용
             document.getElementById('modalTitle').innerHTML = `📋 ${esc(m.name)} (${esc(m.nickname)}) 프로필 확인`;
             
             let imagesHtml = '<div class="photo-container">';
@@ -311,12 +310,12 @@
                 const myFormat = `${m.birthYear}년생${m.name}`.replace(/\s/g, '');
                 if (myBlock.includes(targetFormat) || targetBlock.includes(myFormat)) return false;
 
-                let cNum = parseInt(c.birthYear);
+                let cNum = parseInt(c.birthYear, 10);
                 const cBirthYearFull = cNum < 50 ? 2000 + cNum : 1900 + cNum; 
                 if (m.min_preferred_year && cBirthYearFull > m.min_preferred_year) return false; 
                 if (m.max_preferred_year && cBirthYearFull < m.max_preferred_year) return false; 
 
-                let mNum = parseInt(m.birthYear);
+                let mNum = parseInt(m.birthYear, 10);
                 const mBirthYearFull = mNum < 50 ? 2000 + mNum : 1900 + mNum;
                 if (c.min_preferred_year && mBirthYearFull > c.min_preferred_year) return false;
                 if (c.max_preferred_year && mBirthYearFull < c.max_preferred_year) return false;
@@ -331,7 +330,6 @@
                 return true;
             });
 
-            // ✨ innerHTML 방어 로직 적용
             document.getElementById('modalTitle').innerHTML = `❤️ ${esc(m.name)} 님을 위한 추천 후보`;
             
             let htmlContent = candidates.length === 0 ? '<div style="padding:40px; text-align:center; color:#94a3b8;">조건에 맞는 정회원 후보가 없습니다.</div>' : '';
@@ -399,7 +397,6 @@
             }
         }
 
-        // ✨ 정규식 파이프라인 완벽 구성 (숫자 선추출)
         function copyText(t) { 
             const onlyNumbers = t.replace(/[^0-9]/g, '');
             const formatted = onlyNumbers.replace(/^(\d{2,3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
