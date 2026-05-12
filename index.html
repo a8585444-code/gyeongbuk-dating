@@ -375,7 +375,7 @@
         <div style="font-size: 3rem; margin-bottom:10px;">🎉</div>
         <h2 style="margin-bottom:10px; color:#1a1a2e; font-weight:800;">지원서 제출 완료!</h2>
         <p style="color:#64748b; font-size:0.9rem; line-height:1.6;">데이터가 안전하게 암호화되어 저장되었습니다.<br>아래 버튼을 눌러 카카오톡 채널로 <strong>'본인 년생_이름_닉네임'</strong>을 꼭 보내주세요!</p>
-        <a href="http://pf.kakao.com/_xxxxxx/chat" target="_blank" class="kakao-next">당신의 계절 카카오톡 바로가기 💬</a>
+        <a href="#" target="_blank" class="kakao-next" id="kakaoLinkBtn">당신의 계절 카카오톡 바로가기 💬</a>
         <div style="margin-top: 25px;">
             <button onclick="location.reload()" style="padding: 10px 25px; background: #e2e8f0; color: #475569; border: none; border-radius: 30px; font-weight: 700; cursor:pointer;">창 닫기</button>
         </div>
@@ -393,7 +393,12 @@
         try {
             const { data, error } = await _supabase.from('site_settings').select('*').eq('id', 1).single();
             if (data) {
+                if (data.kakao_url) {
+                    document.getElementById('kakaoLinkBtn').href = data.kakao_url;
+                }
+
                 if (data.is_open === false) {
+            
                     document.getElementById('formWrapper').style.display = 'none';
                     document.getElementById('closedMessage').style.display = 'block';
                 } else {
