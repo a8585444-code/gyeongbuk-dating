@@ -150,8 +150,9 @@
                 is_open: document.getElementById('isOpenToggle').checked,
                 price_male: document.getElementById('priceMale').value,
                 price_female: document.getElementById('priceFemale').value,
-                notice_text: document.getElementById('noticeText').value,
-                updated_at: new Date().toISOString()
+                notice_text: document.getElementById('noticeText').value
+               
+                
             };
 
             const { error } = await _supabase.from('site_settings').update(updates).eq('id', 1);
