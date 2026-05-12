@@ -9,16 +9,21 @@
         body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
         .header { max-width: 1200px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
         .back-btn { text-decoration: none; color: #7c3aed; font-weight: 700; background: #fff; padding: 8px 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .card { background: #fff; border-radius: 16px; padding: 24px; max-width: 1200px; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .card { background: #fff; border-radius: 16px; padding: 24px; max-width: 1200px; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow-x: auto; }
         h1 { font-size: 20px; margin-bottom: 20px; color: #1a1a2e; display: flex; align-items: center; gap: 10px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; white-space: nowrap; }
         th { background: #f8fafc; color: #64748b; padding: 15px; border-bottom: 2px solid #edf2f7; }
         td { padding: 15px; border-bottom: 1px solid #eee; }
-        .pay-done { background: #e8f5e9; color: #2e7d32; }
+        
+        .pay-done { background: #e8f5e9; color: #2e7d32; font-weight: 700; }
         select { padding: 6px; border-radius: 6px; border: 1px solid #ddd; font-family: inherit; font-size: 12px; cursor: pointer; outline: none; }
         .match-done-select { background: #7c3aed; color: white; font-weight: 800; }
-        .btn-delete { background: #fee2e2; color: #ef4444; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; transition: 0.2s; }
+        
+        .btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; transition: 0.2s; margin: 0 2px; }
+        .btn-delete { background: #fee2e2; color: #ef4444; padding: 6px 10px; font-size: 11px; }
         .btn-delete:hover { background: #ef4444; color: white; }
+        
         .couple-box { display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; font-size: 14px; }
         .vs { color: #cbd5e1; font-weight: 400; font-size: 12px; }
     </style>
@@ -26,11 +31,26 @@
 <body>
     <div class="header">
         <a href="/admin.html" class="back-btn">← 관리자 홈</a>
-        <div style="font-weight: 700; color: #d63384;">💰 누적 확정: <span id="totalMatch">0</span>건</div>
+        <div style="font-weight: 700; color: #d63384;">💰 조회된 명단: <span id="totalMatch">0</span>건</div>
     </div>
     
     <div class="card" id="mainContainer" style="display:none;">
         <h1>🤝 매칭 및 입금 확정 명단</h1>
+
+        <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <select id="regionFilter" style="padding: 10px; border-radius: 8px; border: 1px solid #db2777; color: #db2777; font-weight: 800; outline: none; background: #fff5f9; cursor: pointer;" onchange="filterMatches()">
+                <option value="ALL">📍 전국 (전체 권역)</option>
+                <option value="[서울,인천]">[서울,인천]</option>
+                <option value="[충북,충남]">[충북,충남]</option>
+                <option value="[대전,세종]">[대전,세종]</option>
+                <option value="[대구,경북]">[대구,경북]</option>
+                <option value="[부산,경남]">[부산,경남]</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="남/녀 이름 검색" style="padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; width: 250px; outline: none;" onkeyup="if(event.key==='Enter') filterMatches()">
+            <button class="btn" style="background:#1e293b; color:white;" onclick="filterMatches()">검색</button>
+            <button class="btn" style="background:#f1f5f9; color:#475569;" onclick="resetFilters()">초기화</button>
+        </div>
+
         <table>
             <thead>
                 <tr>
@@ -47,9 +67,12 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        let allMatches = [];
+        let displayMatches = [];
+        let regionMap = {}; // ✨ 크로스 맵핑용 (id -> 지역)
+
         function esc(str) { return str ? str.toString().replace(/[&<>'"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[m]) : '-'; }
 
-        // 🚨 로그인 안 한 사람 쫓아내는 자물쇠
         async function checkAuth() {
             const { data: { session } } = await _supabase.auth.getSession();
             if (!session) { alert('보안 구역입니다.'); window.location.href = '/login.html'; return; }
@@ -58,23 +81,59 @@
         }
 
         async function loadMatches() {
-            // 🔥 핵심: 전체를 다 가져오지 않고, is_deleted가 false(안 지워짐)인 것만 골라서 가져옵니다!
-            const { data, error } = await _supabase.from('matches')
-                .select('*')
-                .eq('is_deleted', false) 
-                .order('id', { ascending: false });
-            
-            if (error) return;
+            // 1. 매칭 데이터 가져오기
+            const { data: matches, error: matchErr } = await _supabase.from('matches').select('*').eq('is_deleted', false).order('id', { ascending: false });
+            if (matchErr) return;
 
-            document.getElementById('totalMatch').innerText = data.length;
+            // 2. ✨ 지역 필터링을 위해 회원 데이터의 '지역 정보'만 가볍게 싹 가져오기
+            const { data: members, error: memErr } = await _supabase.from('members').select('id, region');
+            if (!memErr && members) {
+                members.forEach(m => regionMap[m.id] = m.region); // 맵핑 (예: 3번회원 -> [서울] 강남구)
+            }
+
+            allMatches = matches;
+            filterMatches();
+        }
+
+        function filterMatches() {
+            const region = document.getElementById('regionFilter').value;
+            const keyword = document.getElementById('searchInput').value.trim();
+
+            displayMatches = allMatches;
+
+            // 지역 필터 (남자 지역이나 여자 지역 중 하나라도 포함되면 표시)
+            if (region !== 'ALL') {
+                displayMatches = displayMatches.filter(m => {
+                    const mRegion = regionMap[m.male_id] || '';
+                    const fRegion = regionMap[m.female_id] || '';
+                    return mRegion.includes(region) || fRegion.includes(region);
+                });
+            }
+
+            // 이름 검색
+            if (keyword) {
+                displayMatches = displayMatches.filter(m => (m.male_name && m.male_name.includes(keyword)) || (m.female_name && m.female_name.includes(keyword)));
+            }
+
+            renderList(displayMatches);
+        }
+
+        function resetFilters() {
+            document.getElementById('regionFilter').value = 'ALL';
+            document.getElementById('searchInput').value = '';
+            filterMatches();
+        }
+
+        function renderList(matches) {
+            document.getElementById('totalMatch').innerText = matches.length;
             const list = document.getElementById('matchList');
             
-            if(data.length === 0) {
-                list.innerHTML = '<tr><td colspan="6" style="padding:40px; color:#94a3b8;">현재 진행 중인 매칭 내역이 없습니다.</td></tr>';
+            if(matches.length === 0) {
+                list.innerHTML = '<tr><td colspan="6" style="padding:40px; color:#94a3b8;">조건에 맞는 매칭 내역이 없습니다.</td></tr>';
                 return;
             }
 
-            list.innerHTML = data.map(m => `
+            list.innerHTML = matches.map(m => `
                 <tr>
                     <td style="color:#94a3b8;">${new Date(m.created_at).toLocaleDateString()}</td>
                     <td><div class="couple-box"><span style="color:#3b82f6;">${esc(m.male_name)}</span><span class="vs">❤️</span><span style="color:#ec4899;">${esc(m.female_name)}</span></div></td>
@@ -108,10 +167,8 @@
             if (error) alert('수정 실패'); else loadMatches();
         }
 
-        // 🔥 핵심: 진짜 지우지(.delete) 않고 꼬리표만 바꿉니다(.update)
         async function deleteMatch(id) {
             if(!confirm('이 매칭 기록을 명단에서 숨기시겠습니까?\\n(데이터베이스에는 안전하게 보관됩니다)')) return;
-            
             const { error } = await _supabase.from('matches').update({ is_deleted: true }).eq('id', id);
             if (error) alert('숨기기 처리 중 오류가 발생했습니다.');
             else loadMatches();
