@@ -36,10 +36,25 @@
 <body>
     <div class="header">
         <a href="/admin.html" class="back-btn">← 관리자 홈으로</a>
-        <div style="font-size: 13px; color: #64748b; font-weight: 600;">신규 대기 회원: <span id="pendingCount">0</span>명</div>
+        <div style="font-size: 13px; color: #64748b; font-weight: 600;">조회된 대기 회원: <span id="pendingCount">0</span>명</div>
     </div>
     <div class="card" id="mainContainer" style="display:none;">
         <h1>🚨 신규 신청 회원 관리 (미승인 명단)</h1>
+
+        <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <select id="regionFilter" style="padding: 10px; border-radius: 8px; border: 1px solid #db2777; color: #db2777; font-weight: 800; outline: none; background: #fff5f9; cursor: pointer;" onchange="filterMembers()">
+                <option value="ALL">📍 전국 (전체 권역)</option>
+                <option value="[서울,인천]">[서울,인천]</option>
+                <option value="[충북,충남]">[충북,충남]</option>
+                <option value="[대전,세종]">[대전,세종]</option>
+                <option value="[대구,경북]">[대구,경북]</option>
+                <option value="[부산,경남]">[부산,경남]</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="이름 또는 닉네임 검색" style="padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; width: 250px; outline: none;" onkeyup="if(event.key==='Enter') filterMembers()">
+            <button class="btn" style="padding: 10px 20px; background:#1e293b; color:white;" onclick="filterMembers()">검색</button>
+            <button class="btn btn-copy" style="padding: 10px 20px;" onclick="resetFilters()">초기화</button>
+        </div>
+
         <div id="loading" style="text-align:center; padding:50px; color:#db2777; font-weight:700;">불러오는 중...</div>
         <table>
             <thead>
@@ -70,7 +85,8 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_3VeTRnYQJ1wl50YYQwodCA_nuTZ1WM-';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        let pendingMembers = [];
+        let allPendingMembers = []; // ✨ 모든 데이터 저장용
+        let displayMembers = []; // ✨ 화면 표시용 (필터링됨)
         let currentViewId = null;
 
         function esc(str) { return str ? str.toString().replace(/[&<>'"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[m]) : '-'; }
@@ -86,20 +102,47 @@
             try {
                 const { data, error } = await _supabase.from('members').select('*').in('status', ['대기', 'PENDING']).order('id', { ascending: false });
                 if (error) throw error;
-                pendingMembers = data;
-                document.getElementById('pendingCount').innerText = pendingMembers.length;
-                renderList();
+                allPendingMembers = data;
+                filterMembers(); // ✨ 데이터를 불러온 직후 필터 실행
             } catch (e) { alert('데이터 로드 실패'); }
             finally { document.getElementById('loading').style.display = 'none'; }
         }
 
+        // ✨ [추가됨] 지역 및 이름 필터 로직
+        function filterMembers() {
+            const region = document.getElementById('regionFilter').value;
+            const keyword = document.getElementById('searchInput').value.trim();
+
+            displayMembers = allPendingMembers;
+
+            if (region !== 'ALL') {
+                displayMembers = displayMembers.filter(m => m.region && m.region.includes(region));
+            }
+
+            if (keyword) {
+                displayMembers = displayMembers.filter(m => 
+                    (m.name && m.name.includes(keyword)) || 
+                    (m.nickname && m.nickname.includes(keyword))
+                );
+            }
+
+            document.getElementById('pendingCount').innerText = displayMembers.length;
+            renderList();
+        }
+
+        function resetFilters() {
+            document.getElementById('regionFilter').value = 'ALL';
+            document.getElementById('searchInput').value = '';
+            filterMembers();
+        }
+
         function renderList() {
             const listBody = document.getElementById('memberList');
-            if(pendingMembers.length === 0) {
-                listBody.innerHTML = '<tr><td colspan="8" style="padding:40px; color:#94a3b8;">현재 승인 대기 중인 신규 회원이 없습니다.</td></tr>';
+            if(displayMembers.length === 0) {
+                listBody.innerHTML = '<tr><td colspan="8" style="padding:40px; color:#94a3b8;">조건에 맞는 승인 대기 회원이 없습니다.</td></tr>';
                 return;
             }
-            listBody.innerHTML = pendingMembers.map(m => `
+            listBody.innerHTML = displayMembers.map(m => `
                 <tr>
                     <td><button class="btn btn-detail" onclick="showDetail(${m.id})">상세 심사</button></td>
                     <td><span style="color:#ef4444; font-weight:800;">${m.status}</span></td>
@@ -110,7 +153,7 @@
                         ${esc(m.phoneNumber)}<br>
                         <button class="btn btn-copy" style="margin-top:4px;" onclick="copyText('${esc(m.phoneNumber)}')">📞 번호복사</button>
                     </td>
-                    <td>${esc(m.region)}</td>
+                    <td><span style="color:#db2777; font-weight:800;">${esc(m.region)}</span></td>
                     <td>${esc(m.job)}</td>
                 </tr>
             `).join('');
@@ -118,7 +161,8 @@
 
         async function showDetail(id) {
             currentViewId = id;
-            const m = pendingMembers.find(x => x.id === id);
+            const m = allPendingMembers.find(x => x.id === id); // ✨ 원본 배열에서 찾기
+            
             document.getElementById('modalTitle').innerHTML = `📋 ${esc(m.name)} (${esc(m.nickname)}) 님 프로필 심사`;
             
             let imagesHtml = '<div class="photo-container">';
@@ -181,7 +225,7 @@
             if(!confirm("이 회원을 정회원으로 승인하시겠습니까?\n(승인 즉시 보안을 위해 고객의 인증 서류는 서버에서 영구 삭제됩니다.)")) return;
             
             try {
-                const member = pendingMembers.find(x => x.id === currentViewId);
+                const member = allPendingMembers.find(x => x.id === currentViewId);
 
                 if (member.cert_url && !member.cert_url.startsWith('http')) {
                     let certFileName = member.cert_url.split('?')[0].split('/').pop();
@@ -191,7 +235,7 @@
                 const { error } = await _supabase.from('members')
                     .update({ status: '정회원', cert_url: null })
                     .eq('id', currentViewId);
-                    
+                
                 if (error) throw error;
                 alert("정회원 승인 및 서류 영구 파기가 완료되었습니다!");
                 closeModal(); loadData();
@@ -202,7 +246,7 @@
             if(!currentViewId) return;
             if(!confirm("이 회원의 가입을 반려하시겠습니까?\n업로드된 데이터가 모두 영구 삭제됩니다.")) return;
             
-            const member = pendingMembers.find(x => x.id === currentViewId);
+            const member = allPendingMembers.find(x => x.id === currentViewId);
             
             try {
                 const photosToDelete = [];
@@ -216,6 +260,7 @@
                 }
                 
                 if (photosToDelete.length > 0) await _supabase.storage.from('profile_photos').remove(photosToDelete);
+                
                 if (member.cert_url && !member.cert_url.startsWith('http')) {
                     let certFileName = member.cert_url.split('?')[0].split('/').pop();
                     await _supabase.storage.from('cert_documents').remove([decodeURIComponent(certFileName)]);
@@ -234,7 +279,7 @@
         function copyText(t) { 
             const onlyNumbers = t.replace(/[^0-9]/g, '');
             const formatted = onlyNumbers.replace(/^(\d{2,3})(\d{3,4})(\d{4})$/, `$1-$2-$3`);
-            navigator.clipboard.writeText(formatted).then(()=>alert('연락처 복사됨: ' + formatted)); 
+            navigator.clipboard.writeText(formatted).then(()=>alert('연락처 복사됨: ' + formatted));
         }
 
         function closeModal() { document.getElementById('detailModal').style.display = 'none'; currentViewId = null; }
