@@ -196,7 +196,7 @@
 
         async function rejectMember() {
             if(!currentViewId) return;
-            if(!confirm("이 회원의 가입을 반려하시겠습니까?업로드된 데이터가 모두 영구 삭제됩니다.")) return;
+            if(!confirm("이 회원의 가입을 반려하시겠습니까?\n업로드된 데이터가 모두 영구 삭제됩니다.")) return;
             
             const member = pendingMembers.find(x => x.id === currentViewId);
             
