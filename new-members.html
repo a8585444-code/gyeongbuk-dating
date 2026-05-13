@@ -32,7 +32,17 @@
         .info-value { font-size: 14px; font-weight: 600; color: #1e293b; line-height: 1.6; white-space: pre-wrap; word-break: keep-all; }
         .full-width { grid-column: span 2; }
     </style>
-</head>
+
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('selectstart', event => event.preventDefault());
+        document.addEventListener('keydown', function(e) {
+            if(e.keyCode == 123) { e.preventDefault(); return false; } 
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 73) { e.preventDefault(); return false; } 
+            if(e.ctrlKey && e.keyCode == 85) { e.preventDefault(); return false; } 
+        });
+    </script>
+    </head>
 <body>
     <div class="header">
         <a href="/admin.html" class="back-btn">← 관리자 홈으로</a>
