@@ -7,13 +7,12 @@
     <title> 1:1 소개팅 지원서</title>
     <style>
         :root {
-    /* 👇 여기서 색상과 폰트만 바꾸면 사이트 전체가 한 번에 바뀝니다! */
-    --primary-color: #db2777;      /* 메인 컬러 (현재 핑크) */
-    --gradient-start: #f472b6;     /* 배너 그라데이션 시작색 */
-    --light-bg: #fff0f6;           /* 연한 배경색 */
-    --border-light: #fce4ec;       /* 연한 테두리색 */
-    --font-main: 'Apple SD Gothic Neo', '맑은 고딕', sans-serif;
-}
+            --primary-color: #db2777;      
+            --gradient-start: #f472b6;     
+            --light-bg: #fff0f6;           
+            --border-light: #fce4ec;       
+            --font-main: 'Apple SD Gothic Neo', '맑은 고딕', sans-serif;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: var(--font-main); background: #fdf6f9; color: #333; min-height: 100vh; }
         .top-banner { background: linear-gradient(135deg, var(--gradient-start), var(--primary-color)); color: white; text-align: center; padding: 35px 20px 30px; }
@@ -168,12 +167,15 @@
                         <div style="display: flex; gap: 5px;">
                             <select id="broadRegion" required style="flex: 1.2;">
                                 <option value="">권역 선택</option>
-                                <option value="서울,인천">서울,인천</option>
-                                <option value="충북,충남">충북,충남</option>
-                                <option value="대전,세종">대전,세종</option>
-                                <option value="대구,경북">대구,경북</option>
-                                <option value="부산,경남">부산,경남</option>
-</select>
+                                <option value="[서울,인천]">서울,인천</option>
+                                <option value="[경기]">경기</option>
+                                <option value="[충북,충남]">충북,충남</option>
+                                <option value="[대전,세종]">대전,세종</option>
+                                <option value="[대구,경북]">대구,경북</option>
+                                <option value="[부산,경남]">부산,경남</option>
+                                <option value="[광주,전라]">광주,전라</option>
+                                <option value="[강원,제주]">강원,제주</option>
+                            </select>
                             <input type="text" id="detailRegion" required placeholder="상세 (예: 강남구)" data-no-emoji style="flex: 1;">
                         </div>
                         <input type="hidden" name="region" id="finalRegion">
@@ -270,7 +272,7 @@
                         <label class="field-label">재직증명서 / 사업자등록증 첨부 <span class="req">*</span></label>
                         <div class="field-desc" style="color: #e53e3e; font-weight: 800; margin-bottom: 10px; background: #fff5f5; padding: 10px; border-radius: 8px; border: 1px dashed #feb2b2; word-break: keep-all;">
                             🚨 주의: 건강보험자격득실확인서 등 주민등록번호가 포함된 서류 첨부 시, 반드시 <span style="text-decoration: underline;">뒷자리 7자리를 포스트잇이나 모자이크로 완전히 가리고(마스킹)</span> 첨부해 주세요. 뒷자리가 노출된 서류는 개인정보보호법에 따라 즉시 영구 파기되며 가입이 거절됩니다.
-                                                        </div>
+                        </div>
                         <div class="file-upload-area" id="proofUploadArea" style="min-height: 100px; padding:15px;">
                             <input type="file" id="certInput" accept=".jpg, .jpeg, .png, .webp" required>
                             <div style="font-size: 1.5rem;">📄</div>
@@ -289,14 +291,15 @@
                     <label class="field-label">이상형 상세 <span class="req">*</span></label>
                     <textarea name="idealType" required placeholder="원하는 외모, 성격 등을 자세히 적어주세요."></textarea>
                 </div>
+                
                 <div class="field" style="display:flex; gap:10px;">
                     <div style="flex:1;">
-                        <label class="field-label">선호 최소 나이</label>
-                        <select id="ageMinSel" required onchange="checkAgeOrder()"><option value="">선택</option></select>
+                        <label class="field-label">선호 나이대 (시작)</label>
+                        <select id="ageMinSel" required><option value="">선택</option></select>
                     </div>
                     <div style="flex:1;">
-                        <label class="field-label">선호 최대 나이</label>
-                        <select id="ageMaxSel" required onchange="checkAgeOrder()"><option value="">선택</option></select>
+                        <label class="field-label">선호 나이대 (끝)</label>
+                        <select id="ageMaxSel" required><option value="">선택</option></select>
                     </div>
                 </div>
                 <input type="hidden" name="preferredAgeRange" id="preferredAgeRangeHidden">
@@ -351,7 +354,10 @@
 
             <button type="submit" class="submit-btn" id="submitBtn">소개팅 지원서 제출하기</button>
         </form>
-    </div> </div> <div class="modal-overlay" id="termsModal">
+    </div> 
+</div> 
+
+<div class="modal-overlay" id="termsModal">
     <div class="modal-content">
         <div class="modal-header">1:1데이팅 필수 이용 약관</div>
         <div class="terms-text" style="text-align: left;">
@@ -416,6 +422,7 @@
                     const v = String(i).substring(2);
                     opts += `<option value="${v}">${v}년생</option>`;
                 }
+                
                 document.getElementById('ageSelect').innerHTML = opts;
                 document.getElementById('ageMinSel').innerHTML = opts;
                 document.getElementById('ageMaxSel').innerHTML = opts;
@@ -462,25 +469,12 @@
         el.addEventListener('input', () => { counter.textContent = `${el.value.length} / ${max}자`; });
     });
 
-    function checkAgeOrder() {
-        const minVal = document.getElementById('ageMinSel').value;
-        const maxVal = document.getElementById('ageMaxSel').value;
-        if(minVal && maxVal) {
-            let minNum = parseInt(minVal, 10); let maxNum = parseInt(maxVal, 10);
-            if(minNum < 50) minNum += 100; if(maxNum < 50) maxNum += 100;
-            if(minNum < maxNum) {
-                alert("선호 최대 나이가 선호 최소 나이보다 어릴 수 없습니다.");
-                document.getElementById('ageMaxSel').value = '';
-            }
-        }
-    }
-
     function addExcludeRow() {
         const list = document.getElementById('excludePersonList');
         const row = document.createElement('div'); row.className = 'exclude-row'; row.style.cssText = 'display:flex; gap:5px; margin-bottom:8px;';
         row.innerHTML = `<select class="ex-birth" style="flex:1;">${document.getElementById('ageMinSel').innerHTML}</select>
                          <input type="text" class="ex-name" placeholder="이름" style="flex:1;">
-                         <button type="button" onclick="this.parentElement.remove()" style="padding:0 12px; background:#ef4444; color:#fff; border:none; border-radius:8px; font-weight:800;">-</button>`;
+                         <button type="button" onclick="this.parentElement.remove()" style="padding:0 12px; background:var(--primary-color); color:#fff; border:none; border-radius:8px; font-weight:800;">-</button>`;
         list.appendChild(row);
     }
 
@@ -519,7 +513,6 @@
         let uploadedFiles = []; 
 
         try {
-            // ✨ [지역 전국구 확장] 권역 + 상세주소 하나로 합쳐서 전송 준비
             const broad = document.getElementById('broadRegion').value;
             const detail = document.getElementById('detailRegion').value;
             document.getElementById('finalRegion').value = `[${broad}] ${detail}`;
@@ -529,11 +522,24 @@
             
             const minVal = document.getElementById('ageMinSel').value;
             const maxVal = document.getElementById('ageMaxSel').value;
-            document.getElementById('preferredAgeRangeHidden').value = minVal + '년생 ~ ' + maxVal + '년생';
             
-            let minYear = null; let maxYear = null;
-            if(minVal) { let minNum = parseInt(minVal, 10); minYear = minNum < 50 ? 2000 + minNum : 1900 + minNum; }
-            if(maxVal) { let maxNum = parseInt(maxVal, 10); maxYear = maxNum < 50 ? 2000 + maxNum : 1900 + maxNum; }
+            let y1 = null, y2 = null;
+            if(minVal) { let n = parseInt(minVal, 10); y1 = n < 50 ? 2000 + n : 1900 + n; }
+            if(maxVal) { let n = parseInt(maxVal, 10); y2 = n < 50 ? 2000 + n : 1900 + n; }
+            
+            let finalMinYear = null, finalMaxYear = null;
+            if(y1 && y2) {
+                finalMinYear = Math.max(y1, y2); 
+                finalMaxYear = Math.min(y1, y2); 
+                const displayMin = String(finalMaxYear).substring(2);
+                const displayMax = String(finalMinYear).substring(2);
+                document.getElementById('preferredAgeRangeHidden').value = `${displayMin}년생 ~ ${displayMax}년생`;
+            } else {
+                finalMinYear = y1 || y2;
+                finalMaxYear = y1 || y2;
+                const displayVal = String(y1 || y2).substring(2);
+                document.getElementById('preferredAgeRangeHidden').value = `${displayVal}년생`;
+            }
 
             let avoidPersons = [];
             document.querySelectorAll('.exclude-row').forEach(row => {
@@ -567,8 +573,8 @@
             finalData.photo_url_full = photoFull;
             finalData.cert_url = certPath; 
             finalData.status = "대기";
-            finalData.min_preferred_year = minYear;
-            finalData.max_preferred_year = maxYear;
+            finalData.min_preferred_year = finalMinYear;
+            finalData.max_preferred_year = finalMaxYear;
 
             const { error: dbError } = await _supabase.from('members').insert([finalData]);
             if (dbError) {
