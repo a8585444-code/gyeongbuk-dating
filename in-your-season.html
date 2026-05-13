@@ -66,7 +66,7 @@
             <div id="captureWrapper">
                 <table class="profile-table" id="captureCard">
                     <thead>
-                        <tr><th colspan="2">♥In Your Season Profile♥</th></tr>
+                        <tr><th colspan="2">♥ 1:1 데이팅 Profile ♥</th>
                     </thead>
                     <tbody>
                         <tr><td>닉네임</td><td id="cNickname"></td></tr>
@@ -374,7 +374,7 @@
                 const card = document.getElementById('captureWrapper');
                 html2canvas(card, { scale: 2, backgroundColor: '#000000' }).then(canvas => {
                     const link = document.createElement('a');
-                    link.download = `InYourSeason_Profile_${Date.now()}.jpg`;
+                    link.download = '1on1_Profile_${Date.now()}.jpg';
                     link.href = canvas.toDataURL('image/jpeg', 0.9);
                     link.click();
                     btn.innerText = '📸 JPEG 저장하기'; btn.disabled = false;
