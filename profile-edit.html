@@ -26,8 +26,18 @@
         .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; font-family: inherit; }
         .btn-cancel { background: #f1f5f9; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; }
         .btn-save { background: #7c3aed; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
-    </style>
-</head>
+   </style>
+
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('selectstart', event => event.preventDefault());
+        document.addEventListener('keydown', function(e) {
+            if(e.keyCode == 123) { e.preventDefault(); return false; } 
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 73) { e.preventDefault(); return false; } 
+            if(e.ctrlKey && e.keyCode == 85) { e.preventDefault(); return false; } 
+        });
+    </script>
+    </head>
 <body>
     <a href="/admin.html" class="header-link">← 관리자 홈으로</a>
     <div class="card" id="mainContainer" style="display:none;">
