@@ -6,54 +6,62 @@
     <meta name="viewport" content="width=device-width, maximum-scale=1, user-scalable=yes">
     <title> 1:1 소개팅 지원서</title>
     <style>
+        :root {
+        /* 👇 여기서 색상과 폰트만 바꾸면 사이트 전체가 한 번에 바뀝니다! */
+        --primary-color: var(--primary-color);      /* 메인 컬러 (현재 핑크) */
+        --gradient-start: var(--gradient-start);     /* 배너 그라데이션 시작색 */
+        --light-bg: var(--light-bg);           /* 연한 배경색 */
+        --border-light: var(--border-light);       /* 연한 테두리색 */
+        --font-main: var(--font-main);
+    }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Apple SD Gothic Neo', '맑은 고딕', sans-serif; background: #fdf6f9; color: #333; min-height: 100vh; }
-        .top-banner { background: linear-gradient(135deg, #f472b6, #db2777); color: white; text-align: center; padding: 35px 20px 30px; }
+        body { font-family: var(--font-main); background: #fdf6f9; color: #333; min-height: 100vh; }
+        .top-banner { background: linear-gradient(135deg, var(--gradient-start), var(--primary-color)); color: white; text-align: center; padding: 35px 20px 30px; }
         .top-banner h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; }
         .top-banner p { margin-top: 8px; font-size: 0.95rem; opacity: 0.9; font-weight: 600; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px 14px 70px; }
         
-        .intro-box { background: white; border-radius: 18px; padding: 25px; margin-bottom: 20px; font-size: 0.9rem; line-height: 1.8; color: #444; box-shadow: 0 4px 15px rgba(219, 39, 119, 0.08); border: 1px solid #fce4ec; word-break: keep-all; }
-        .intro-box h3 { font-size: 1rem; color: #db2777; margin: 20px 0 10px; border-left: 4px solid #db2777; padding-left: 10px; }
+        .intro-box { background: white; border-radius: 18px; padding: 25px; margin-bottom: 20px; font-size: 0.9rem; line-height: 1.8; color: #444; box-shadow: 0 4px 15px rgba(219, 39, 119, 0.08); border: 1px solid var(--border-light); word-break: keep-all; }
+        .intro-box h3 { font-size: 1rem; color: var(--primary-color); margin: 20px 0 10px; border-left: 4px solid var(--primary-color); padding-left: 10px; }
         .intro-box ul { list-style: none; padding-left: 0; }
         .intro-box li { margin-bottom: 6px; position: relative; padding-left: 18px; }
         .intro-box li::before { content: '✨'; position: absolute; left: 0; font-size: 0.8rem; }
-        .highlight { color: #db2777; font-weight: 800; }
+        .highlight { color: var(--primary-color); font-weight: 800; }
         .warning-text { background: #fff5f5; color: #e53e3e; padding: 12px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; margin-top: 15px; border: 1px dashed #feb2b2; word-break: keep-all; }
 
         .section { background: white; border-radius: 16px; padding: 25px 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
-        .section-title { font-size: 0.85rem; font-weight: 800; color: #db2777; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #fce4ec; display: flex; align-items: center; gap: 6px; }
+        .section-title { font-size: 0.85rem; font-weight: 800; color: var(--primary-color); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 6px; }
         
         .field { margin-bottom: 22px; }
         .field:last-child { margin-bottom: 0; }
         label.field-label { display: block; font-size: 0.92rem; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
         .field-desc { font-size: 0.82rem; color: #718096; margin-bottom: 10px; line-height: 1.5; }
-        .req { color: #db2777; margin-left: 3px; }
+        .req { color: var(--primary-color); margin-left: 3px; }
         .badge-public { display: inline-block; background: #e8f5e9; color: #2e7d32; font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; border: 1px solid #a5d6a7; margin-bottom: 8px; }
 
         input[type="text"], select, textarea { width: 100%; padding: 12px 15px; border: 1.5px solid #edf2f7; border-radius: 10px; font-size: 0.95rem; background: #fdfcfd; outline: none; transition: 0.2s; font-family: inherit; }
-        input[type="text"]:focus, select:focus, textarea:focus { border-color: #f472b6; background: #fff; box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.1); }
+        input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--gradient-start); background: #fff; box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.1); }
         textarea { resize: vertical; min-height: 80px; line-height: 1.55; }
         
         .radio-row { display: flex; flex-wrap: wrap; gap: 10px; }
         .radio-row label { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: 1.5px solid #edf2f7; border-radius: 25px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: 0.2s; background: #fff; }
         .radio-row input[type="radio"] { display: none; }
-        .radio-row label.selected { border-color: #db2777; background: #fff0f6; color: #db2777; }
+        .radio-row label.selected { border-color: var(--primary-color); background: var(--light-bg); color: var(--primary-color); }
 
         .file-upload-area { border: 2px dashed #e2e8f0; border-radius: 14px; padding: 25px; text-align: center; cursor: pointer; transition: 0.2s; background: #f8fafc; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px; }
-        .file-upload-area:hover { border-color: #f472b6; background: #fff5f9; }
+        .file-upload-area:hover { border-color: var(--gradient-start); background: #fff5f9; }
         .file-upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
         .file-preview-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: center; }
         .file-preview-item { position: relative; width: 110px; height: 140px; }
         .file-preview-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; border: 1.5px solid #eee; }
 
         .ar-tag { display: inline-block; padding: 8px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1.5px solid #d1d5db; background: #fff; color: #374151; transition: 0.2s; margin: 0 4px 6px 0; }
-        .ar-tag.selected { background: #db2777; color: #fff; border-color: #db2777; }
+        .ar-tag.selected { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
 
         .private-box { background: #f7f7f7; border: 1px solid #ddd; border-left: 4px solid #a0aec0; border-radius: 10px; padding: 20px; margin-top: 12px; }
         .private-box-header { font-size: 0.8rem; font-weight: 800; color: #718096; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; }
 
-        .submit-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #f472b6, #db2777); color: white; border: none; border-radius: 14px; font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 15px; box-shadow: 0 10px 20px rgba(219, 39, 119, 0.2); }
+        .submit-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, var(--gradient-start), var(--primary-color)); color: white; border: none; border-radius: 14px; font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 15px; box-shadow: 0 10px 20px rgba(219, 39, 119, 0.2); }
         .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(219, 39, 119, 0.3); }
 
@@ -63,8 +71,8 @@
         .modal-header { font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; color: #1a1a2e; border-bottom: 1px solid #eee; padding-bottom: 12px; }
         .terms-text { font-size: 0.88rem; color: #4a5568; line-height: 1.7; text-align: left; word-break: keep-all; }
         .terms-text p { margin-bottom: 15px; }
-        .terms-text strong { color: #db2777; }
-        .close-terms { display: block; width: 100%; padding: 15px; background: #db2777; color: white; border: none; border-radius: 10px; margin-top: 25px; font-size: 1rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(219, 39, 119, 0.3); transition: 0.2s; }
+        .terms-text strong { color: var(--primary-color); }
+        .close-terms { display: block; width: 100%; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 10px; margin-top: 25px; font-size: 1rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(219, 39, 119, 0.3); transition: 0.2s; }
         
         .modal-success { background: white; border-radius: 18px; padding: 36px 26px; max-width: 360px; width: 100%; text-align: center; box-shadow: 0 10px 50px rgba(0,0,0,0.2); }
         .modal-success .kakao-next { display: inline-block; background: #fee500; color: #333; text-decoration: none; border-radius: 10px; padding: 12px 20px; font-size: 0.9rem; font-weight: 800; margin-top: 16px; box-shadow: 0 4px 10px rgba(254,229,0,0.3); transition: 0.2s; }
@@ -75,7 +83,7 @@
 <body>
 
 <div class="top-banner">
-    <h1> 1:1 소개팅</h1>
+   <h1 style="display: block;">1:1 데이팅</h1>
     <p>전국 프리미엄 매칭 서비스</p>
 </div>
 
@@ -299,7 +307,7 @@
                         <div class="exclude-row" style="display:flex; gap:5px; margin-bottom:8px;">
                             <select class="ex-birth" style="flex:1;"><option value="">년생</option></select>
                             <input type="text" class="ex-name" placeholder="이름" style="flex:1;">
-                            <button type="button" onclick="addExcludeRow()" style="padding:0 12px; background:#db2777; color:#fff; border:none; border-radius:8px; font-weight:800;">+</button>
+                            <button type="button" onclick="addExcludeRow()" style="padding:0 12px; background:var(--primary-color); color:#fff; border:none; border-radius:8px; font-weight:800;">+</button>
                         </div>
                     </div>
                     <input type="hidden" name="avoidType" id="avoidTypeHidden">
@@ -320,22 +328,22 @@
             <div class="section">
                 <div class="section-title">⚙️ 매칭 진행 옵션</div>
                 <div style="display:flex; flex-direction:column; gap:10px;">
-                    <label style="padding:15px; border:2px solid #f472b6; border-radius:12px; background:#fff5f9; cursor:pointer;">
-                        <input type="radio" name="continueMatchingYn" value="Y" checked style="accent-color:#db2777;"> 
-                        <strong style="color:#db2777;">계속 매칭 받기 (추천)</strong>
+                    <label style="padding:15px; border:2px solid var(--gradient-start); border-radius:12px; background:#fff5f9; cursor:pointer;">
+                        <input type="radio" name="continueMatchingYn" value="Y" checked style="accent-color:var(--primary-color);"> 
+                        <strong style="color:var(--primary-color);">계속 매칭 받기 (추천)</strong>
                     </label>
                     <label style="padding:15px; border:2px solid #e2e8f0; border-radius:12px; cursor:pointer;">
-                        <input type="radio" name="continueMatchingYn" value="N" style="accent-color:#db2777;"> 
+                        <input type="radio" name="continueMatchingYn" value="N" style="accent-color:var(--primary-color);"> 
                         <strong style="color:#64748b;">매칭 성사 시 자동 중지</strong>
                     </label>
                 </div>
             </div>
 
-            <div class="section" style="border: 2px solid #db2777; background: #fff0f6;">
+            <div class="section" style="border: 2px solid var(--primary-color); background: var(--light-bg);">
                 <div style="display: flex; align-items: center; gap: 10px; padding: 5px;">
-                    <input type="checkbox" id="termsCheck" required style="width: 22px; height: 22px; accent-color: #db2777;" onclick="openTerms(); return false;">
+                    <input type="checkbox" id="termsCheck" required style="width: 22px; height: 22px; accent-color: var(--primary-color);" onclick="openTerms(); return false;">
                     <label for="termsCheck" style="font-size: 0.95rem; font-weight: 800; color: #1a1a2e; cursor: pointer;" onclick="openTerms(); return false;">
-                        <span style="color: #db2777; text-decoration: underline;">필수 이용 약관 및 개인정보 처리방침</span>을 확인해주세요. <span class="req">*</span>
+                        <span style="color: var(--primary-color); text-decoration: underline;">필수 이용 약관 및 개인정보 처리방침</span>을 확인해주세요. <span class="req">*</span>
                     </label>
                 </div>
                 <div style="font-size: 0.75rem; color: #e8820c; margin-left: 32px; margin-top: 5px; font-weight: 700;">👆 글씨를 클릭하여 약관을 직접 읽으셔야 동의가 가능합니다.</div>
