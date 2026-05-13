@@ -34,8 +34,18 @@
             .menu-text h2 { font-size: 14px; }
             .menu-text p { font-size: 12px; }
         }
-    </style>
-</head>
+   </style>
+
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('selectstart', event => event.preventDefault());
+        document.addEventListener('keydown', function(e) {
+            if(e.keyCode == 123) { e.preventDefault(); return false; } 
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 73) { e.preventDefault(); return false; } 
+            if(e.ctrlKey && e.keyCode == 85) { e.preventDefault(); return false; } 
+        });
+    </script>
+    </head>
 <body>
     <div style="max-width:480px;width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <div id="welcomeMsg" style="color:#7c3aed;font-weight:600;font-size:14px;display:none;"></div>
