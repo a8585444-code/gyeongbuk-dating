@@ -37,8 +37,18 @@
         .btn-pw:hover { background: #be185d; }
         
         .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; font-weight: 800; color: #db2777; }
-    </style>
-</head>
+   </style>
+
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('selectstart', event => event.preventDefault());
+        document.addEventListener('keydown', function(e) {
+            if(e.keyCode == 123) { e.preventDefault(); return false; } 
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 73) { e.preventDefault(); return false; } 
+            if(e.ctrlKey && e.keyCode == 85) { e.preventDefault(); return false; } 
+        });
+    </script>
+    </head>
 <body>
 
     <div id="loading" class="loading-overlay">설정 저장 중... ⏳</div>
